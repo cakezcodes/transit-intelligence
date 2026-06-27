@@ -1,0 +1,16 @@
+{
+  "name": "transit-intelligence",
+  "version": "1.0.0",
+  "description": "Transit Intelligence is a cosmic calendar and personal grimoire system by CakezCodes.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
