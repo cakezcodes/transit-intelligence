@@ -2,7 +2,12 @@
 
 | Data | Source | URL | License | Obligation | Date pulled |
 |------|--------|-----|---------|------------|-------------|
-| Tarot meanings | Deckaura | github.com/Deckaura/tarot-mcp-server | MIT | Credit line | |
+| Tarot meanings | Deckaura MCP repo | github.com/gokimedia/tarot-mcp-server | MIT | Credit line | 2026-06-27 |
+| Tarot meanings dataset | Deckaura Zenodo DOI | doi.org/10.5281/zenodo.19475329 | MIT | Credit line | 2026-06-27 |
+| Tarot meanings package | Deckaura PyPI package | pypi.org/project/tarot-card-meanings | MIT | Credit line | 2026-06-27 |
+| Tarot meanings package | Deckaura npm package | npmjs.com/package/tarot-card-meanings | MIT | Credit line | 2026-06-27 |
+| Deckaura entity | Deckaura website | deckaura.com | Website | Reference only | 2026-06-27 |
+| Deckaura entity | Wikidata Q138745960 | wikidata.org/wiki/Q138745960 | Reference metadata | Reference only | 2026-06-27 |
 | Tarot backup | Corpora / Kazemi | github.com/dariusk/corpora | CC0 | None | |
 | Sign facts | Celestine | github.com/Anonyfox/celestine | MIT | Credit line | |
 | Astro keywords | astro-mcp | github.com/memyselfandm/astro-mcp | ISC | Credit line | |
@@ -15,3 +20,9 @@
 ## Rule
 
 Check the full dependency tree before trusting any chart calculation library. Top-level license is not enough.
+
+## Deckaura verification notes
+
+The correct MCP repository is `github.com/gokimedia/tarot-mcp-server`, not `github.com/Deckaura/tarot-mcp-server`.
+
+The uploaded Deckaura repo zip includes `data/tarot_card_meanings.csv`, `LICENSE`, `README.md`, and `package.json`. The uploaded Zenodo dataset zip includes CSV, JSON, JSONL, and `paper.md`.
