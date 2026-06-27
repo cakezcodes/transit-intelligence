@@ -1,0 +1,64 @@
+:root {
+  --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif;
+  --font-serif: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-serif-alt: "DM Serif Display", Georgia, serif;
+  --font-caps: "Montserrat", var(--font-sans);
+
+  --font-display: var(--font-serif);
+  --font-body: var(--font-sans);
+
+  --w-regular: 400;
+  --w-medium: 500;
+  --w-semibold: 600;
+  --w-bold: 700;
+  --w-heavy: 800;
+
+  --t-display: 48px;
+  --t-title: 29px;
+  --t-h2: 21px;
+  --t-h3: 17px;
+  --t-body: 16px;
+  --t-callout: 15px;
+  --t-sub: 13.5px;
+  --t-foot: 12.5px;
+  --t-eyebrow: 11px;
+  --t-micro: 9.5px;
+
+  --track-tight: -0.02em;
+  --track-snug: -0.01em;
+  --track-eyebrow: 0.22em;
+  --track-ceremony: 0.46em;
+
+  --leading-tight: 1.05;
+  --leading-body: 1.45;
+  --leading-relaxed: 1.6;
+}
+
+.t-eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--t-eyebrow);
+  font-weight: var(--w-heavy);
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.t-title {
+  font-family: var(--font-serif);
+  font-weight: var(--w-semibold);
+  font-size: var(--t-title);
+  color: var(--moon);
+}
+
+.t-title-italic {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: var(--w-semibold);
+}
+
+.t-ceremony {
+  font-family: var(--font-caps);
+  font-weight: var(--w-medium);
+  letter-spacing: var(--track-ceremony);
+  text-transform: uppercase;
+}
