@@ -1,0 +1,46 @@
+.app-afterdark {
+  --accent: #00AFF0;
+  --accent-soft: rgba(0, 175, 240, 0.18);
+}
+
+.app-seen {
+  --accent: #A8842F;
+  --accent-soft: rgba(168, 132, 47, 0.16);
+}
+
+.app-transit {
+  --accent: #C9A961;
+  --accent-soft: rgba(201, 169, 97, 0.16);
+}
+
+:root {
+  --rib-antique-gold: #C9A961;
+  --rib-cosmic-indigo: #2E1B4D;
+  --rib-forest-moss: #4A5D3A;
+  --rib-rose-mauve: #6E4451;
+  --rib-blood-red: #7A1E2B;
+  --rib-petal-rose: #C28BA0;
+  --rib-terracotta: #A8674E;
+
+  --ad-of-blue: #00AFF0;
+  --ad-sky: #38C6F4;
+  --ad-azure: #2D7DFF;
+  --ad-cobalt: #2E5BC0;
+  --ad-velvet: #8A5FC0;
+  --ad-royal: #6534C8;
+  --ad-emerald: #18A06B;
+  --ad-teal: #1FA3A3;
+
+  --seen-magnetic: #BE6B4A;
+  --seen-baddie: #FF3B30;
+  --seen-sweet: #C2607C;
+  --seen-brat: #B5476E;
+  --seen-luxury: #A8842F;
+  --seen-mysterious: #785499;
+  --seen-icequeen: #3E8A8C;
+  --seen-delulu: #8A6BC0;
+  --seen-temptress: #8E2B4E;
+  --seen-siren: #7A2D5F;
+  --seen-midnight: #2E2A5E;
+  --seen-femme: #6E1F2E;
+}
