@@ -2,9 +2,13 @@
 
 This file tracks the reference-data work for Transit Intelligence.
 
-## v2 correction
+## v3 correction
 
-The old Flatlib path is retired. Do not use Flatlib or Swiss Ephemeris wrappers. Chart positions should use Astronomy Engine, and houses should use the in-house Placidus calculator at `lib/astro/placidus.js`.
+Flatlib is retired. Astronomy Engine is replaced. Celestine is now the primary astrology calculation engine.
+
+Use Celestine for planetary positions, retrograde detection, Placidus houses, planet-in-house assignment, aspects, dignities, transits, progressions, and solar arc features.
+
+Keep `lib/astro/placidus.js` as an independent cross-check only.
 
 ## Build order
 
@@ -13,8 +17,8 @@ The old Flatlib path is retired. Do not use Flatlib or Swiss Ephemeris wrappers.
 3. Add raw data files.
 4. Add cleaned data files.
 5. Add SQL setup files.
-6. Install Astronomy Engine.
-7. Validate chart math with a known natal chart.
+6. Install Celestine.
+7. Validate chart math with the user's known natal chart.
 
 ## Reference tables
 
