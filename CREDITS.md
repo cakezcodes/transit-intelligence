@@ -1,11 +1,11 @@
 # Credits
 
-Transit Intelligence uses or references the following open/commercial-safe sources:
+Transit Intelligence uses open reference sources for its data layer.
 
-- Deckaura tarot meanings — MIT
-- Corpora tarot interpretations by Darius Kazemi — CC0
-- Celestine zodiac sign facts — MIT
-- astro-mcp astrology keyword references — ISC
-- Flatlib chart calculation library — MIT
+- Deckaura tarot meanings: MIT
+- Corpora tarot interpretations by Darius Kazemi: CC0
+- Celestine zodiac sign facts: MIT
+- astro-mcp astrology keyword references: ISC
+- Flatlib chart calculation library: MIT
 
-Authored interpretive text, decan meanings, app voice, and product system are original to CakezCodes / Transit Intelligence.
+Original app voice, product structure, authored decan meanings, and authored astrology interpretation text belong to CakezCodes / Transit Intelligence.
