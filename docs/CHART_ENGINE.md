@@ -1,25 +1,36 @@
 # Chart Engine
 
-This file records the v2 chart-engine decision.
+This file records the v3 chart-engine decision.
 
 ## Locked direction
 
-Use Astronomy Engine by Don Cross for planetary positions. It is MIT-licensed and avoids Swiss Ephemeris / GPL dependency issues.
+Use Celestine as the primary astrology calculation engine.
 
-Use `lib/astro/placidus.js` for Placidus houses. It is in-house project code using public-domain house math.
+Celestine is MIT-licensed, ships with zero runtime dependencies, and provides birth charts, planetary positions, retrograde detection, Placidus houses, aspects, dignities, transits, progressions, and solar arc features.
+
+## Why Celestine replaced Astronomy Engine
+
+Astronomy Engine is clean and remains a good astronomy library, but Celestine is purpose-built for astrology and gives the app more of the computational layer out of the box.
+
+Celestine's own docs say it is validated against NASA, JPL Horizons, and Swiss Ephemeris. That validation is a benchmark/reference claim, not a runtime dependency.
+
+## House system
+
+Use Celestine with Placidus as the default house system.
+
+Keep `lib/astro/placidus.js` as an independent cross-check only. It is not the primary production house engine unless validation later shows Celestine is wrong for the user's known chart.
 
 ## Do not use
 
 Do not use Flatlib, pyswisseph, Kerykeion, swisseph-wasm, or other Swiss Ephemeris wrappers unless the project has a paid commercial license and a clear compliance plan.
 
-## Pipeline
-
-1. Astronomy Engine calculates planetary ecliptic longitudes, obliquity, and sidereal time.
-2. Convert longitude to sign and degree.
-3. Detect aspects by longitude difference and orb table.
-4. Compute houses with `computeHouses(ramc, latitude, obliquity)`.
-5. Validate against a known natal chart before trusting house cusps.
-
 ## Validation rule
 
-Validation is required before production use. Cross-check Ascendant, Midheaven, and all 12 Placidus cusps against a known chart. If latitude is above about 66 degrees, fall back to Whole Sign and flag the chart.
+Before production use, run the user's known birth data through Celestine and compare against the known reference chart:
+
+- Scorpio Sun in 8th house
+- Aries Moon in 2nd house
+- Pisces Ascendant
+- Sagittarius Midheaven
+
+If the known placements and house cusps match closely, treat Celestine as validated for the app's natal/transit layer.
