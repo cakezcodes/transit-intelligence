@@ -17,5 +17,8 @@
   "dependencies": {
     "celestine": "^0.2.1"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "supabase": "^2.108.0"
+  }
 }

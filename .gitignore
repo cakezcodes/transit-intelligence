@@ -49,3 +49,6 @@ next-env.d.ts
 .venv/
 __pycache__/
 *.pyc
+
+# supabase local temp
+supabase/.temp/
