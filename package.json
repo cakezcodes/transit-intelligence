@@ -7,13 +7,15 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "validate:syd-chart": "node scripts/validate-syd-chart.mjs",
+    "test": "npm run validate:syd-chart"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "CakezCodes",
+  "license": "UNLICENSED",
   "type": "commonjs",
   "dependencies": {
     "celestine": "^0.2.1"
-  }
+  },
+  "private": true
 }
