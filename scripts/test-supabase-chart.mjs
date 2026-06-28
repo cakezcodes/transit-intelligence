@@ -1,10 +1,10 @@
 import { loadLocalEnv } from '../lib/env/loadLocalEnv.mjs';
-import { createSupabaseClient } from '../lib/supabase/client.mjs';
+import { createSupabaseAdminClient } from '../lib/supabase/admin.mjs';
 import { calculateFullPersonChart } from '../lib/astro/calculateFullPersonChart.mjs';
 
 loadLocalEnv();
 
-const supabase = createSupabaseClient();
+const supabase = createSupabaseAdminClient();
 
 const { data: person, error } = await supabase
   .from('people')
@@ -23,7 +23,7 @@ const chart = calculateFullPersonChart(person);
 const planetByName = Object.fromEntries(chart.planets.map((planet) => [planet.name, planet]));
 
 console.log('\nTransit Intelligence — Supabase → Celestine full chart bridge\n');
-console.log('Loaded person from Supabase:');
+console.log('Loaded person from Supabase with server-only admin client:');
 console.table({
   name: chart.person.name,
   birth_date: chart.person.birth_date,
