@@ -1,22 +1,38 @@
 # Credits
 
-Transit Intelligence uses open reference sources for its data and calculation layers.
+Transit Intelligence uses a small, deliberate source stack.
 
-## Data sources
+## Engine
 
-- Deckaura tarot meanings: MIT
-- Corpora tarot interpretations by Darius Kazemi: CC0
-- Celestine zodiac sign facts: MIT
-- astro-mcp astrology keyword references: ISC
+- **Celestine** by Anonyfox — MIT License
+  - Used for astronomical / astrological chart calculation: planetary positions, houses, aspects, transits, retrogrades, progressions, and related chart math.
+  - Included as the app's single chart engine.
 
-## Calculation layer
+## Tarot reference data
 
-- Celestine by Anonyfox: MIT
-- In-house Placidus calculator: original project code kept as an independent cross-check
+- **Deckaura tarot-mcp-server** — MIT License
+  - Used as a tarot meaning seed source.
+
+- **Corpora** by Darius Kazemi / dariusk — CC0
+  - Used as supplemental tarot metadata where appropriate.
+
+## Zodiac facts
+
+- **zodiac.json / Wikipedia-sourced zodiac facts** — CC-BY-SA
+  - Used for basic sign facts such as element, modality, polarity, rulership labels, and sign metadata.
+  - Requires attribution when surfaced in distributed source materials.
+
+## Traditional correspondences
+
+- **Golden Dawn / Liber 777 tarot-astrology correspondences** — public domain tradition
+  - Used for the 36 decan mappings linking Minor Arcana pips Two through Ten with zodiac decans, planetary decan rulers, and signs.
+
+## Original authored layers
+
+- Planets, houses, aspects, decan summaries, placement meanings, synthesis logic, voice layer, and app-specific interpretations are authored for Transit Intelligence unless otherwise credited.
 
 ## Retired / not used
 
-- Flatlib is not used. It pulls pyswisseph / Swiss Ephemeris-related dependency behavior and is not being treated as the commercial-safe path.
-- Astronomy Engine is clean MIT, but is replaced by Celestine because Celestine is purpose-built for astrology calculations.
-
-Original app voice, product structure, authored decan meanings, and authored astrology interpretation text belong to CakezCodes / Transit Intelligence.
+- **Flatlib** is not used.
+- **Astronomy Engine** is not used.
+- **astro-mcp** is not used in the current source stack.
