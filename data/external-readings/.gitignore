@@ -1,8 +1,15 @@
-# Raw transcripts are creator content. Keep them local/private.
-raw/
-clean/
-extracted/
-reviewed/
+# Raw transcripts and generated review files are creator content.
+# Keep them local/private unless intentionally sanitized.
+raw/*
+clean/*
+extracted/*
+reviewed/*
+reviews/*
 
-# Keep the example queue in git, but not your working queue.
-videos.json
+# Keep folder placeholders and example queue in git.
+!raw/.gitkeep
+!clean/.gitkeep
+!extracted/.gitkeep
+!reviewed/.gitkeep
+!reviews/.gitkeep
+!videos.json
