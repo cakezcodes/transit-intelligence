@@ -1,0 +1,32 @@
+[
+  {
+    "creator": "Cam White",
+    "source_url": "https://www.youtube.com/watch?v=PASTE_VIDEO_ID_HERE",
+    "source_type": "youtube",
+    "reading_type_guess": "transit",
+    "time_tier_guess": "monthly",
+    "period_label": "July 2026",
+    "status": "queued",
+    "notes": "Use for transit/date/rising-sign house extraction."
+  },
+  {
+    "creator": "303 High Priestess",
+    "source_url": "https://www.youtube.com/watch?v=PASTE_VIDEO_ID_HERE",
+    "source_type": "youtube",
+    "reading_type_guess": "tarot",
+    "time_tier_guess": "weekly",
+    "period_label": "Week of YYYY-MM-DD",
+    "status": "queued",
+    "notes": "Use for tarot/ritual extraction."
+  },
+  {
+    "creator": "Jimmy",
+    "source_url": "https://www.youtube.com/watch?v=PASTE_VIDEO_ID_HERE",
+    "source_type": "youtube",
+    "reading_type_guess": "hybrid",
+    "time_tier_guess": "monthly",
+    "period_label": "Month YYYY",
+    "status": "queued",
+    "notes": "Use for tarot plus astrology correspondence extraction."
+  }
+]
