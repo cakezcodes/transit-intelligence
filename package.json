@@ -13,6 +13,7 @@
     "test:meaning-bundle": "node scripts/test-chart-meaning-bundle.mjs",
     "extract:reading": "node scripts/external-readings/extract-reading.mjs",
     "scrape:creator": "node scripts/external-readings/scrape-creator-reading.mjs",
+    "queue:creator": "node scripts/external-readings/queue-creator-videos.mjs",
     "test": "npm run validate:syd-chart"
   },
   "keywords": [],
