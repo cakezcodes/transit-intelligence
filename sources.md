@@ -1,33 +1,40 @@
 # DATA SOURCES & LICENSES
 
-| Data | Source | URL | License | Obligation | Date pulled |
-|------|--------|-----|---------|------------|-------------|
-| Tarot meanings | Deckaura MCP repo | github.com/gokimedia/tarot-mcp-server | MIT | Credit line | 2026-06-27 |
-| Tarot meanings dataset | Deckaura Zenodo DOI | doi.org/10.5281/zenodo.19475329 | MIT | Credit line | 2026-06-27 |
-| Tarot meanings package | Deckaura PyPI package | pypi.org/project/tarot-card-meanings | MIT | Credit line | 2026-06-27 |
-| Tarot meanings package | Deckaura npm package | npmjs.com/package/tarot-card-meanings | MIT | Credit line | 2026-06-27 |
-| Deckaura entity | Deckaura website | deckaura.com | Website | Reference only | 2026-06-27 |
-| Deckaura entity | Wikidata Q138745960 | wikidata.org/wiki/Q138745960 | Reference metadata | Reference only | 2026-06-27 |
-| Tarot backup | Corpora / Kazemi | github.com/dariusk/corpora | CC0 | None | |
-| Sign facts | Celestine | github.com/Anonyfox/celestine | MIT | Credit line | 2026-06-27 |
-| Chart engine | Celestine | github.com/Anonyfox/celestine | MIT | Credit line | 2026-06-27 |
-| Astro keywords | astro-mcp | github.com/memyselfandm/astro-mcp | ISC | Credit line | |
-| Houses cross-check | In-house Placidus calculator | public-domain / reference math | Original | None | 2026-06-27 |
-| Decans | Authored | Golden Dawn public-domain correspondence facts | Original | None | |
-| Astro interpretive text | Authored | Original meaning layer | Original | None | |
-| Retired / not used | Flatlib | github.com/flatangle/flatlib | Not used | Retired due transitive pyswisseph / Swiss Ephemeris concern | 2026-06-27 |
-| Retired / replaced | Astronomy Engine | github.com/cosinekitty/astronomy | MIT | Replaced by Celestine as astrology engine | 2026-06-27 |
+Every dataset and engine used in Transit Intelligence, with its license and what obligation it carries. Update this whenever a new source is added.
 
-## Rule
+| Data | Source | URL | License | Obligation | Status |
+|---|---|---|---|---|---|
+| Chart engine | Celestine | github.com/Anonyfox/celestine | MIT | Credit line | Locked, in use — replaced Flatlib |
+| Tarot meanings (base) | Deckaura | deckaura.com/blogs/guide/tarot-card-meanings | See note ⚠️ | Credit line | Loaded — all 78 cards |
+| Tarot meanings (backup) | Corpora / Kazemi (McElroy) | github.com/dariusk/corpora | CC0 | None — see note | Loaded — all 78 cards |
+| Sign facts | zodiac.json reference | Wikipedia-derived | CC-BY-SA ⚠️ | Share-alike | Loaded — 12 signs |
+| Planets / houses / aspects | Authored — public-domain astrology | — | Original | None | Loaded |
+| Decans — 36 minor pips + majors + courts | Authored — Golden Dawn / Liber 777 public-domain correspondences | — | Original | None | Loaded — 36 decans |
+| Astro keywords | astro-mcp | github.com/memyselfandm/astro-mcp | ISC | Credit line | NOT NEEDED — planets/houses/aspects already authored |
 
-Check the full dependency tree before trusting any chart calculation library. Top-level license is not enough.
+## Notes on the two flags ⚠️
 
-## Deckaura verification notes
+### Deckaura license
 
-The correct MCP repository is `github.com/gokimedia/tarot-mcp-server`, not `github.com/Deckaura/tarot-mcp-server`.
+The Deckaura tarot data circulates in two copies: an MIT npm/PyPI package (`tarot-card-meanings`) and a CC-BY-SA dataset copy (`tarot-card-meanings-78` on HuggingFace/Kaggle). The CSV loaded into the base `tarot_cards` table came from the Deckaura guide. Per the project sources plan, Deckaura is the intended MIT base layer.
 
-The uploaded Deckaura repo zip includes `data/tarot_card_meanings.csv`, `LICENSE`, `README.md`, and `package.json`. The uploaded Zenodo dataset zip includes CSV, JSON, JSONL, and `paper.md`.
+If the specific CSV used is ever shown to derive from the CC-BY-SA copy, the safe move is to keep Deckaura content in a removable, source-tagged layer rather than the core. The data is already isolated to its own columns (`upright_core`, `reversed_core`, `upright_love`, `upright_career`, `upright_yes_no`), so it can be lifted without disturbing anything else.
 
-## Celestine verification notes
+Credit Deckaura on the About/Credits page either way.
 
-Celestine's package metadata shows MIT license and no runtime dependency list; only build/test/documentation devDependencies are present. Its README states zero runtime dependencies and includes Placidus, transits, progressions, dignities, and aspect support.
+### Corpora content origin
+
+The Corpora repo is CC0, but this file’s own description attributes its text to Mark McElroy’s *A Guide to Tarot Meanings*. It has been distributed as open data for years and is widely reused. For personal use this is a non-issue.
+
+For commercial release, Corpora content lives in its own columns (`meaning_light`, `meaning_shadow`, `fortune_telling`, `corpora_keywords`) and can be swapped out if ever needed.
+
+### Sign facts — CC-BY-SA
+
+The structural sign facts — element, modality, polarity, rulers — trace to a Wikipedia-derived zodiac reference. These specific facts are not copyrightable individually; element/modality of a sign is not authorship. The seed file noted a CC-BY-SA origin, logged here for honesty.
+
+## License cheat sheet
+
+- **MIT / ISC** — free commercial use, keep a credit line.
+- **CC0 / Public Domain** — no obligation.
+- **CC-BY-SA** — share-alike: derivatives must carry the same license. Keep such data in a removable layer, not baked into the core.
+- **GPL / AGPL** — forces the whole app open-source. Avoided; this is why Celestine replaced Flatlib / Swiss Ephemeris paths.
