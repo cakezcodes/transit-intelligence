@@ -1,0 +1,8 @@
+# Raw transcripts are creator content. Keep them local/private.
+raw/
+clean/
+extracted/
+reviewed/
+
+# Keep the example queue in git, but not your working queue.
+videos.json
