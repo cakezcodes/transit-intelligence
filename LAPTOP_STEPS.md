@@ -1,55 +1,102 @@
-# LAPTOP STEPS — Transit Intelligence (paste this whole thing to ChatGPT or run in terminal)
+# LAPTOP STEPS — Transit Intelligence catch-up only
 
 Everything below happens in your repo folder:
-    C:\CakezCodes\transit-intelligence
 
-The tarot meaning data is ALREADY loaded in the live Supabase database. These
-steps just (1) save the matching migration files into the repo so the database
-is reproducible, (2) add the source/credit files, and (3) sync your local
-migration history with the cloud. Nothing here changes the live data.
+```powershell
+C:\CakezCodes\transit-intelligence
+```
 
-------------------------------------------------------------------
-STEP 1 — Drop in the files
-------------------------------------------------------------------
-Place the four provided files into the repo like this:
+Current truth as of 2026-07-01:
 
-    supabase/migrations/20260630000300_crossfill_corpora_by_number.sql
-    supabase/migrations/20260630000400_fill_tarot_deckaura.sql
-    sources.md          (repo root — overwrite the old one if present)
-    CREDITS.md          (repo root)
+- Live Supabase project `lfukxvbcfetdzbauigxe` already has the tarot data loaded.
+- Supabase has 14 migration records, including 5 Corpora tarot crossfill migrations and 2 Deckaura tarot fill migrations from 2026-06-30.
+- GitHub already has `sources.md`, `CREDITS.md`, and `supabase/migrations/20260630000400_fill_tarot_deckaura.sql`.
+- GitHub does **not** have `supabase/migrations/20260630000300_crossfill_corpora_by_number.sql` yet.
+- `WORKLOG.md` is private user handoff/admin context and should **not** live in GitHub.
+- YouTube scrubber / creator corpus build is parked until repo + Supabase catch-up is done.
 
-If an older Corpora crossfill migration exists (a name-keyed one that was
-silently skipping cards), DELETE it — the new 20260630000300 file replaces it.
+## Step 1 — Download the missing file from ChatGPT
 
-------------------------------------------------------------------
-STEP 2 — Sync local migration history with the cloud
-------------------------------------------------------------------
-Four migrations were applied directly to the cloud database today. Pull them so
-local and remote agree. In the repo folder run:
+Download this uploaded file from the chat into Downloads or Desktop:
 
-    supabase migration list
+```txt
+20260630000300_crossfill_corpora_by_number.sql
+```
 
-That shows which migrations are remote-only (a gap between local and cloud).
-Then bring the remote state down:
+## Step 2 — Copy it into the repo and push it
 
-    supabase db pull
+Paste this into PowerShell:
 
-If it asks to link the project first:
+```powershell
+$repo = "C:\CakezCodes\transit-intelligence"
+$file = "20260630000300_crossfill_corpora_by_number.sql"
 
-    supabase link --project-ref lfukxvbcfetdzbauigxe
+$src = Get-ChildItem -Path "$env:USERPROFILE\Downloads","$env:USERPROFILE\Desktop" -Filter $file -Recurse -ErrorAction SilentlyContinue |
+  Sort-Object LastWriteTime -Descending |
+  Select-Object -First 1
 
-------------------------------------------------------------------
-STEP 3 — Commit
-------------------------------------------------------------------
-    git add supabase/migrations sources.md CREDITS.md
-    git commit -m "Load tarot meaning layer (Deckaura + Corpora), update sources/credits"
-    git push origin main
+if (-not $src) {
+  throw "Could not find $file in Downloads or Desktop. Download it from ChatGPT first, then rerun this."
+}
 
-------------------------------------------------------------------
-DONE. After this, the repo and the live database match, and the full tarot +
-astrology meaning layer is reproducible from migrations.
-------------------------------------------------------------------
+Set-Location $repo
 
-Note: do NOT run `supabase db reset` or `supabase db push` expecting to reload
-the tarot data — it's already live. These files are for reproducibility and for
-anyone who rebuilds the DB from scratch later.
+git pull origin main
+
+New-Item -ItemType Directory -Force -Path ".\supabase\migrations" | Out-Null
+Copy-Item $src.FullName ".\supabase\migrations\$file" -Force
+
+Get-Item ".\supabase\migrations\$file" | Select-Object Name, Length, LastWriteTime
+
+git status --short
+git add ".\supabase\migrations\$file"
+git commit -m "Add Corpora tarot crossfill migration"
+git push origin main
+```
+
+Expected: the file length should be around 62 KB. If it is tiny, blank, or missing, stop.
+
+## Step 3 — Sync local Supabase state
+
+Paste this after the GitHub push succeeds:
+
+```powershell
+Set-Location "C:\CakezCodes\transit-intelligence"
+
+supabase migration list
+
+supabase link --project-ref lfukxvbcfetdzbauigxe
+
+supabase db pull
+
+git status --short
+```
+
+If `supabase db pull` creates or changes files, commit them:
+
+```powershell
+git add supabase/migrations supabase/schema.sql 2>$null
+git commit -m "Sync Supabase remote schema state"
+git push origin main
+```
+
+If Git says there is nothing to commit, that is fine.
+
+## Do not run these right now
+
+```powershell
+supabase db reset
+supabase db push
+```
+
+Those are not catch-up commands. The live DB is already populated; the goal is only to make GitHub/local match the cloud.
+
+## Definition of done
+
+Catch-up is done when:
+
+- `git status --short` is clean locally.
+- GitHub contains `20260630000300_crossfill_corpora_by_number.sql` and `20260630000400_fill_tarot_deckaura.sql` under `supabase/migrations/`.
+- `supabase migration list` shows the local and remote histories without surprise drift.
+- `WORKLOG.md` stays off GitHub.
+- No YouTube scrubber work starts until the above is true.
