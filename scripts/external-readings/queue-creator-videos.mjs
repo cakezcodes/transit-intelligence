@@ -2,6 +2,22 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+const OPPOSITES = {
+  Aries: 'Libra',
+  Taurus: 'Scorpio',
+  Gemini: 'Sagittarius',
+  Cancer: 'Capricorn',
+  Leo: 'Aquarius',
+  Virgo: 'Pisces',
+  Libra: 'Aries',
+  Scorpio: 'Taurus',
+  Sagittarius: 'Gemini',
+  Capricorn: 'Cancer',
+  Aquarius: 'Leo',
+  Pisces: 'Virgo',
+};
+
 const CREATOR_DEFAULTS = {
   cam: {
     creator: 'Cam White',
@@ -11,6 +27,7 @@ const CREATOR_DEFAULTS = {
     creator_mode: 'technical_astrology',
     syd_section: 'Pisces',
     sign_basis: 'rising',
+    reading_scope: 'rising_sign_forecast',
   },
   jimmy: {
     creator: 'The Tarot Sh*t with Jimmy',
@@ -19,7 +36,8 @@ const CREATOR_DEFAULTS = {
     audience_mode: 'sun_moon_rising',
     creator_mode: 'hybrid_astrology_tarot',
     syd_section: 'Scorpio',
-    sign_basis: 'sun',
+    sign_basis: 'sun_moon_rising',
+    reading_scope: 'single_sign_hybrid_reading',
   },
   '303': {
     creator: '303 High Priestess',
@@ -28,7 +46,8 @@ const CREATOR_DEFAULTS = {
     audience_mode: 'sun_moon_rising_venus',
     creator_mode: 'intuitive_tarot_ritual',
     syd_section: 'Scorpio',
-    sign_basis: 'resonance',
+    sign_basis: 'sun_moon_rising_venus',
+    reading_scope: 'single_sign_tarot_ritual_reading',
   },
 };
 
@@ -47,13 +66,14 @@ function parseArgs(argv) {
 function usage() {
   console.log(`Usage:
   npm run queue:creator -- --creator cam|jimmy|303 --links-file data/external-readings/links.txt
-  npm run queue:creator -- --creator cam --urls "https://youtu.be/VIDEO1,https://youtube.com/watch?v=VIDEO2"
-  npm run queue:creator -- --creator jimmy --handle "@ChannelHandle" --max 25
-  npm run queue:creator -- --creator 303 --channel-id "UCxxxxxxxx" --max 25
+  npm run queue:creator -- --creator jimmy --links-file data/external-readings/jimmy-june-2026.txt --period "June 2026"
+  npm run queue:creator -- --creator cam --urls "https://youtu.be/VIDEO1,https://youtube.com/watch?v=VIDEO2" --target-sign Pisces --period "2026"
+  npm run queue:creator -- --creator jimmy --playlist-url "https://www.youtube.com/playlist?list=PLAYLIST_ID" --period "June 2026"
+  npm run queue:creator -- --creator 303 --handle "@ChannelHandle" --max 25
 
 Notes:
-  - Bulk links need no API key.
-  - Channel/handle pull requires YOUTUBE_API_KEY in .env.local or your shell.
+  - Bulk video links need no API key.
+  - Playlist/channel/handle pull requires YOUTUBE_API_KEY in .env.local or your shell.
   - This queues video metadata only. Transcript fetch/parsing remains a separate reviewed step.
 `);
 }
@@ -98,6 +118,18 @@ function extractYouTubeId(urlOrId) {
   return null;
 }
 
+function extractPlaylistId(urlOrId) {
+  const raw = String(urlOrId || '').trim();
+  if (!raw) return null;
+  if (/^[a-zA-Z0-9_-]{16,}$/.test(raw) && raw.startsWith('PL')) return raw;
+  try {
+    const url = new URL(raw);
+    return url.searchParams.get('list') || null;
+  } catch {
+    return null;
+  }
+}
+
 function readUrls(args) {
   const values = [];
   if (args.urls) values.push(...String(args.urls).split(/[\n,]+/));
@@ -106,17 +138,49 @@ function readUrls(args) {
     if (!fs.existsSync(file)) throw new Error(`links-file not found: ${file}`);
     values.push(...fs.readFileSync(file, 'utf8').split(/\r?\n/));
   }
-  return values.map((value) => value.trim()).filter(Boolean);
+  return values.map((value) => value.trim()).filter((value) => value && !value.startsWith('#'));
 }
 
-function inferPeriod(title = '') {
-  const text = title.toLowerCase();
-  if (text.includes('timeless')) return 'Timeless';
-  const year = text.match(/\b20\d{2}\b/);
-  if (year) return year[0];
-  const month = text.match(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\b/i);
-  if (month) return month[0][0].toUpperCase() + month[0].slice(1).toLowerCase();
+function properSign(value) {
+  if (!value) return null;
+  const match = SIGNS.find((sign) => sign.toLowerCase() === String(value).toLowerCase());
+  return match || null;
+}
+
+function inferTargetSign(title = '') {
+  const text = String(title || '').toLowerCase();
+  for (const sign of SIGNS) {
+    const pattern = new RegExp(`(^|[^a-z])${sign.toLowerCase()}([^a-z]|$)`);
+    if (pattern.test(text)) return sign;
+  }
   return null;
+}
+
+function axisForSign(sign) {
+  if (!sign || !OPPOSITES[sign]) return null;
+  return [sign, OPPOSITES[sign]].sort().join('-');
+}
+
+function inferPeriod(title = '', fallback = null) {
+  const text = String(title || '').toLowerCase();
+  if (text.includes('timeless')) return 'Timeless';
+  const monthYear = text.match(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\s+20\d{2}\b/i);
+  if (monthYear) return monthYear[0].replace(/\b\w/g, (c) => c.toUpperCase());
+  const year = text.match(/\b20\d{2}\b/);
+  const month = text.match(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\b/i);
+  if (month && fallback && /20\d{2}/.test(fallback)) return `${month[0][0].toUpperCase()}${month[0].slice(1).toLowerCase()} ${fallback.match(/20\d{2}/)[0]}`;
+  if (month) return month[0][0].toUpperCase() + month[0].slice(1).toLowerCase();
+  if (year) return year[0];
+  return fallback;
+}
+
+function inferTimeTier(periodLabel = '', title = '') {
+  const text = `${periodLabel || ''} ${title || ''}`.toLowerCase();
+  if (text.includes('timeless')) return 'timeless';
+  if (/\b20\d{2}\b/.test(text) && !/(january|february|march|april|may|june|july|august|september|october|november|december)/i.test(text)) return 'yearly';
+  if (/(january|february|march|april|may|june|july|august|september|october|november|december)/i.test(text)) return 'monthly';
+  if (text.includes('week') || /\b\d{1,2}\s*-\s*\d{1,2}\b/.test(text)) return 'weekly';
+  return 'unknown';
 }
 
 function inferProfileFromTitle(defaults, title = '') {
@@ -126,8 +190,16 @@ function inferProfileFromTitle(defaults, title = '') {
   return defaults.default_extraction_profile;
 }
 
-function makeQueueItem({ defaults, videoId, url, title = null, publishedAt = null, source = 'bulk_links' }) {
-  const extraction_profile = inferProfileFromTitle(defaults, title || '');
+function makeQueueItem({ defaults, videoId, url, title = null, publishedAt = null, source = 'bulk_links', args = {} }) {
+  const extraction_profile = args.profile && args.profile !== 'auto' ? String(args.profile) : inferProfileFromTitle(defaults, title || '');
+  const explicitTargetSign = properSign(args['target-sign']);
+  const inferredTargetSign = explicitTargetSign || inferTargetSign(title || '');
+  const isJimmyOverview = defaults.creator_key === 'jimmy' && extraction_profile === 'jimmy_collective_overview';
+  const target_sign = isJimmyOverview ? 'Collective' : inferredTargetSign;
+  const period_label = inferPeriod(title || '', args.period || null);
+  const opposite_sign = SIGNS.includes(target_sign) ? OPPOSITES[target_sign] : null;
+  const axis = SIGNS.includes(target_sign) ? axisForSign(target_sign) : null;
+
   return {
     id: `${defaults.creator_key}:${videoId}`,
     creator_key: defaults.creator_key,
@@ -136,24 +208,29 @@ function makeQueueItem({ defaults, videoId, url, title = null, publishedAt = nul
     url: url || `https://www.youtube.com/watch?v=${videoId}`,
     title,
     published_at: publishedAt,
-    period_label: inferPeriod(title || ''),
+    target_sign,
+    opposite_sign,
+    axis,
+    period_label,
+    time_tier: inferTimeTier(period_label, title || ''),
+    reading_scope: isJimmyOverview ? 'collective_overview' : defaults.reading_scope,
     extraction_profile,
-    audience_mode: defaults.creator_key === 'jimmy' && extraction_profile === 'jimmy_collective_overview' ? 'all_signs_general' : defaults.audience_mode,
-    creator_mode: defaults.creator_key === 'jimmy' && extraction_profile === 'jimmy_collective_overview' ? 'collective_astrology_overview' : defaults.creator_mode,
-    syd_section: defaults.creator_key === 'jimmy' && extraction_profile === 'jimmy_collective_overview' ? 'Collective' : defaults.syd_section,
-    sign_basis: defaults.creator_key === 'jimmy' && extraction_profile === 'jimmy_collective_overview' ? 'collective' : defaults.sign_basis,
+    audience_mode: isJimmyOverview ? 'all_signs_general' : defaults.audience_mode,
+    creator_mode: isJimmyOverview ? 'collective_astrology_overview' : defaults.creator_mode,
+    syd_section: isJimmyOverview ? 'Collective' : defaults.syd_section,
+    sign_basis: isJimmyOverview ? 'collective' : defaults.sign_basis,
     status: 'queued',
     source,
     transcript_path: null,
     review_json_path: null,
-    notes: null,
+    notes: target_sign ? null : 'Target sign not inferred from title. Add --target-sign or edit videos.json after queueing.',
     queued_at: new Date().toISOString(),
   };
 }
 
 async function youtubeGet(endpoint, params) {
   const key = process.env.YOUTUBE_API_KEY;
-  if (!key) throw new Error('YOUTUBE_API_KEY is required for channel/handle pulls. Add it to .env.local or your shell.');
+  if (!key) throw new Error('YOUTUBE_API_KEY is required for playlist/channel/handle pulls. Add it to .env.local or your shell.');
   const url = new URL(`https://www.googleapis.com/youtube/v3/${endpoint}`);
   for (const [k, v] of Object.entries({ ...params, key })) {
     if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, String(v));
@@ -179,13 +256,13 @@ async function resolveUploadsPlaylist({ channelId, handle }) {
   };
 }
 
-async function fetchUploads({ uploadsPlaylistId, max }) {
+async function fetchPlaylistItems({ playlistId, max }) {
   const out = [];
   let pageToken = '';
   while (out.length < max) {
     const data = await youtubeGet('playlistItems', {
       part: 'snippet,contentDetails',
-      playlistId: uploadsPlaylistId,
+      playlistId,
       maxResults: Math.min(50, max - out.length),
       pageToken,
     });
@@ -216,7 +293,7 @@ function loadExistingQueue(queuePath) {
 function saveQueue(queuePath, queue) {
   fs.mkdirSync(path.dirname(queuePath), { recursive: true });
   const payload = {
-    schema_version: '0.1.0',
+    schema_version: '0.2.0',
     updated_at: new Date().toISOString(),
     videos: queue.videos,
   };
@@ -234,10 +311,26 @@ function mergeVideos(existing, incoming) {
       continue;
     }
     const old = byId.get(item.id);
-    byId.set(item.id, { ...old, ...Object.fromEntries(Object.entries(item).filter(([, v]) => v !== null && v !== undefined)), status: old.status || item.status, transcript_path: old.transcript_path || item.transcript_path, review_json_path: old.review_json_path || item.review_json_path, notes: old.notes || item.notes });
+    byId.set(item.id, {
+      ...old,
+      ...Object.fromEntries(Object.entries(item).filter(([, v]) => v !== null && v !== undefined)),
+      status: old.status || item.status,
+      transcript_path: old.transcript_path || item.transcript_path,
+      review_json_path: old.review_json_path || item.review_json_path,
+      notes: old.notes || item.notes,
+    });
     updated += 1;
   }
   return { videos: [...byId.values()], added, updated };
+}
+
+function summarizeCoverage(videos) {
+  const bySign = Object.fromEntries([...SIGNS, 'Collective', 'Unknown'].map((sign) => [sign, 0]));
+  for (const video of videos) {
+    const sign = video.target_sign || 'Unknown';
+    bySign[bySign[sign] === undefined ? 'Unknown' : sign] += 1;
+  }
+  return bySign;
 }
 
 async function main() {
@@ -250,27 +343,44 @@ async function main() {
 
   const defaults = creatorDefaults(args.creator);
   const queuePath = path.resolve(String(args.queue || 'data/external-readings/videos.json'));
-  const max = Math.max(1, Number(args.max || 25));
+  const max = Math.max(1, Number(args.max || 50));
   const incoming = [];
 
   const urls = readUrls(args);
   for (const rawUrl of urls) {
+    const playlistId = extractPlaylistId(rawUrl);
     const videoId = extractYouTubeId(rawUrl);
+    if (playlistId && !videoId) {
+      const playlistItems = await fetchPlaylistItems({ playlistId, max });
+      for (const video of playlistItems) {
+        incoming.push(makeQueueItem({ defaults, videoId: video.videoId, title: video.title, publishedAt: video.publishedAt, source: 'youtube_playlist_from_links_file', args }));
+      }
+      continue;
+    }
     if (!videoId) continue;
-    incoming.push(makeQueueItem({ defaults, videoId, url: rawUrl, source: 'bulk_links' }));
+    incoming.push(makeQueueItem({ defaults, videoId, url: rawUrl, source: 'bulk_links', args }));
+  }
+
+  if (args['playlist-url'] || args['playlist-id']) {
+    const playlistId = args['playlist-id'] || extractPlaylistId(args['playlist-url']);
+    if (!playlistId) throw new Error('Could not read playlist id from --playlist-url/--playlist-id.');
+    const playlistItems = await fetchPlaylistItems({ playlistId, max });
+    for (const video of playlistItems) {
+      incoming.push(makeQueueItem({ defaults, videoId: video.videoId, title: video.title, publishedAt: video.publishedAt, source: 'youtube_playlist', args }));
+    }
   }
 
   if (args['channel-id'] || args.handle) {
     const channel = await resolveUploadsPlaylist({ channelId: args['channel-id'], handle: args.handle });
     if (!channel.uploads_playlist_id) throw new Error(`No uploads playlist found for ${channel.channel_title || channel.channel_id}`);
-    const uploads = await fetchUploads({ uploadsPlaylistId: channel.uploads_playlist_id, max });
+    const uploads = await fetchPlaylistItems({ playlistId: channel.uploads_playlist_id, max });
     for (const video of uploads) {
-      incoming.push(makeQueueItem({ defaults, videoId: video.videoId, title: video.title, publishedAt: video.publishedAt, source: args.handle ? 'youtube_handle_uploads' : 'youtube_channel_uploads' }));
+      incoming.push(makeQueueItem({ defaults, videoId: video.videoId, title: video.title, publishedAt: video.publishedAt, source: args.handle ? 'youtube_handle_uploads' : 'youtube_channel_uploads', args }));
     }
   }
 
   if (!incoming.length) {
-    console.error('No videos found. Provide --links-file, --urls, --channel-id, or --handle.');
+    console.error('No videos found. Provide --links-file, --urls, --playlist-url, --playlist-id, --channel-id, or --handle.');
     process.exit(1);
   }
 
@@ -278,7 +388,17 @@ async function main() {
   const merged = mergeVideos(existing.videos, incoming);
   saveQueue(queuePath, { videos: merged.videos });
 
-  console.log(JSON.stringify({ ok: true, queuePath, incoming: incoming.length, added: merged.added, updated: merged.updated, total: merged.videos.length, creator: defaults.creator }, null, 2));
+  console.log(JSON.stringify({
+    ok: true,
+    queuePath,
+    incoming: incoming.length,
+    added: merged.added,
+    updated: merged.updated,
+    total: merged.videos.length,
+    creator: defaults.creator,
+    period: args.period || null,
+    coverage_for_incoming: summarizeCoverage(incoming),
+  }, null, 2));
 }
 
 main().catch((error) => {
