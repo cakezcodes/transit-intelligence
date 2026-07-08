@@ -13,26 +13,27 @@ Celestine is installed from npm and listed in `package.json` as the only astrolo
 Celestine is responsible for chart math, including:
 
 - planetary positions
-- Placidus house calculation
-- house cusps and angles
+- angles (ASC/MC) and house cusps
 - planet-in-house assignment
 - aspects
 - retrograde detection
 - transits
 - progressions where needed later
 
-## Configuration baseline
+## House system baseline
 
-Use:
+**Porphyry is the default house system.** Cusps are derived from Celestine's angles (ASC/MC/DSC/IC), with each quadrant trisected equally — see `porphyryCusps()` in `lib/engine/transit-routing-engine.ts`. House lookup is degree-based against those cusps. Whole-sign and Placidus stay available as user settings.
+
+Configuration:
 
 ```js
 calculateChart(birth, {
-  houseSystem: 'placidus',
   zodiacType: 'tropical'
 })
+// then derive Porphyry cusps from the returned ASC/MC
 ```
 
-For extreme latitudes where Placidus can fail, fall back to whole-sign and flag the chart.
+Porphyry works at all latitudes (only the angles are needed). If a user selects Placidus and their chart is at an extreme latitude where Placidus fails, fall back to whole-sign and flag the chart.
 
 ## Validation fixture
 

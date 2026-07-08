@@ -37,9 +37,9 @@ People: `people` (1 row), `profiles`. Archive (read-only, never an engine source
 Storage: a bucket exists for RWS card art (public domain, 1909) — images not sourced/uploaded yet; add `card_image_url` to `tarot_cards` when wiring.
 
 ## Prototype → screens
-`Transit Intelligence.html` in the uploads zip is the interaction reference: views = Calendar, Orbit, Me (chart), Grimoire/Library, Health, Reminders, Settings; plus journal, tarot pull logging, spell logging, custom events. Design tokens/components live in the `_ds/cakezcodes-design-system` bundle in the same zip.
+`docs/prototype/Transit Intelligence.html` is the interaction reference: views = Calendar, Orbit, Me (chart), Grimoire/Library, Health, Reminders, Settings; plus journal, tarot pull logging, spell logging, custom events. Design tokens/components live in the `cakezcodes/design-system` repo.
 
-## Known open items (do not silently "fix")
+## Known open items
 - `card_themes` assignments await Syd's curation.
 - Cycle phase logic stays simple date math (no medical claims).
 - Mathers/Etteilla third divinatory voice: only if a clean public-domain text is provided; wire like Waite via `meaning_enrichments`.
