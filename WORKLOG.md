@@ -1,5 +1,19 @@
 # Worklog
 
+## 2026-07-12 — Phase D step 1: natal computation + storage
+
+Created `natal_positions` (RLS by owner) and stored Syd's full natal chart: 14 bodies (10 planets + Chiron, nodes, Lilith) with Porphyry house assignments, 4 angles, 12 Porphyry cusps.
+
+### Decisions
+
+- One table for bodies/angles/cusps, discriminated by `kind`, unique on `(person_id, house_system, body_key)` — cusps key as `cusp_1..cusp_12` so a single upsert is idempotent.
+- Porphyry cusps derived app-side from Celestine's ASC/MC (`lib/astro/porphyry.mjs`, mirrors the TS engine); Celestine remains the only position source.
+- Chart validated against the Syd fixture before storage: ASC Pisces 8°, MC Sagittarius, Sun Scorpio (house 8), Moon Aries (house 2) — matches the engine docstring example.
+
+### Notes
+
+`npm run natal:compute [person_id]` recomputes/upserts via the service-role client. Next: Phase D step 2 (daily `sky_positions` snapshot job).
+
 ## 2026-07-02 — Bestie Voice Skill Lock
 
 Locked `skills/bestie-voice/SKILL.md` as the canonical Transit Intelligence voice skill.

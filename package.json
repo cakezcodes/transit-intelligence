@@ -8,6 +8,7 @@
   },
   "scripts": {
     "validate:syd-chart": "node scripts/validate-syd-chart.mjs",
+    "natal:compute": "node scripts/compute-natal-positions.mjs",
     "test:supabase-chart": "node scripts/test-supabase-chart.mjs",
     "inspect:chart-shape": "node scripts/inspect-celestine-chart-shape.mjs",
     "test:meaning-bundle": "node scripts/test-chart-meaning-bundle.mjs",
