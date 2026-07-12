@@ -12,7 +12,22 @@ Created `natal_positions` (RLS by owner) and stored Syd's full natal chart: 14 b
 
 ### Notes
 
-`npm run natal:compute [person_id]` recomputes/upserts via the service-role client. Next: Phase D step 2 (daily `sky_positions` snapshot job).
+`npm run natal:compute [person_id]` recomputes/upserts via the service-role client.
+
+## 2026-07-12 — Phase D step 2: daily sky snapshot job
+
+Deployed the `sky-snapshot` Supabase edge function (Celestine via npm specifier) and scheduled it daily at 00:10 UTC via pg_cron + pg_net. First snapshot (2026-07-12) written and verified: 12 rows — 10 planets + Chiron + North Node.
+
+### Decisions
+
+- Positions computed at 12:00 UTC of the snapshot date (midday representative).
+- Motion: longitude-speed sign at day start vs day end; a flip inside the day = station_retrograde / station_direct. Node speed (no longitudeSpeed from Celestine) falls back to longitude delta across the day.
+- Idempotent upsert on UNIQUE(snapshot_date, body_key). `?date=YYYY-MM-DD` supports backfill.
+- The cron bearer token is the public anon key — it only passes the verify_jwt gate; writes happen via the function's service-role env.
+
+### Notes
+
+Next: Phase D step 3 (Illuminations screen — buildSkyState + ranking + voiced paragraphs).
 
 ## 2026-07-02 — Bestie Voice Skill Lock
 
