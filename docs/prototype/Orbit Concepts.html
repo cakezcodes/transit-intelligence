@@ -1,0 +1,378 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orbit Concepts — Transit Intelligence</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap');
+  /* Falls back to Georgia italic + system sans when fonts can't load — same bones. */
+  :root{
+    --canvas:#EFEBE3; --ink:#2a2118; --gold:#A8842F; --gold-soft:rgba(168,132,47,.16);
+    --page:#F2F2F7; --card:#fff; --line:rgba(60,60,67,.12); --hair:rgba(60,60,67,.08);
+    --moon:#1C1C1E; --dust:rgba(60,60,67,.62); --faint:rgba(60,60,67,.45);
+    --parch:#FBF8F0; --parchline:rgba(168,132,47,.28);
+    --cosmic1:#2a2540; --cosmic2:#4a3a5e; --cosmic3:#6b4a3a;
+    --sans:"DM Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --serif:"Playfair Display",Georgia,"Times New Roman",serif;
+  }
+  body{background:var(--canvas);color:var(--ink);font-family:var(--sans);margin:0}
+  .se{font-family:var(--serif)}
+  .board{overflow-x:auto;padding:26px 30px 60px}
+  .boardin{min-width:1560px;position:relative}
+  .bhead .se{font-style:italic;font-size:30px;font-weight:600;color:var(--ink)}
+  .bhead p{font-size:13px;color:rgba(60,50,40,.62);margin:5px 0 0}
+  .bhead a{color:var(--gold);text-decoration:none}
+  .sticky{position:absolute;right:10px;top:0;width:242px;background:#FBF0C9;padding:15px 16px;font-size:12.5px;line-height:1.55;color:#5b4a1f;box-shadow:0 2px 6px rgba(0,0,0,.14);transform:rotate(-1.2deg)}
+  .frames{display:flex;gap:88px;margin-top:74px;align-items:flex-start}
+  .frame{position:relative;flex:0 0 392px}
+  .flabel{position:absolute;top:-30px;left:2px;font-size:12px;font-weight:600;color:rgba(60,50,40,.72);white-space:nowrap}
+  .flabel b{background:var(--ink);color:#fff;border-radius:5px;padding:2px 6px;font-size:10px;margin-right:6px;font-weight:600}
+  .phone{width:392px;height:852px;background:var(--page);border-radius:34px;box-shadow:0 12px 36px rgba(0,0,0,.16);overflow:hidden;position:relative}
+  .status{display:flex;align-items:center;justify-content:space-between;padding:13px 26px 0;font-size:13px;font-weight:600}
+  .status i{font-style:normal;font-size:11px;letter-spacing:.4px}
+  .eyebrow{font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+  .vtitle{font-style:italic;font-weight:600;font-size:28px;line-height:1.05;margin-top:5px}
+  .halo{position:absolute;top:-60px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,var(--gold-soft),transparent 64%);pointer-events:none}
+  .caps{margin:11px 18px 0;display:grid;grid-template-columns:repeat(4,1fr);background:var(--card);border:1px solid var(--line);border-radius:15px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .caps>div{padding:10px 4px;text-align:center}
+  .caps>div+div{border-left:1px solid var(--hair)}
+  .caps b{font-size:15px;font-weight:700;display:block}
+  .caps .se{font-size:14px;font-weight:600;font-style:italic}
+  .caps small{font-size:8.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);display:block;margin-top:2px}
+  .sechd{display:flex;align-items:center;gap:11px;padding:15px 18px 8px}
+  .sechd b{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+  .sechd i{flex:1;height:1px;background:var(--line);font-style:normal}
+  .pcard{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:11px 13px;margin:0 18px 8px;box-shadow:0 1px 2px rgba(0,0,0,.04);text-align:left}
+  .pav{flex:0 0 40px;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px}
+  .pnm{font-style:italic;font-weight:600;font-size:16.5px;line-height:1.1}
+  .prole{font-size:11px;color:var(--dust);margin-top:1px}
+  .pgly{font-size:10.5px;color:var(--gold);letter-spacing:.06em;margin-top:3px}
+  .pchip{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.04em;background:var(--parch);border:1px solid var(--parchline);color:#8a6a1f;border-radius:999px;padding:2px 7px;margin-top:4px}
+  .pchev{margin-left:auto;color:var(--faint);font-size:15px}
+  .tabbar{position:absolute;left:50%;transform:translateX(-50%);bottom:15px;display:flex;gap:3px;padding:6px 8px;background:rgba(248,248,250,.86);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid rgba(60,60,67,.14);border-radius:999px;box-shadow:0 6px 24px rgba(0,0,0,.16)}
+  .tabbar>div{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 8px;color:var(--faint)}
+  .tabbar>div span{font-size:9px;font-weight:600}
+  .tabbar>div.on{color:var(--gold)}
+  .tabbar>div.on span{font-weight:700}
+  .seg{display:flex;background:rgba(60,60,67,.07);border-radius:999px;padding:3px;margin:12px 18px 0}
+  .seg>span{flex:1;text-align:center;font-size:11.5px;font-weight:600;color:var(--dust);padding:6px 0;border-radius:999px}
+  .seg>span.on{background:var(--card);color:var(--moon);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+  .blkcard{margin:10px 18px 0;background:var(--card);border:1px solid var(--line);border-radius:17px;padding:13px 14px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .nlab{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  .xrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--hair)}
+  .xrow:last-child{border-bottom:none;padding-bottom:2px}
+  .xgl{flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:var(--parch);border:1px solid var(--parchline);display:flex;align-items:center;justify-content:center;font-size:13px;color:#8a6a1f}
+  .xnm{font-style:italic;font-weight:600;font-size:14.5px;line-height:1.15}
+  .xsub{font-size:11px;color:var(--dust);line-height:1.45;margin-top:2px}
+  .orb{margin-left:auto;flex:0 0 auto;font-size:9.5px;font-weight:700;border-radius:999px;padding:3px 8px;background:var(--gold-soft);color:var(--gold)}
+  .orb.loose{background:rgba(60,60,67,.07);color:var(--dust)}
+  .parchnote{margin:10px 18px 0;background:var(--parch);border:1px solid var(--parchline);border-radius:13px;padding:11px 13px;font-size:11.5px;line-height:1.5;color:#5b4a1f}
+  .field{margin:0 0 11px}
+  .field label{display:block;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:5px}
+  .field .in{background:rgba(60,60,67,.06);border:1px solid transparent;border-radius:12px;padding:11px 13px;font-size:13.5px;color:var(--moon)}
+  .field .in.ph{color:var(--faint)}
+  .chiprow{display:flex;gap:6px}
+  .chiprow span{font-size:11px;font-weight:600;border-radius:999px;padding:6px 12px;background:rgba(60,60,67,.06);color:var(--dust)}
+  .chiprow span.on{background:var(--gold);color:#fff;box-shadow:0 4px 10px rgba(168,132,47,.35)}
+  .hint{font-size:10.5px;color:var(--faint);margin-top:5px;line-height:1.45}
+  .cta{display:block;width:100%;border:none;border-radius:15px;background:var(--gold);color:#fff;font-family:var(--sans);font-weight:800;font-size:15px;padding:15px;box-shadow:0 8px 24px var(--gold-soft)}
+  .sw{width:40px;height:24px;border-radius:999px;background:rgba(60,60,67,.18);position:relative;flex:0 0 auto}
+  .sw i{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .sw.on{background:var(--gold)}
+  .sw.on i{left:auto;right:2px}
+  @media (prefers-reduced-motion: no-preference){ .pulse{animation:pulse 3.2s ease-in-out infinite} @keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}} }
+</style>
+
+<div class="board"><div class="boardin">
+
+<div class="bhead">
+  <div class="se">orbit — the entanglement files 🪐</div>
+  <p>first pass, full range · built on the real synastry layer (overlays + crossings are live math now) · <a href="#6a">6a</a> the orbit — roster as a sky · <a href="#6b">6b</a> the entanglement file — synastry opened · <a href="#6c">6c</a> add someone — birth data, honestly handled</p>
+</div>
+
+<div class="sticky">
+  <b>what this rides on</b><br>
+  · `synastry` table is live — crossings + house overlays are cached math, not vibes<br>
+  · overlay rows join `synastry_meanings` (planet × house, 48 curated)<br>
+  · no birth time? houses stay OFF — the app never fakes an ascendant<br>
+  · real timezone resolver shipped — date + city is enough to chart anyone
+</div>
+
+<div class="frames">
+
+<!-- ============ 6A — THE ORBIT ============ -->
+<div class="frame" id="6a">
+  <div class="flabel"><b>6a</b>The Orbit — your sky, populated</div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><i>5G&nbsp;&nbsp;100%</i></div>
+    <div style="position:relative;padding:12px 18px 0">
+      <div class="halo"></div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between">
+        <div>
+          <div class="eyebrow">✦ · THE ORBIT · ✦</div>
+          <div class="se vtitle">the entanglements</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding-bottom:4px">
+          <span style="font-size:11.5px;color:var(--faint)">7 charts ✧</span>
+          <span style="width:28px;height:28px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px" title="hide all">👁</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- the orbit itself — who's closest right now -->
+    <div style="margin:11px 18px 0;position:relative;border-radius:17px;overflow:hidden;background:linear-gradient(150deg,var(--cosmic1),var(--cosmic2) 60%,var(--cosmic3));padding:14px 17px 12px;box-shadow:0 8px 22px rgba(42,37,64,.3)">
+      <div style="position:absolute;top:8px;right:14px;color:rgba(255,255,255,.35);font-size:13px;letter-spacing:5px" class="pulse">✧ ⋆ ☽</div>
+      <svg width="100%" height="128" viewBox="0 0 340 128" fill="none" aria-label="orbit map">
+        <ellipse cx="170" cy="64" rx="150" ry="52" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+        <ellipse cx="170" cy="64" rx="104" ry="35" stroke="rgba(255,255,255,.30)" stroke-width="1"/>
+        <ellipse cx="170" cy="64" rx="58" ry="19" stroke="rgba(255,255,255,.38)" stroke-width="1"/>
+        <text x="170" y="70" text-anchor="middle" fill="#E9DFC4" font-size="15">✦</text>
+        <circle cx="223" cy="49" r="9" fill="#A684D0"/><text x="223" y="52.5" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">J</text>
+        <circle cx="120" cy="83" r="9" fill="#4FA89B"/><text x="120" y="86.5" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">N</text>
+        <circle cx="262" cy="88" r="9" fill="#C9A24B"/><text x="262" y="91.5" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">S</text>
+        <circle cx="70" cy="44" r="9" fill="#B89BC9"/><text x="70" y="47.5" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">D</text>
+        <circle cx="305" cy="55" r="9" fill="#C65A2E" opacity=".55"/><text x="305" y="58.5" text-anchor="middle" fill="#fff" font-size="9" font-weight="700" opacity=".8">R</text>
+      </svg>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:4px">
+        <span class="se" style="font-style:italic;font-size:13.5px;color:#fff">closeness = tightest crossing, live</span>
+        <span style="font-size:10px;color:rgba(255,255,255,.6)">tap a body to open the file ›</span>
+      </div>
+    </div>
+
+    <div class="caps">
+      <div><b>7</b><small>in orbit</small></div>
+      <div><span class="se">nova ✦</span><small>tightest bond</small></div>
+      <div><b>3 🔥</b><small>talking</small></div>
+      <div><span class="se">♀ △ ☽</span><small>crossing of the day</small></div>
+    </div>
+
+    <div class="sechd"><b>talking 🔥</b><i></i><span style="font-size:10.5px;font-weight:600;color:var(--gold)">＋ someone</span></div>
+
+    <div class="pcard">
+      <span class="pav" style="background:#A684D0">♎</span>
+      <span style="flex:1">
+        <span class="se pnm">jordan</span>
+        <span class="prole" style="display:block">situationship 🔥</span>
+        <span class="pgly">☉ ♎ &nbsp; ☽ ♍ &nbsp; ↑ ♎</span>
+      </span>
+      <span style="text-align:right">
+        <span class="orb">♀ △ ☽ · 0.5°</span>
+        <span style="display:block;font-size:9.5px;color:var(--faint);margin-top:4px">their sun → your 8th</span>
+      </span>
+      <span class="pchev">›</span>
+    </div>
+
+    <div class="pcard">
+      <span class="pav" style="background:#C9A24B">♐</span>
+      <span style="flex:1">
+        <span class="se pnm">sam</span>
+        <span class="prole" style="display:block">the 2am text ♟</span>
+        <span class="pgly">☉ ♐ &nbsp; ☽ ♒ &nbsp; ↑ —</span>
+        <span class="pchip">birth time unknown · houses off</span>
+      </span>
+      <span class="pchev">›</span>
+    </div>
+
+    <div class="pcard" style="opacity:.55">
+      <span class="pav" style="background:#C65A2E">♍</span>
+      <span style="flex:1">
+        <span class="se pnm">riley</span>
+        <span class="prole" style="display:block">the one that left · archived</span>
+        <span class="pgly">☉ ♍ &nbsp; ☽ ♑ &nbsp; ↑ ♊</span>
+      </span>
+      <span class="pchev">›</span>
+    </div>
+
+    <div class="sechd"><b>your people ✦</b><i></i></div>
+
+    <div class="pcard">
+      <span class="pav" style="background:#4FA89B">♓</span>
+      <span style="flex:1">
+        <span class="se pnm">nova</span>
+        <span class="prole" style="display:block">ride or die 🌈</span>
+        <span class="pgly">☉ ♓ &nbsp; ☽ ♋ &nbsp; ↑ ♌</span>
+      </span>
+      <span style="text-align:right"><span class="orb">☽ ☌ ☽ · 1.1°</span></span>
+      <span class="pchev">›</span>
+    </div>
+
+    <div class="pcard">
+      <span class="pav" style="background:#B89BC9">♐</span>
+      <span style="flex:1">
+        <span class="se pnm">dani</span>
+        <span class="prole" style="display:block">work wife / enabler</span>
+        <span class="pgly">☉ ♐ &nbsp; ☽ ♌ &nbsp; ↑ ♏</span>
+      </span>
+      <span class="pchev">›</span>
+    </div>
+
+    <div class="pcard" style="border-style:dashed;background:transparent;box-shadow:none">
+      <span class="pav" style="background:rgba(60,60,67,.08);color:var(--gold)">＋</span>
+      <span style="flex:1">
+        <span class="se pnm" style="color:var(--gold)">add someone</span>
+        <span class="prole" style="display:block">new entanglement — date + city is enough now ✧</span>
+      </span>
+      <span class="pchev">›</span>
+    </div>
+
+    <div class="tabbar">
+      <div><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 9.5h17M8 3v3.5M16 3v3.5"/></svg><span>Calendar</span></div>
+      <div class="on"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3.4"/><ellipse cx="12" cy="12" rx="9.5" ry="4.2" transform="rotate(-18 12 12)"/></svg><span>Orbit</span></div>
+      <div><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10 4.8 7.4 4.4 4.5 4.7v13.6c2.9-.3 5.5.1 7.5 1.8 2-1.7 4.6-2.1 7.5-1.8V4.7c-2.9-.3-5.5.1-7.5 1.8z"/><path d="M12 6.5v13.6"/></svg><span>Grimoire</span></div>
+      <div><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l2.5 2.5L16 8"/><rect x="3.5" y="4.5" width="17" height="16" rx="3.5"/><path d="M8 3v3M16 3v3"/></svg><span>Reminders</span></div>
+      <div><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M21.5 12h-3M5.5 12h-3"/></svg><span>Settings</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 6B — THE ENTANGLEMENT FILE ============ -->
+<div class="frame" id="6b">
+  <div class="flabel"><b>6b</b>The Entanglement File — synastry, opened</div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><i>5G&nbsp;&nbsp;100%</i></div>
+    <div style="position:relative;padding:10px 18px 0;text-align:center">
+      <span style="position:absolute;left:18px;top:12px;font-size:21px;color:var(--gold)">‹</span>
+      <div class="eyebrow">✧ ENTANGLEMENT FILE ✧</div>
+      <div class="se vtitle" style="font-size:26px">syd × jordan</div>
+      <div style="font-size:11.5px;color:var(--dust);margin-top:4px">♏ scorpio 8th-house sun &nbsp;·&nbsp; ♎ libra sun, libra rising</div>
+    </div>
+
+    <!-- the two-ring orbit: her chart inside yours -->
+    <div style="margin:12px 18px 0;background:var(--card);border:1px solid var(--line);border-radius:17px;padding:12px 14px 9px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
+      <svg width="100%" height="150" viewBox="0 0 340 150" fill="none" aria-label="two charts, one orbit">
+        <ellipse cx="170" cy="75" rx="152" ry="60" stroke="rgba(168,132,47,.45)" stroke-width="1.2"/>
+        <ellipse cx="170" cy="75" rx="100" ry="38" stroke="rgba(74,58,94,.45)" stroke-width="1.2"/>
+        <text x="170" y="81" text-anchor="middle" fill="#A8842F" font-size="16">✦</text>
+        <circle cx="60" cy="47" r="8" fill="#A8842F"/><text x="60" y="50.5" text-anchor="middle" fill="#fff" font-size="8.5">☽</text>
+        <circle cx="290" cy="100" r="8" fill="#A8842F"/><text x="290" y="103.5" text-anchor="middle" fill="#fff" font-size="8.5">☉</text>
+        <circle cx="248" cy="42" r="8" fill="#A8842F"/><text x="248" y="45.5" text-anchor="middle" fill="#fff" font-size="8.5">♀</text>
+        <circle cx="92" cy="102" r="8" fill="#4a3a5e"/><text x="92" y="105.5" text-anchor="middle" fill="#fff" font-size="8.5">♀</text>
+        <circle cx="226" cy="106" r="8" fill="#4a3a5e"/><text x="226" y="109.5" text-anchor="middle" fill="#fff" font-size="8.5">☉</text>
+        <circle cx="118" cy="44" r="8" fill="#4a3a5e"/><text x="118" y="47.5" text-anchor="middle" fill="#fff" font-size="8.5">☽</text>
+        <path d="M92 102 L60 47" stroke="rgba(168,132,47,.5)" stroke-width="1" stroke-dasharray="3 3"/>
+        <path d="M226 106 L290 100" stroke="rgba(74,58,94,.4)" stroke-width="1" stroke-dasharray="3 3"/>
+      </svg>
+      <div style="display:flex;justify-content:center;gap:16px;font-size:10px;color:var(--dust);padding-top:2px">
+        <span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#A8842F;margin-right:4px"></i>you</span>
+        <span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#4a3a5e;margin-right:4px"></i>jordan</span>
+        <span style="color:var(--faint)">dotted = the crossings</span>
+      </div>
+    </div>
+
+    <div class="seg"><span class="on">synastry</span><span>chart</span><span>composite</span><span>journal</span></div>
+
+    <div class="blkcard">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <span class="nlab">① the crossings — tightest first</span>
+        <span style="font-size:10px;color:var(--faint)">orb ≤ 2° = it's loud</span>
+      </div>
+      <div class="xrow">
+        <span class="xgl">△</span>
+        <span style="flex:1">
+          <span class="se xnm">their venus trine your moon</span>
+          <span class="xsub" style="display:block">affection lands where you actually live. this is why the good days feel easy.</span>
+        </span>
+        <span class="orb">0.5° tight</span>
+      </div>
+      <div class="xrow">
+        <span class="xgl">☌</span>
+        <span style="flex:1">
+          <span class="se xnm">their sun conjunct your mercury</span>
+          <span class="xsub" style="display:block">they talk, you archive. every conversation goes in your permanent record.</span>
+        </span>
+        <span class="orb">1.4°</span>
+      </div>
+      <div class="xrow">
+        <span class="xgl">□</span>
+        <span style="flex:1">
+          <span class="se xnm">their mars square your saturn</span>
+          <span class="xsub" style="display:block">their gas pedal, your brake. the recurring fight has an address now.</span>
+        </span>
+        <span class="orb loose">3.8°</span>
+      </div>
+    </div>
+
+    <div class="blkcard">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="nlab">② where they land</span>
+        <span style="display:flex;background:rgba(60,60,67,.07);border-radius:999px;padding:2px;font-size:9.5px;font-weight:700">
+          <span style="padding:4px 9px;border-radius:999px;background:var(--card);box-shadow:0 1px 2px rgba(0,0,0,.1)">in your houses</span>
+          <span style="padding:4px 9px;color:var(--dust)">in theirs</span>
+        </span>
+      </div>
+      <div class="xrow">
+        <span class="xgl">☉</span>
+        <span style="flex:1">
+          <span class="se xnm">their sun → your 8th house</span>
+          <span class="xsub" style="display:block">they walked straight into the deep end. surface-level was never on the menu.</span>
+        </span>
+      </div>
+      <div class="xrow">
+        <span class="xgl">♀</span>
+        <span style="flex:1">
+          <span class="se xnm">their venus → your 7th house</span>
+          <span class="xsub" style="display:block">partner-shaped energy, whether or not anyone's said the word.</span>
+        </span>
+      </div>
+      <div class="xrow">
+        <span class="xgl">♂</span>
+        <span style="flex:1">
+          <span class="se xnm">their mars → your 12th house</span>
+          <span class="xsub" style="display:block">their heat operates below your radar. name it before it names you.</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="parchnote">☽ <b>one honest note:</b> jordan's rising is from a screenshot of a placidus app — their file stays placidus so the houses match what they'd recognize. yours stays porphyry. the math holds both.</div>
+  </div>
+</div>
+
+<!-- ============ 6C — ADD SOMEONE ============ -->
+<div class="frame" id="6c">
+  <div class="flabel"><b>6c</b>Add Someone — birth data, honestly handled</div>
+  <div class="phone">
+    <div class="status"><span>9:41</span><i>5G&nbsp;&nbsp;100%</i></div>
+    <div style="position:relative;padding:10px 18px 0;text-align:center">
+      <span style="position:absolute;left:18px;top:12px;font-size:21px;color:var(--gold)">‹</span>
+      <div class="eyebrow">✧ NEW ENTANGLEMENT ✧</div>
+      <div class="se vtitle" style="font-size:26px">add someone</div>
+      <div style="font-size:11.5px;color:var(--dust);margin-top:4px">a date and a city is enough — i'll remember their sky ☽</div>
+    </div>
+
+    <div class="blkcard" style="margin-top:14px">
+      <div class="nlab" style="margin-bottom:10px">① who</div>
+      <div class="field"><label>name</label><div class="in ph">who is it 👀</div></div>
+      <div class="field" style="margin-bottom:2px"><label>what they are to you</label><div class="in">situationship 🔥</div></div>
+    </div>
+
+    <div class="blkcard">
+      <div class="nlab" style="margin-bottom:10px">② the sky they arrived under</div>
+      <div class="field"><label>birth date</label><div class="in">october 12, 1996</div></div>
+      <div class="field"><label>birthplace</label><div class="in">louisville, kentucky</div>
+        <div class="hint">timezone + daylight saving handled for you — even for the year they were born ✧</div>
+      </div>
+      <div class="field" style="margin-bottom:2px">
+        <label>birth time</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="in ph" style="flex:1">hh : mm</div>
+          <span style="display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:var(--dust)">unknown <span class="sw on"><i></i></span></span>
+        </div>
+        <div class="hint">no time? no problem — but no faking either: their chart runs at noon and <b>houses + rising stay off</b> until you charm it out of them.</div>
+      </div>
+    </div>
+
+    <div class="blkcard">
+      <div class="nlab" style="margin-bottom:10px">③ how they read themselves</div>
+      <div class="chiprow"><span class="on">porphyry</span><span>placidus</span><span>whole sign</span></div>
+      <div class="hint">porphyry is house rules. pick placidus if they quote a screenshot app — their file will match what they know.</div>
+    </div>
+
+    <div style="margin:14px 18px 0">
+      <button class="cta">plug them in ✦</button>
+      <div style="text-align:center;font-size:10.5px;color:var(--faint);margin-top:8px">chart computes once, stays cached · crossings with you appear instantly</div>
+    </div>
+
+    <div class="parchnote" style="margin-top:14px">✧ <b>privacy, obviously:</b> the whole orbit hides behind the 👁 — one tap and this tab is a very boring list of names. for when someone's looking over your shoulder.</div>
+  </div>
+</div>
+
+</div><!-- /frames -->
+</div></div>
