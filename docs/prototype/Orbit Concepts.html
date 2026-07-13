@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Orbit Concepts — Transit Intelligence</title>
+<title>Orbit — Transit Intelligence</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap');
   /* Falls back to Georgia italic + system sans when fonts can't load — same bones. */
@@ -13,24 +13,28 @@
     --sans:"DM Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
     --serif:"Playfair Display",Georgia,"Times New Roman",serif;
   }
-  body{background:var(--canvas);color:var(--ink);font-family:var(--sans);margin:0}
+  *{box-sizing:border-box}
+  body{background:var(--canvas);color:var(--ink);font-family:var(--sans);margin:0;display:flex;flex-direction:column;align-items:center;padding:26px 14px 50px}
   .se{font-family:var(--serif)}
-  .board{overflow-x:auto;padding:26px 30px 60px}
-  .boardin{min-width:1560px;position:relative}
-  .bhead .se{font-style:italic;font-size:30px;font-weight:600;color:var(--ink)}
-  .bhead p{font-size:13px;color:rgba(60,50,40,.62);margin:5px 0 0}
-  .bhead a{color:var(--gold);text-decoration:none}
-  .sticky{position:absolute;right:10px;top:0;width:242px;background:#FBF0C9;padding:15px 16px;font-size:12.5px;line-height:1.55;color:#5b4a1f;box-shadow:0 2px 6px rgba(0,0,0,.14);transform:rotate(-1.2deg)}
-  .frames{display:flex;gap:88px;margin-top:74px;align-items:flex-start}
-  .frame{position:relative;flex:0 0 392px}
-  .flabel{position:absolute;top:-30px;left:2px;font-size:12px;font-weight:600;color:rgba(60,50,40,.72);white-space:nowrap}
-  .flabel b{background:var(--ink);color:#fff;border-radius:5px;padding:2px 6px;font-size:10px;margin-right:6px;font-weight:600}
-  .phone{width:392px;height:852px;background:var(--page);border-radius:34px;box-shadow:0 12px 36px rgba(0,0,0,.16);overflow:hidden;position:relative}
-  .status{display:flex;align-items:center;justify-content:space-between;padding:13px 26px 0;font-size:13px;font-weight:600}
+  .bhead{max-width:392px;width:100%;margin-bottom:36px;position:relative}
+  .bhead .se{font-style:italic;font-size:26px;font-weight:600}
+  .bhead p{font-size:12.5px;color:rgba(60,50,40,.62);margin:5px 0 0;line-height:1.5}
+  .phone{width:392px;max-width:100%;height:852px;background:var(--page);border-radius:34px;box-shadow:0 12px 36px rgba(0,0,0,.16);overflow:hidden;position:relative}
+  .view{position:absolute;inset:0;display:none;flex-direction:column}
+  .view.on{display:flex;animation:rise .22s cubic-bezier(.2,.7,.2,1)}
+  @keyframes rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion: reduce){.view.on{animation:none}}
+  .scroll{flex:1;overflow-y:auto;padding-bottom:110px}
+  .status{display:flex;align-items:center;justify-content:space-between;padding:13px 26px 0;font-size:13px;font-weight:600;flex:0 0 auto}
   .status i{font-style:normal;font-size:11px;letter-spacing:.4px}
   .eyebrow{font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
   .vtitle{font-style:italic;font-weight:600;font-size:28px;line-height:1.05;margin-top:5px}
   .halo{position:absolute;top:-60px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,var(--gold-soft),transparent 64%);pointer-events:none}
+  button{font-family:var(--sans);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .press{transition:transform .15s cubic-bezier(.2,.6,.3,1)}
+  .press:active{transform:scale(.975)}
+  .back{position:absolute;left:18px;top:10px;font-size:21px;color:var(--gold);background:none;border:none;padding:2px 8px}
   .caps{margin:11px 18px 0;display:grid;grid-template-columns:repeat(4,1fr);background:var(--card);border:1px solid var(--line);border-radius:15px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
   .caps>div{padding:10px 4px;text-align:center}
   .caps>div+div{border-left:1px solid var(--hair)}
@@ -40,179 +44,82 @@
   .sechd{display:flex;align-items:center;gap:11px;padding:15px 18px 8px}
   .sechd b{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
   .sechd i{flex:1;height:1px;background:var(--line);font-style:normal}
-  .pcard{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:11px 13px;margin:0 18px 8px;box-shadow:0 1px 2px rgba(0,0,0,.04);text-align:left}
+  .sechd button{font-size:10.5px;font-weight:600;color:var(--gold);background:none;border:none;padding:0}
+  .pcard{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:11px 13px;margin:0 18px 8px;box-shadow:0 1px 2px rgba(0,0,0,.04);text-align:left;width:calc(100% - 36px)}
   .pav{flex:0 0 40px;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px}
   .pnm{font-style:italic;font-weight:600;font-size:16.5px;line-height:1.1}
-  .prole{font-size:11px;color:var(--dust);margin-top:1px}
-  .pgly{font-size:10.5px;color:var(--gold);letter-spacing:.06em;margin-top:3px}
+  .prole{font-size:11px;color:var(--dust);margin-top:1px;display:block}
+  .pgly{font-size:10.5px;color:var(--gold);letter-spacing:.06em;margin-top:3px;display:block}
   .pchip{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.04em;background:var(--parch);border:1px solid var(--parchline);color:#8a6a1f;border-radius:999px;padding:2px 7px;margin-top:4px}
-  .pchev{margin-left:auto;color:var(--faint);font-size:15px}
-  .tabbar{position:absolute;left:50%;transform:translateX(-50%);bottom:15px;display:flex;gap:3px;padding:6px 8px;background:rgba(248,248,250,.86);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid rgba(60,60,67,.14);border-radius:999px;box-shadow:0 6px 24px rgba(0,0,0,.16)}
+  .pchev{margin-left:auto;color:var(--faint);font-size:15px;flex:0 0 auto}
+  .tabbar{position:absolute;left:50%;transform:translateX(-50%);bottom:15px;display:flex;gap:3px;padding:6px 8px;background:rgba(248,248,250,.86);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid rgba(60,60,67,.14);border-radius:999px;box-shadow:0 6px 24px rgba(0,0,0,.16);z-index:5}
   .tabbar>div{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 8px;color:var(--faint)}
   .tabbar>div span{font-size:9px;font-weight:600}
   .tabbar>div.on{color:var(--gold)}
   .tabbar>div.on span{font-weight:700}
   .seg{display:flex;background:rgba(60,60,67,.07);border-radius:999px;padding:3px;margin:12px 18px 0}
-  .seg>span{flex:1;text-align:center;font-size:11.5px;font-weight:600;color:var(--dust);padding:6px 0;border-radius:999px}
-  .seg>span.on{background:var(--card);color:var(--moon);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+  .seg>button{flex:1;text-align:center;font-size:11.5px;font-weight:600;color:var(--dust);padding:6px 0;border-radius:999px;border:none;background:none}
+  .seg>button.on{background:var(--card);color:var(--moon);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1)}
   .blkcard{margin:10px 18px 0;background:var(--card);border:1px solid var(--line);border-radius:17px;padding:13px 14px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
   .nlab{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
-  .xrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--hair)}
+  .xrow{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--hair)}
   .xrow:last-child{border-bottom:none;padding-bottom:2px}
   .xgl{flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:var(--parch);border:1px solid var(--parchline);display:flex;align-items:center;justify-content:center;font-size:13px;color:#8a6a1f}
   .xnm{font-style:italic;font-weight:600;font-size:14.5px;line-height:1.15}
-  .xsub{font-size:11px;color:var(--dust);line-height:1.45;margin-top:2px}
+  .xsub{font-size:11px;color:var(--dust);line-height:1.45;margin-top:2px;display:block}
   .orb{margin-left:auto;flex:0 0 auto;font-size:9.5px;font-weight:700;border-radius:999px;padding:3px 8px;background:var(--gold-soft);color:var(--gold)}
   .orb.loose{background:rgba(60,60,67,.07);color:var(--dust)}
   .parchnote{margin:10px 18px 0;background:var(--parch);border:1px solid var(--parchline);border-radius:13px;padding:11px 13px;font-size:11.5px;line-height:1.5;color:#5b4a1f}
+  .flip{display:flex;background:rgba(60,60,67,.07);border-radius:999px;padding:2px;font-size:9.5px;font-weight:700}
+  .flip>button{padding:4px 9px;border-radius:999px;border:none;background:none;color:var(--dust);font-weight:700;font-size:9.5px}
+  .flip>button.on{background:var(--card);color:var(--moon);box-shadow:0 1px 2px rgba(0,0,0,.1)}
   .field{margin:0 0 11px}
   .field label{display:block;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:5px}
-  .field .in{background:rgba(60,60,67,.06);border:1px solid transparent;border-radius:12px;padding:11px 13px;font-size:13.5px;color:var(--moon)}
-  .field .in.ph{color:var(--faint)}
+  .field input{width:100%;background:rgba(60,60,67,.06);border:1px solid transparent;border-radius:12px;padding:11px 13px;font-size:13.5px;color:var(--moon);font-family:var(--sans)}
+  .field input:focus{outline:none;border-color:var(--gold)}
+  .field input::placeholder{color:var(--faint)}
+  .field input:disabled{opacity:.4}
   .chiprow{display:flex;gap:6px}
-  .chiprow span{font-size:11px;font-weight:600;border-radius:999px;padding:6px 12px;background:rgba(60,60,67,.06);color:var(--dust)}
-  .chiprow span.on{background:var(--gold);color:#fff;box-shadow:0 4px 10px rgba(168,132,47,.35)}
+  .chiprow button{font-size:11px;font-weight:600;border-radius:999px;padding:6px 12px;background:rgba(60,60,67,.06);color:var(--dust);border:none}
+  .chiprow button.on{background:var(--gold);color:#fff;box-shadow:0 4px 10px rgba(168,132,47,.35)}
   .hint{font-size:10.5px;color:var(--faint);margin-top:5px;line-height:1.45}
-  .cta{display:block;width:100%;border:none;border-radius:15px;background:var(--gold);color:#fff;font-family:var(--sans);font-weight:800;font-size:15px;padding:15px;box-shadow:0 8px 24px var(--gold-soft)}
-  .sw{width:40px;height:24px;border-radius:999px;background:rgba(60,60,67,.18);position:relative;flex:0 0 auto}
-  .sw i{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .cta{display:block;width:100%;border:none;border-radius:15px;background:var(--gold);color:#fff;font-weight:800;font-size:15px;padding:15px;box-shadow:0 8px 24px var(--gold-soft)}
+  .sw{width:40px;height:24px;border-radius:999px;background:rgba(60,60,67,.18);position:relative;flex:0 0 auto;border:none;padding:0}
+  .sw i{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .15s}
   .sw.on{background:var(--gold)}
-  .sw.on i{left:auto;right:2px}
+  .sw.on i{left:18px}
+  .toast{position:absolute;left:50%;transform:translateX(-50%);bottom:96px;background:var(--ink);color:#fff;font-size:12px;font-weight:600;border-radius:999px;padding:9px 16px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:9;white-space:nowrap}
+  .toast.show{opacity:1}
+  .eyebtn{width:28px;height:28px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;padding:0}
   @media (prefers-reduced-motion: no-preference){ .pulse{animation:pulse 3.2s ease-in-out infinite} @keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}} }
 </style>
 
-<div class="board"><div class="boardin">
-
 <div class="bhead">
-  <div class="se">orbit — the entanglement files 🪐</div>
-  <p>first pass, full range · built on the real synastry layer (overlays + crossings are live math now) · <a href="#6a">6a</a> the orbit — roster as a sky · <a href="#6b">6b</a> the entanglement file — synastry opened · <a href="#6c">6c</a> add someone — birth data, honestly handled</p>
+  <div class="se">orbit — one piece, interactive ✦</div>
+  <p>rounds 6a–6c merged. everything is tappable: bodies on the orbit map, the roster cards, the 👁, the flip, the tabs, the time-unknown switch. add someone actually adds them.</p>
 </div>
 
-<div class="sticky">
-  <b>what this rides on</b><br>
-  · `synastry` table is live — crossings + house overlays are cached math, not vibes<br>
-  · overlay rows join `synastry_meanings` (planet × house, 48 curated)<br>
-  · no birth time? houses stay OFF — the app never fakes an ascendant<br>
-  · real timezone resolver shipped — date + city is enough to chart anyone
-</div>
+<div class="phone">
 
-<div class="frames">
-
-<!-- ============ 6A — THE ORBIT ============ -->
-<div class="frame" id="6a">
-  <div class="flabel"><b>6a</b>The Orbit — your sky, populated</div>
-  <div class="phone">
+  <!-- ============ VIEW: ORBIT HOME ============ -->
+  <div class="view on" id="v-home">
     <div class="status"><span>9:41</span><i>5G&nbsp;&nbsp;100%</i></div>
-    <div style="position:relative;padding:12px 18px 0">
-      <div class="halo"></div>
-      <div style="display:flex;align-items:flex-end;justify-content:space-between">
-        <div>
-          <div class="eyebrow">✦ · THE ORBIT · ✦</div>
-          <div class="se vtitle">the entanglements</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;padding-bottom:4px">
-          <span style="font-size:11.5px;color:var(--faint)">7 charts ✧</span>
-          <span style="width:28px;height:28px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px" title="hide all">👁</span>
+    <div class="scroll">
+      <div style="position:relative;padding:12px 18px 0">
+        <div class="halo"></div>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between">
+          <div>
+            <div class="eyebrow">✦ · THE ORBIT · ✦</div>
+            <div class="se vtitle">the entanglements</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding-bottom:4px">
+            <span style="font-size:11.5px;color:var(--faint)" id="countLbl">6 charts ✧</span>
+            <button class="eyebtn press" id="eye" aria-label="hide the orbit">👁</button>
+          </div>
         </div>
       </div>
+      <div id="homeBody"></div>
     </div>
-
-    <!-- the orbit itself — who's closest right now -->
-    <div style="margin:11px 18px 0;position:relative;border-radius:17px;overflow:hidden;background:linear-gradient(150deg,var(--cosmic1),var(--cosmic2) 60%,var(--cosmic3));padding:14px 17px 12px;box-shadow:0 8px 22px rgba(42,37,64,.3)">
-      <div style="position:absolute;top:8px;right:14px;color:rgba(255,255,255,.35);font-size:13px;letter-spacing:5px" class="pulse">✧ ⋆ ☽</div>
-      <svg width="100%" height="128" viewBox="0 0 340 128" fill="none" aria-label="orbit map">
-        <ellipse cx="170" cy="64" rx="150" ry="52" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
-        <ellipse cx="170" cy="64" rx="104" ry="35" stroke="rgba(255,255,255,.30)" stroke-width="1"/>
-        <ellipse cx="170" cy="64" rx="58" ry="19" stroke="rgba(255,255,255,.38)" stroke-width="1"/>
-        <text x="170" y="70" text-anchor="middle" fill="#E9DFC4" font-size="15">✦</text>
-        <circle cx="223" cy="49" r="9" fill="#A684D0"/><text x="223" y="52.5" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">J</text>
-        <circle cx="120" cy="83" r="9" fill="#4FA89B"/><text x="120" y="86.5" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">N</text>
-        <circle cx="262" cy="88" r="9" fill="#C9A24B"/><text x="262" y="91.5" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">S</text>
-        <circle cx="70" cy="44" r="9" fill="#B89BC9"/><text x="70" y="47.5" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">D</text>
-        <circle cx="305" cy="55" r="9" fill="#C65A2E" opacity=".55"/><text x="305" y="58.5" text-anchor="middle" fill="#fff" font-size="9" font-weight="700" opacity=".8">R</text>
-      </svg>
-      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:4px">
-        <span class="se" style="font-style:italic;font-size:13.5px;color:#fff">closeness = tightest crossing, live</span>
-        <span style="font-size:10px;color:rgba(255,255,255,.6)">tap a body to open the file ›</span>
-      </div>
-    </div>
-
-    <div class="caps">
-      <div><b>7</b><small>in orbit</small></div>
-      <div><span class="se">nova ✦</span><small>tightest bond</small></div>
-      <div><b>3 🔥</b><small>talking</small></div>
-      <div><span class="se">♀ △ ☽</span><small>crossing of the day</small></div>
-    </div>
-
-    <div class="sechd"><b>talking 🔥</b><i></i><span style="font-size:10.5px;font-weight:600;color:var(--gold)">＋ someone</span></div>
-
-    <div class="pcard">
-      <span class="pav" style="background:#A684D0">♎</span>
-      <span style="flex:1">
-        <span class="se pnm">jordan</span>
-        <span class="prole" style="display:block">situationship 🔥</span>
-        <span class="pgly">☉ ♎ &nbsp; ☽ ♍ &nbsp; ↑ ♎</span>
-      </span>
-      <span style="text-align:right">
-        <span class="orb">♀ △ ☽ · 0.5°</span>
-        <span style="display:block;font-size:9.5px;color:var(--faint);margin-top:4px">their sun → your 8th</span>
-      </span>
-      <span class="pchev">›</span>
-    </div>
-
-    <div class="pcard">
-      <span class="pav" style="background:#C9A24B">♐</span>
-      <span style="flex:1">
-        <span class="se pnm">sam</span>
-        <span class="prole" style="display:block">the 2am text ♟</span>
-        <span class="pgly">☉ ♐ &nbsp; ☽ ♒ &nbsp; ↑ —</span>
-        <span class="pchip">birth time unknown · houses off</span>
-      </span>
-      <span class="pchev">›</span>
-    </div>
-
-    <div class="pcard" style="opacity:.55">
-      <span class="pav" style="background:#C65A2E">♍</span>
-      <span style="flex:1">
-        <span class="se pnm">riley</span>
-        <span class="prole" style="display:block">the one that left · archived</span>
-        <span class="pgly">☉ ♍ &nbsp; ☽ ♑ &nbsp; ↑ ♊</span>
-      </span>
-      <span class="pchev">›</span>
-    </div>
-
-    <div class="sechd"><b>your people ✦</b><i></i></div>
-
-    <div class="pcard">
-      <span class="pav" style="background:#4FA89B">♓</span>
-      <span style="flex:1">
-        <span class="se pnm">nova</span>
-        <span class="prole" style="display:block">ride or die 🌈</span>
-        <span class="pgly">☉ ♓ &nbsp; ☽ ♋ &nbsp; ↑ ♌</span>
-      </span>
-      <span style="text-align:right"><span class="orb">☽ ☌ ☽ · 1.1°</span></span>
-      <span class="pchev">›</span>
-    </div>
-
-    <div class="pcard">
-      <span class="pav" style="background:#B89BC9">♐</span>
-      <span style="flex:1">
-        <span class="se pnm">dani</span>
-        <span class="prole" style="display:block">work wife / enabler</span>
-        <span class="pgly">☉ ♐ &nbsp; ☽ ♌ &nbsp; ↑ ♏</span>
-      </span>
-      <span class="pchev">›</span>
-    </div>
-
-    <div class="pcard" style="border-style:dashed;background:transparent;box-shadow:none">
-      <span class="pav" style="background:rgba(60,60,67,.08);color:var(--gold)">＋</span>
-      <span style="flex:1">
-        <span class="se pnm" style="color:var(--gold)">add someone</span>
-        <span class="prole" style="display:block">new entanglement — date + city is enough now ✧</span>
-      </span>
-      <span class="pchev">›</span>
-    </div>
-
     <div class="tabbar">
       <div><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 9.5h17M8 3v3.5M16 3v3.5"/></svg><span>Calendar</span></div>
       <div class="on"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3.4"/><ellipse cx="12" cy="12" rx="9.5" ry="4.2" transform="rotate(-18 12 12)"/></svg><span>Orbit</span></div>
@@ -221,158 +128,289 @@
       <div><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M21.5 12h-3M5.5 12h-3"/></svg><span>Settings</span></div>
     </div>
   </div>
-</div>
 
-<!-- ============ 6B — THE ENTANGLEMENT FILE ============ -->
-<div class="frame" id="6b">
-  <div class="flabel"><b>6b</b>The Entanglement File — synastry, opened</div>
-  <div class="phone">
+  <!-- ============ VIEW: ENTANGLEMENT FILE ============ -->
+  <div class="view" id="v-file">
     <div class="status"><span>9:41</span><i>5G&nbsp;&nbsp;100%</i></div>
-    <div style="position:relative;padding:10px 18px 0;text-align:center">
-      <span style="position:absolute;left:18px;top:12px;font-size:21px;color:var(--gold)">‹</span>
-      <div class="eyebrow">✧ ENTANGLEMENT FILE ✧</div>
-      <div class="se vtitle" style="font-size:26px">syd × jordan</div>
-      <div style="font-size:11.5px;color:var(--dust);margin-top:4px">♏ scorpio 8th-house sun &nbsp;·&nbsp; ♎ libra sun, libra rising</div>
-    </div>
-
-    <!-- the two-ring orbit: her chart inside yours -->
-    <div style="margin:12px 18px 0;background:var(--card);border:1px solid var(--line);border-radius:17px;padding:12px 14px 9px;box-shadow:0 1px 2px rgba(0,0,0,.04)">
-      <svg width="100%" height="150" viewBox="0 0 340 150" fill="none" aria-label="two charts, one orbit">
-        <ellipse cx="170" cy="75" rx="152" ry="60" stroke="rgba(168,132,47,.45)" stroke-width="1.2"/>
-        <ellipse cx="170" cy="75" rx="100" ry="38" stroke="rgba(74,58,94,.45)" stroke-width="1.2"/>
-        <text x="170" y="81" text-anchor="middle" fill="#A8842F" font-size="16">✦</text>
-        <circle cx="60" cy="47" r="8" fill="#A8842F"/><text x="60" y="50.5" text-anchor="middle" fill="#fff" font-size="8.5">☽</text>
-        <circle cx="290" cy="100" r="8" fill="#A8842F"/><text x="290" y="103.5" text-anchor="middle" fill="#fff" font-size="8.5">☉</text>
-        <circle cx="248" cy="42" r="8" fill="#A8842F"/><text x="248" y="45.5" text-anchor="middle" fill="#fff" font-size="8.5">♀</text>
-        <circle cx="92" cy="102" r="8" fill="#4a3a5e"/><text x="92" y="105.5" text-anchor="middle" fill="#fff" font-size="8.5">♀</text>
-        <circle cx="226" cy="106" r="8" fill="#4a3a5e"/><text x="226" y="109.5" text-anchor="middle" fill="#fff" font-size="8.5">☉</text>
-        <circle cx="118" cy="44" r="8" fill="#4a3a5e"/><text x="118" y="47.5" text-anchor="middle" fill="#fff" font-size="8.5">☽</text>
-        <path d="M92 102 L60 47" stroke="rgba(168,132,47,.5)" stroke-width="1" stroke-dasharray="3 3"/>
-        <path d="M226 106 L290 100" stroke="rgba(74,58,94,.4)" stroke-width="1" stroke-dasharray="3 3"/>
-      </svg>
-      <div style="display:flex;justify-content:center;gap:16px;font-size:10px;color:var(--dust);padding-top:2px">
-        <span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#A8842F;margin-right:4px"></i>you</span>
-        <span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#4a3a5e;margin-right:4px"></i>jordan</span>
-        <span style="color:var(--faint)">dotted = the crossings</span>
-      </div>
-    </div>
-
-    <div class="seg"><span class="on">synastry</span><span>chart</span><span>composite</span><span>journal</span></div>
-
-    <div class="blkcard">
-      <div style="display:flex;justify-content:space-between;align-items:baseline">
-        <span class="nlab">① the crossings — tightest first</span>
-        <span style="font-size:10px;color:var(--faint)">orb ≤ 2° = it's loud</span>
-      </div>
-      <div class="xrow">
-        <span class="xgl">△</span>
-        <span style="flex:1">
-          <span class="se xnm">their venus trine your moon</span>
-          <span class="xsub" style="display:block">affection lands where you actually live. this is why the good days feel easy.</span>
-        </span>
-        <span class="orb">0.5° tight</span>
-      </div>
-      <div class="xrow">
-        <span class="xgl">☌</span>
-        <span style="flex:1">
-          <span class="se xnm">their sun conjunct your mercury</span>
-          <span class="xsub" style="display:block">they talk, you archive. every conversation goes in your permanent record.</span>
-        </span>
-        <span class="orb">1.4°</span>
-      </div>
-      <div class="xrow">
-        <span class="xgl">□</span>
-        <span style="flex:1">
-          <span class="se xnm">their mars square your saturn</span>
-          <span class="xsub" style="display:block">their gas pedal, your brake. the recurring fight has an address now.</span>
-        </span>
-        <span class="orb loose">3.8°</span>
-      </div>
-    </div>
-
-    <div class="blkcard">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span class="nlab">② where they land</span>
-        <span style="display:flex;background:rgba(60,60,67,.07);border-radius:999px;padding:2px;font-size:9.5px;font-weight:700">
-          <span style="padding:4px 9px;border-radius:999px;background:var(--card);box-shadow:0 1px 2px rgba(0,0,0,.1)">in your houses</span>
-          <span style="padding:4px 9px;color:var(--dust)">in theirs</span>
-        </span>
-      </div>
-      <div class="xrow">
-        <span class="xgl">☉</span>
-        <span style="flex:1">
-          <span class="se xnm">their sun → your 8th house</span>
-          <span class="xsub" style="display:block">they walked straight into the deep end. surface-level was never on the menu.</span>
-        </span>
-      </div>
-      <div class="xrow">
-        <span class="xgl">♀</span>
-        <span style="flex:1">
-          <span class="se xnm">their venus → your 7th house</span>
-          <span class="xsub" style="display:block">partner-shaped energy, whether or not anyone's said the word.</span>
-        </span>
-      </div>
-      <div class="xrow">
-        <span class="xgl">♂</span>
-        <span style="flex:1">
-          <span class="se xnm">their mars → your 12th house</span>
-          <span class="xsub" style="display:block">their heat operates below your radar. name it before it names you.</span>
-        </span>
-      </div>
-    </div>
-
-    <div class="parchnote">☽ <b>one honest note:</b> jordan's rising is from a screenshot of a placidus app — their file stays placidus so the houses match what they'd recognize. yours stays porphyry. the math holds both.</div>
+    <div class="scroll" id="fileBody"></div>
   </div>
-</div>
 
-<!-- ============ 6C — ADD SOMEONE ============ -->
-<div class="frame" id="6c">
-  <div class="flabel"><b>6c</b>Add Someone — birth data, honestly handled</div>
-  <div class="phone">
+  <!-- ============ VIEW: ADD SOMEONE ============ -->
+  <div class="view" id="v-add">
     <div class="status"><span>9:41</span><i>5G&nbsp;&nbsp;100%</i></div>
-    <div style="position:relative;padding:10px 18px 0;text-align:center">
-      <span style="position:absolute;left:18px;top:12px;font-size:21px;color:var(--gold)">‹</span>
-      <div class="eyebrow">✧ NEW ENTANGLEMENT ✧</div>
-      <div class="se vtitle" style="font-size:26px">add someone</div>
-      <div style="font-size:11.5px;color:var(--dust);margin-top:4px">a date and a city is enough — i'll remember their sky ☽</div>
-    </div>
-
-    <div class="blkcard" style="margin-top:14px">
-      <div class="nlab" style="margin-bottom:10px">① who</div>
-      <div class="field"><label>name</label><div class="in ph">who is it 👀</div></div>
-      <div class="field" style="margin-bottom:2px"><label>what they are to you</label><div class="in">situationship 🔥</div></div>
-    </div>
-
-    <div class="blkcard">
-      <div class="nlab" style="margin-bottom:10px">② the sky they arrived under</div>
-      <div class="field"><label>birth date</label><div class="in">october 12, 1996</div></div>
-      <div class="field"><label>birthplace</label><div class="in">louisville, kentucky</div>
-        <div class="hint">timezone + daylight saving handled for you — even for the year they were born ✧</div>
+    <div class="scroll">
+      <div style="position:relative;padding:10px 18px 0;text-align:center">
+        <button class="back" data-nav="home" aria-label="back">‹</button>
+        <div class="eyebrow">✧ NEW ENTANGLEMENT ✧</div>
+        <div class="se vtitle" style="font-size:26px">add someone</div>
+        <div style="font-size:11.5px;color:var(--dust);margin-top:4px">a date and a city is enough — i'll remember their sky ☽</div>
       </div>
-      <div class="field" style="margin-bottom:2px">
-        <label>birth time</label>
-        <div style="display:flex;align-items:center;gap:10px">
-          <div class="in ph" style="flex:1">hh : mm</div>
-          <span style="display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:var(--dust)">unknown <span class="sw on"><i></i></span></span>
+      <div class="blkcard" style="margin-top:14px">
+        <div class="nlab" style="margin-bottom:10px">① who</div>
+        <div class="field"><label>name</label><input id="afName" placeholder="who is it 👀"></div>
+        <div class="field" style="margin-bottom:2px"><label>what they are to you</label><input id="afRole" placeholder="situationship / bestie / the ex…"></div>
+      </div>
+      <div class="blkcard">
+        <div class="nlab" style="margin-bottom:10px">② the sky they arrived under</div>
+        <div class="field"><label>birth date</label><input id="afDate" placeholder="october 12, 1996"></div>
+        <div class="field"><label>birthplace</label><input id="afPlace" placeholder="louisville, kentucky">
+          <div class="hint">timezone + daylight saving handled for you — even for the year they were born ✧</div>
         </div>
-        <div class="hint">no time? no problem — but no faking either: their chart runs at noon and <b>houses + rising stay off</b> until you charm it out of them.</div>
+        <div class="field" style="margin-bottom:2px">
+          <label>birth time</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input id="afTime" placeholder="hh : mm" style="flex:1">
+            <span style="display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:var(--dust)">unknown <button class="sw" id="afUnknown" role="switch" aria-checked="false" aria-label="birth time unknown"><i></i></button></span>
+          </div>
+          <div class="hint">no time? no problem — but no faking either: their chart runs at noon and <b>houses + rising stay off</b> until you charm it out of them.</div>
+        </div>
+      </div>
+      <div class="blkcard">
+        <div class="nlab" style="margin-bottom:10px">③ how they read themselves</div>
+        <div class="chiprow" id="afHouses">
+          <button class="on" data-h="porphyry">porphyry</button>
+          <button data-h="placidus">placidus</button>
+          <button data-h="whole sign">whole sign</button>
+        </div>
+        <div class="hint">porphyry is house rules. pick placidus if they quote a screenshot app — their file will match what they know.</div>
+      </div>
+      <div style="margin:14px 18px 0">
+        <button class="cta press" id="afSave">plug them in ✦</button>
+        <div style="text-align:center;font-size:10.5px;color:var(--faint);margin-top:8px">chart computes once, stays cached · crossings with you appear instantly</div>
       </div>
     </div>
-
-    <div class="blkcard">
-      <div class="nlab" style="margin-bottom:10px">③ how they read themselves</div>
-      <div class="chiprow"><span class="on">porphyry</span><span>placidus</span><span>whole sign</span></div>
-      <div class="hint">porphyry is house rules. pick placidus if they quote a screenshot app — their file will match what they know.</div>
-    </div>
-
-    <div style="margin:14px 18px 0">
-      <button class="cta">plug them in ✦</button>
-      <div style="text-align:center;font-size:10.5px;color:var(--faint);margin-top:8px">chart computes once, stays cached · crossings with you appear instantly</div>
-    </div>
-
-    <div class="parchnote" style="margin-top:14px">✧ <b>privacy, obviously:</b> the whole orbit hides behind the 👁 — one tap and this tab is a very boring list of names. for when someone's looking over your shoulder.</div>
   </div>
+
+  <div class="toast" id="toast"></div>
 </div>
 
-</div><!-- /frames -->
-</div></div>
+<script>
+(function(){
+'use strict';
+
+/* ---------- data (shapes mirror the live synastry table) ---------- */
+var PEOPLE=[
+  {id:'jordan',name:'jordan',role:'situationship 🔥',cat:'talking',accent:'#A684D0',sun:'♎',big3:'☉ ♎  ☽ ♍  ↑ ♎',timeKnown:true,houseSystem:'placidus',archived:false,
+   tag:{t:'♀ △ ☽ · 0.5°',sub:'their sun → your 8th'},
+   crossings:[
+     {gl:'△',nm:'their venus trine your moon',orb:'0.5° tight',tight:true,sub:'affection lands where you actually live. this is why the good days feel easy.'},
+     {gl:'☌',nm:'their sun conjunct your mercury',orb:'1.4°',tight:true,sub:'they talk, you archive. every conversation goes in your permanent record.'},
+     {gl:'□',nm:'their mars square your saturn',orb:'3.8°',tight:false,sub:'their gas pedal, your brake. the recurring fight has an address now.'}],
+   inYours:[
+     {gl:'☉',nm:'their sun → your 8th house',sub:'they walked straight into the deep end. surface-level was never on the menu.'},
+     {gl:'♀',nm:'their venus → your 7th house',sub:'partner-shaped energy, whether or not anyone’s said the word.'},
+     {gl:'♂',nm:'their mars → your 12th house',sub:'their heat operates below your radar. name it before it names you.'}],
+   inTheirs:[
+     {gl:'☉',nm:'your sun → their 2nd house',sub:'you read as an asset. make sure that’s a compliment.'},
+     {gl:'☽',nm:'your moon → their 7th house',sub:'your moods register as partnership weather. they take you seriously.'},
+     {gl:'♄',nm:'your saturn → their 5th house',sub:'you make their fun feel graded. loosen the rubric, sometimes.'}],
+   note:'☽ <b>one honest note:</b> jordan’s rising is from a screenshot of a placidus app — their file stays placidus so the houses match what they’d recognize. yours stays porphyry. the math holds both.',
+   placements:[['☉ sun','libra 19°'],['☽ moon','virgo 7°'],['↑ rising','libra 3°'],['☿ mercury','scorpio 2°'],['♀ venus','virgo 25°'],['♂ mars','scorpio 10°']]},
+  {id:'sam',name:'sam',role:'the 2am text ♟',cat:'talking',accent:'#C9A24B',sun:'♐',big3:'☉ ♐  ☽ ♒  ↑ —',timeKnown:false,houseSystem:'porphyry',archived:false,
+   tag:null,chip:'birth time unknown · houses off',
+   crossings:[
+     {gl:'△',nm:'their sun trine your moon',orb:'2.1°',tight:false,sub:'they make your reactions feel reasonable. dangerous at 2am.'},
+     {gl:'□',nm:'their moon square your venus',orb:'2.8°',tight:false,sub:'what soothes them spends what delights you. check the exchange rate.'}],
+   inYours:[
+     {gl:'☉',nm:'their sun → your 10th house',sub:'somehow everyone you work with knows their name. you did that.'},
+     {gl:'☿',nm:'their mercury → your 9th house',sub:'the conversations go somewhere. that’s the hook, and you know it.'}],
+   inTheirs:null,
+   note:'☽ <b>one honest note:</b> no birth time yet, so their chart runs at noon — rising + houses stay off and “in their houses” stays empty. the crossings above are real either way (planet-to-planet doesn’t need a time). ask casually.',
+   placements:[['☉ sun','sagittarius 0°'],['☽ moon','aquarius 14°'],['↑ rising','— time unknown'],['☿ mercury','sagittarius 9°'],['♀ venus','capricorn 21°'],['♂ mars','virgo 27°']]},
+  {id:'riley',name:'riley',role:'the one that left · archived',cat:'talking',accent:'#C65A2E',sun:'♍',big3:'☉ ♍  ☽ ♑  ↑ ♊',timeKnown:true,houseSystem:'porphyry',archived:true,
+   tag:null,
+   crossings:[
+     {gl:'☍',nm:'their saturn opposite your sun',orb:'1.9°',tight:true,sub:'you kept auditioning; they kept the clipboard. archived for a reason.'},
+     {gl:'△',nm:'their venus trine your venus',orb:'2.4°',tight:false,sub:'same taste, wrong timing. it happens.'}],
+   inYours:[
+     {gl:'♄',nm:'their saturn → your 5th house',sub:'joy felt supervised. noted, filed, released.'},
+     {gl:'☉',nm:'their sun → your 6th house',sub:'they lived in your routines. that’s why the quiet feels loud.'}],
+   inTheirs:[
+     {gl:'☽',nm:'your moon → their 8th house',sub:'you were the intensity they said they wanted. said.'}],
+   note:'☽ <b>archive note:</b> the file keeps the math but stops surfacing it — no daily crossings, no notifications. it’s here if you need receipts, not reminders.',
+   placements:[['☉ sun','virgo 21°'],['☽ moon','capricorn 5°'],['↑ rising','gemini 12°'],['♀ venus','libra 8°'],['♂ mars','cancer 16°'],['♄ saturn','pisces 19°']]},
+  {id:'nova',name:'nova',role:'ride or die 🌈',cat:'people',accent:'#4FA89B',sun:'♓',big3:'☉ ♓  ☽ ♋  ↑ ♌',timeKnown:true,houseSystem:'porphyry',archived:false,
+   tag:{t:'☽ ☌ ☽ · 1.1°',sub:'moons conjunct'},
+   crossings:[
+     {gl:'☌',nm:'their moon conjunct your moon',orb:'1.1° tight',tight:true,sub:'same emotional weather system. you don’t explain moods, you just point.'},
+     {gl:'△',nm:'their sun trine your sun',orb:'1.8°',tight:true,sub:'the friendship that doesn’t require maintenance. water finds water.'},
+     {gl:'⚹',nm:'their venus sextile your jupiter',orb:'2.3°',tight:false,sub:'they gas you up and somehow it’s never empty calories.'}],
+   inYours:[
+     {gl:'☉',nm:'their sun → your 1st house',sub:'they see you the way you’re trying to see yourself. keep them.'},
+     {gl:'☽',nm:'their moon → your 2nd house',sub:'their care shows up as groceries and gas money. love language: logistics.'}],
+   inTheirs:[
+     {gl:'☉',nm:'your sun → their 4th house',sub:'you’re family to them. capital F. acts accordingly.'},
+     {gl:'♃',nm:'your jupiter → their 10th house',sub:'you talk them into the promotion. you always have.'}],
+   note:null,
+   placements:[['☉ sun','pisces 26°'],['☽ moon','cancer 24°'],['↑ rising','leo 9°'],['☿ mercury','aries 3°'],['♀ venus','aquarius 17°'],['♂ mars','taurus 11°']]},
+  {id:'dani',name:'dani',role:'work wife / enabler',cat:'people',accent:'#B89BC9',sun:'♐',big3:'☉ ♐  ☽ ♌  ↑ ♏',timeKnown:true,houseSystem:'porphyry',archived:false,
+   tag:null,
+   crossings:[
+     {gl:'☌',nm:'their sun conjunct your venus',orb:'1.6°',tight:true,sub:'they think your worst ideas are charming. hence: enabler.'},
+     {gl:'□',nm:'their mercury square your mercury',orb:'3.1°',tight:false,sub:'you two agree loudly in two different languages. it works anyway.'}],
+   inYours:[
+     {gl:'☉',nm:'their sun → your 9th house',sub:'every conversation ends with a plan for a trip neither of you booked.'},
+     {gl:'☿',nm:'their mercury → your 10th house',sub:'half your best career moves were their idea. tell no one.'}],
+   inTheirs:[
+     {gl:'♀',nm:'your venus → their 11th house',sub:'you’re their favorite plus-one. the group thread agrees.'}],
+   note:null,
+   placements:[['☉ sun','sagittarius 8°'],['☽ moon','leo 19°'],['↑ rising','scorpio 27°'],['☿ mercury','sagittarius 24°'],['♀ venus','libra 29°'],['♂ mars','gemini 6°']]}
+];
+
+/* orbit map ring = tightest crossing (inner ≤1.5°, mid ≤2.5°, outer beyond) */
+var MAP=[
+  {id:'jordan',x:223,y:49},
+  {id:'nova',x:120,y:83},
+  {id:'sam',x:262,y:88},
+  {id:'dani',x:70,y:44},
+  {id:'riley',x:305,y:55}
+];
+
+var hidden=false, fileTab='synastry', flipDir='yours', activeId=null;
+
+function el(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function nav(v){
+  document.querySelectorAll('.view').forEach(function(x){x.classList.remove('on');});
+  el('v-'+v).classList.add('on');
+  el('v-'+v).querySelector('.scroll').scrollTop=0;
+}
+function toast(msg){var t=el('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('show');},2200);}
+
+/* ---------- home ---------- */
+function personCard(p){
+  var right='';
+  if(p.tag)right='<span style="text-align:right"><span class="orb">'+esc(p.tag.t)+'</span><span style="display:block;font-size:9.5px;color:var(--faint);margin-top:4px">'+esc(p.tag.sub)+'</span></span>';
+  return '<button class="pcard press" data-open="'+p.id+'"'+(p.archived?' style="opacity:.55"':'')+'>'+
+    '<span class="pav" style="background:'+p.accent+'">'+p.sun+'</span>'+
+    '<span style="flex:1"><span class="se pnm">'+esc(p.name)+'</span><span class="prole">'+esc(p.role)+'</span><span class="pgly">'+p.big3+'</span>'+(p.chip?'<span class="pchip">'+esc(p.chip)+'</span>':'')+'</span>'+
+    right+'<span class="pchev">›</span></button>';
+}
+function renderHome(){
+  el('countLbl').textContent=PEOPLE.length+' charts ✧';
+  var h='';
+  if(hidden){
+    h='<div class="blkcard" style="margin-top:14px;text-align:center;padding:26px 14px"><div style="font-size:22px">👁</div><div class="se" style="font-style:italic;font-size:16px;margin-top:6px">just a very boring list of names</div><div style="font-size:11.5px;color:var(--dust);margin-top:4px;line-height:1.5">'+PEOPLE.map(function(p){return esc(p.name);}).join(' · ')+'</div><div style="font-size:10.5px;color:var(--faint);margin-top:8px">tap the eye when the coast is clear</div></div>';
+    el('homeBody').innerHTML=h;return;
+  }
+  h+='<div style="margin:11px 18px 0;position:relative;border-radius:17px;overflow:hidden;background:linear-gradient(150deg,var(--cosmic1),var(--cosmic2) 60%,var(--cosmic3));padding:14px 17px 12px;box-shadow:0 8px 22px rgba(42,37,64,.3)">'+
+    '<div style="position:absolute;top:8px;right:14px;color:rgba(255,255,255,.35);font-size:13px;letter-spacing:5px" class="pulse">✧ ⋆ ☽</div>'+
+    '<svg width="100%" height="128" viewBox="0 0 340 128" fill="none" aria-label="orbit map">'+
+    '<ellipse cx="170" cy="64" rx="150" ry="52" stroke="rgba(255,255,255,.22)" stroke-width="1"/>'+
+    '<ellipse cx="170" cy="64" rx="104" ry="35" stroke="rgba(255,255,255,.30)" stroke-width="1"/>'+
+    '<ellipse cx="170" cy="64" rx="58" ry="19" stroke="rgba(255,255,255,.38)" stroke-width="1"/>'+
+    '<text x="170" y="70" text-anchor="middle" fill="#E9DFC4" font-size="15">✦</text>'+
+    MAP.map(function(m){var p=PEOPLE.find(function(x){return x.id===m.id;});if(!p)return '';
+      return '<g data-open="'+p.id+'" style="cursor:pointer"'+(p.archived?' opacity=".55"':'')+'><circle cx="'+m.x+'" cy="'+m.y+'" r="12" fill="transparent"/><circle cx="'+m.x+'" cy="'+m.y+'" r="9" fill="'+p.accent+'"/><text x="'+m.x+'" y="'+(m.y+3.5)+'" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">'+esc(p.name.charAt(0).toUpperCase())+'</text></g>';}).join('')+
+    '</svg>'+
+    '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:4px"><span class="se" style="font-style:italic;font-size:13.5px;color:#fff">closeness = tightest crossing, live</span><span style="font-size:10px;color:rgba(255,255,255,.6)">tap a body to open the file ›</span></div></div>';
+  h+='<div class="caps"><div><b>'+PEOPLE.length+'</b><small>in orbit</small></div><div><span class="se">nova ✦</span><small>tightest bond</small></div><div><b>'+PEOPLE.filter(function(p){return p.cat==='talking'&&!p.archived;}).length+' 🔥</b><small>talking</small></div><div><span class="se">♀ △ ☽</span><small>crossing of the day</small></div></div>';
+  h+='<div class="sechd"><b>talking 🔥</b><i></i><button data-nav="add">＋ someone</button></div>';
+  h+=PEOPLE.filter(function(p){return p.cat==='talking';}).map(personCard).join('');
+  h+='<div class="sechd"><b>your people ✦</b><i></i></div>';
+  h+=PEOPLE.filter(function(p){return p.cat==='people';}).map(personCard).join('');
+  h+='<button class="pcard press" data-nav="add" style="border-style:dashed;background:transparent;box-shadow:none"><span class="pav" style="background:rgba(60,60,67,.08);color:var(--gold)">＋</span><span style="flex:1"><span class="se pnm" style="color:var(--gold)">add someone</span><span class="prole">new entanglement — date + city is enough now ✧</span></span><span class="pchev">›</span></button>';
+  el('homeBody').innerHTML=h;
+}
+
+/* ---------- entanglement file ---------- */
+function xrows(list){
+  return list.map(function(x){
+    return '<div class="xrow"><span class="xgl">'+x.gl+'</span><span style="flex:1"><span class="se xnm">'+esc(x.nm)+'</span><span class="xsub">'+esc(x.sub)+'</span></span>'+(x.orb?'<span class="orb'+(x.tight?'':' loose')+'">'+esc(x.orb)+'</span>':'')+'</div>';
+  }).join('');
+}
+function renderFile(){
+  var p=PEOPLE.find(function(x){return x.id===activeId;});if(!p)return;
+  var h='<div style="position:relative;padding:10px 18px 0;text-align:center">'+
+    '<button class="back" data-nav="home" aria-label="back">‹</button>'+
+    '<div class="eyebrow">✧ ENTANGLEMENT FILE ✧</div>'+
+    '<div class="se vtitle" style="font-size:26px">syd × '+esc(p.name)+'</div>'+
+    '<div style="font-size:11.5px;color:var(--dust);margin-top:4px">♏ scorpio 8th-house sun &nbsp;·&nbsp; '+p.big3.replace(/ /g,' ')+'</div></div>';
+  h+='<div style="margin:12px 18px 0;background:var(--card);border:1px solid var(--line);border-radius:17px;padding:12px 14px 9px;box-shadow:0 1px 2px rgba(0,0,0,.04)">'+
+    '<svg width="100%" height="150" viewBox="0 0 340 150" fill="none" aria-label="two charts, one orbit">'+
+    '<ellipse cx="170" cy="75" rx="152" ry="60" stroke="rgba(168,132,47,.45)" stroke-width="1.2"/>'+
+    '<ellipse cx="170" cy="75" rx="100" ry="38" stroke="'+(p.timeKnown?'rgba(74,58,94,.45)':'rgba(74,58,94,.2)')+'" stroke-width="1.2"'+(p.timeKnown?'':' stroke-dasharray="4 4"')+'/>'+
+    '<text x="170" y="81" text-anchor="middle" fill="#A8842F" font-size="16">✦</text>'+
+    '<circle cx="60" cy="47" r="8" fill="#A8842F"/><text x="60" y="50.5" text-anchor="middle" fill="#fff" font-size="8.5">☽</text>'+
+    '<circle cx="290" cy="100" r="8" fill="#A8842F"/><text x="290" y="103.5" text-anchor="middle" fill="#fff" font-size="8.5">☉</text>'+
+    '<circle cx="248" cy="42" r="8" fill="#A8842F"/><text x="248" y="45.5" text-anchor="middle" fill="#fff" font-size="8.5">♀</text>'+
+    '<circle cx="92" cy="102" r="8" fill="#4a3a5e"/><text x="92" y="105.5" text-anchor="middle" fill="#fff" font-size="8.5">♀</text>'+
+    '<circle cx="226" cy="106" r="8" fill="#4a3a5e"/><text x="226" y="109.5" text-anchor="middle" fill="#fff" font-size="8.5">☉</text>'+
+    '<circle cx="118" cy="44" r="8" fill="#4a3a5e"/><text x="118" y="47.5" text-anchor="middle" fill="#fff" font-size="8.5">☽</text>'+
+    '<path d="M92 102 L60 47" stroke="rgba(168,132,47,.5)" stroke-width="1" stroke-dasharray="3 3"/>'+
+    '<path d="M226 106 L290 100" stroke="rgba(74,58,94,.4)" stroke-width="1" stroke-dasharray="3 3"/>'+
+    '</svg>'+
+    '<div style="display:flex;justify-content:center;gap:16px;font-size:10px;color:var(--dust);padding-top:2px"><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#A8842F;margin-right:4px"></i>you</span><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#4a3a5e;margin-right:4px"></i>'+esc(p.name)+(p.timeKnown?'':' (dashed = no time)')+'</span><span style="color:var(--faint)">dotted = the crossings</span></div></div>';
+  h+='<div class="seg" role="tablist">'+['synastry','chart','journal'].map(function(t){return '<button data-tab="'+t+'"'+(fileTab===t?' class="on"':'')+' role="tab" aria-selected="'+(fileTab===t)+'">'+t+'</button>';}).join('')+'</div>';
+
+  if(fileTab==='synastry'){
+    h+='<div class="blkcard"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="nlab">① the crossings — tightest first</span><span style="font-size:10px;color:var(--faint)">orb ≤ 2° = it’s loud</span></div>'+xrows(p.crossings)+'</div>';
+    var overlayList=flipDir==='yours'?p.inYours:p.inTheirs;
+    h+='<div class="blkcard"><div style="display:flex;justify-content:space-between;align-items:center"><span class="nlab">② where they land</span>'+
+      '<span class="flip"><button data-flip="yours"'+(flipDir==='yours'?' class="on"':'')+'>in your houses</button><button data-flip="theirs"'+(flipDir==='theirs'?' class="on"':'')+'>in theirs</button></span></div>'+
+      (overlayList?xrows(overlayList):'<div style="padding:16px 4px 6px;text-align:center"><div style="font-size:17px">☽</div><div class="se" style="font-style:italic;font-size:14px;margin-top:4px">their houses are off</div><div style="font-size:11px;color:var(--dust);margin-top:3px;line-height:1.5">no birth time = no ascendant = no houses.<br>the app doesn’t fake it. get the time, this fills in.</div></div>')+'</div>';
+    if(p.note)h+='<div class="parchnote">'+p.note+'</div>';
+  } else if(fileTab==='chart'){
+    h+='<div class="blkcard"><div class="nlab" style="margin-bottom:6px">their placements'+(p.timeKnown?'':' — noon chart, houses off')+'</div>'+
+      p.placements.map(function(pl){return '<div class="xrow" style="align-items:center"><span style="flex:1;font-size:13px;font-weight:600">'+esc(pl[0])+'</span><span class="se" style="font-style:italic;font-size:14px">'+esc(pl[1])+'</span></div>';}).join('')+'</div>';
+    h+='<div class="parchnote">✧ tap a placement in the real app to read it — placement meanings come from the 240-row reference layer, voiced fresh.</div>';
+  } else {
+    h+='<div class="blkcard"><div class="nlab" style="margin-bottom:8px">the record</div>'+
+      '<div class="xrow"><span class="xgl">☽</span><span style="flex:1"><span style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700">jul 3 · during moon □ their venus</span><span class="se xnm" style="display:block;margin-top:2px">"said i was being distant. i was being accurate."</span></span></div>'+
+      '<div class="xrow"><span class="xgl">✦</span><span style="flex:1"><span style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700">jun 28 · venus △ moon exact</span><span class="se xnm" style="display:block;margin-top:2px">"okay fine. it was a good day."</span></span></div></div>'+
+      '<div class="parchnote">✧ entries auto-stamp the sky between you — so the pattern has receipts.</div>';
+  }
+  el('fileBody').innerHTML=h;
+}
+
+/* ---------- add someone ---------- */
+var afHouse='porphyry', afTimeUnknown=false;
+function wireAdd(){
+  el('afUnknown').addEventListener('click',function(){
+    afTimeUnknown=!afTimeUnknown;
+    this.classList.toggle('on',afTimeUnknown);
+    this.setAttribute('aria-checked',String(afTimeUnknown));
+    el('afTime').disabled=afTimeUnknown;
+    if(afTimeUnknown)el('afTime').value='';
+  });
+  el('afHouses').addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b)return;
+    afHouse=b.dataset.h;
+    this.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b);});
+  });
+  el('afSave').addEventListener('click',function(){
+    var name=(el('afName').value.trim()||'someone').toLowerCase();
+    var role=el('afRole').value.trim()||'new entanglement';
+    var accents=['#7BB0C4','#86946A','#C08497','#8A9EC9'];
+    PEOPLE.push({id:'p'+Date.now(),name:name,role:role,cat:'talking',accent:accents[PEOPLE.length%accents.length],sun:'✦',
+      big3:afTimeUnknown?'☉ ✦  ☽ ✦  ↑ —':'☉ ✦  ☽ ✦  ↑ ✦',
+      timeKnown:!afTimeUnknown,houseSystem:afHouse,archived:false,tag:null,
+      chip:afTimeUnknown?'birth time unknown · houses off':null,
+      crossings:[{gl:'✦',nm:'computing the crossings…',orb:'',tight:false,sub:'chart computes once from date + city, then this fills in instantly.'}],
+      inYours:[{gl:'✦',nm:'mapping their planets into your houses…',sub:'one compute, cached forever.'}],
+      inTheirs:afTimeUnknown?null:[{gl:'✦',nm:'mapping your planets into their houses…',sub:'one compute, cached forever.'}],
+      note:afTimeUnknown?'☽ <b>one honest note:</b> no birth time yet — their chart runs at noon, houses + rising stay off until you charm it out of them.':null,
+      placements:[['☉ sun','computing…']]});
+    el('afName').value='';el('afRole').value='';el('afDate').value='';el('afPlace').value='';el('afTime').value='';
+    renderHome();nav('home');
+    toast('plugged in ✦ crossings incoming');
+  });
+}
+
+/* ---------- global wiring ---------- */
+document.addEventListener('click',function(e){
+  var open=e.target.closest('[data-open]');
+  if(open){activeId=open.dataset.open;fileTab='synastry';flipDir='yours';renderFile();nav('file');return;}
+  var go=e.target.closest('[data-nav]');
+  if(go){nav(go.dataset.nav);return;}
+  var tab=e.target.closest('[data-tab]');
+  if(tab){fileTab=tab.dataset.tab;renderFile();return;}
+  var fl=e.target.closest('[data-flip]');
+  if(fl){flipDir=fl.dataset.flip;renderFile();return;}
+});
+el('eye').addEventListener('click',function(){hidden=!hidden;renderHome();toast(hidden?'orbit hidden 👁':'welcome back ✦');});
+
+renderHome();
+wireAdd();
+})();
+</script>
