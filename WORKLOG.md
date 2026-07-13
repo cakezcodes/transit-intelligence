@@ -29,6 +29,21 @@ Deployed the `sky-snapshot` Supabase edge function (Celestine via npm specifier)
 
 Next: Phase D step 3 (Illuminations screen — buildSkyState + ranking + voiced paragraphs).
 
+## 2026-07-13 — Orbit tab data layer (Phase D step 7 foundation)
+
+Adopted the chart-comparison machinery from the July-12 Orbit handoff, adapted to the locked stack (Celestine + existing schema; that doc's circular-natal-horoscope-js suggestion and its "9-table schema applied" claim were rejected — the live DB is the CLAUDE.md schema).
+
+### Decisions
+
+- `people.house_system` (default porphyry) + `people.time_known` — house system is per-person, never global; noon-default charts suppress ASC/MC/houses entirely.
+- New `synastry` table: one cached row per pair (person_a < person_b), overlays JSONB (whose planets in whose houses — joins `synastry_meanings` by planet x house) + cross_aspects JSONB (tightest first), RLS by owner.
+- Real IANA timezone resolver (`lib/astro/timezoneOffset.mjs`, Intl-based, DST-correct) replaced the Syd-only hardcode — arbitrary roster people can now be charted.
+- `lib/astro/synastry.mjs` is pure math (overlays + cross-aspects); `npm run synastry:compute <a> <b>` computes and caches.
+
+### Notes
+
+Roster people (Christian, Zay, Tab, Eryn) need birth data entered into `people` before their charts/synastry can compute. Composites (midpoint charts) deferred to phase 2, per the handoff's own ordering.
+
 ## 2026-07-02 — Bestie Voice Skill Lock
 
 Locked `skills/bestie-voice/SKILL.md` as the canonical Transit Intelligence voice skill.
