@@ -1276,8 +1276,8 @@ function big3(p){
 function renderOrbit(){
   const m=S.me;
   document.getElementById('orbitMe').innerHTML= m.date?
-   `<div style="display:flex;gap:14px;align-items:center"><div class="disc">${(m.name||'y')[0]}</div>
-      <div><div style="font-size:18px;font-weight:700">${m.name||'you'}</div><div style="font-size:12px;color:var(--dust)">${m.place||'—'} · ${m.date}</div></div></div>
+   `<div style="display:flex;gap:14px;align-items:center"><div class="disc">${esc((m.name||'y')[0])}</div>
+      <div><div style="font-size:18px;font-weight:700">${esc(m.name||'you')}</div><div style="font-size:12px;color:var(--dust)">${esc(m.place||'—')} · ${m.date}</div></div></div>
     ${miniWheel(m.date,190)}
     ${big3(m)}<button class="btn g" onclick="nav('natal')">open my full chart ›</button>`
    :`<div class="empty"><div class="eg">☉</div><div class="et">no chart yet</div>
@@ -1286,8 +1286,8 @@ function renderOrbit(){
   document.getElementById('orbitList').innerHTML= S.people.length? S.people.map((p,i)=>{
     const n=S.entries.filter(e=>e.who===p.name).length;
     return `<button class="row" onclick="openPerson(${i})">
-      <span class="disc" style="flex:0 0 40px;height:40px;font-size:16px">${(p.name||'?')[0]}</span>
-      <span><span class="t">${p.name}</span><div class="s">${p.rel||'orbit'}${p.date?` · ☉ ${SIGNS[signOf(sunLon(parse(p.date)))]} · ☽ ${SIGNS[signOf(moonLon(parse(p.date)))]}`:' · no chart'}${n?` · ${n} logged`:''}</div></span>
+      <span class="disc" style="flex:0 0 40px;height:40px;font-size:16px">${esc((p.name||'?')[0])}</span>
+      <span><span class="t">${esc(p.name)}</span><div class="s">${esc(p.rel||'orbit')}${p.date?` · ☉ ${SIGNS[signOf(sunLon(parse(p.date)))]} · ☽ ${SIGNS[signOf(moonLon(parse(p.date)))]}`:' · no chart'}${n?` · ${n} logged`:''}</div></span>
       <span class="c">›</span></button>`;}).join('')
    :`<div class="card"><div class="empty" style="padding:20px 8px"><div class="eg">☍</div><div class="et">orbit's empty</div>
       <div class="ed">astrology, organized around you ☍</div></div></div>`;
@@ -1307,9 +1307,9 @@ function openPerson(i){
   const p=S.people[i];
   const es=S.entries.filter(e=>e.who===p.name);
   document.getElementById('pBody').innerHTML=
-   `<div class="eb"><span class="cer">☍ · </span>${p.rel||'orbit'}<span class="cer"> · ☍</span></div>
-    <div class="h1 sf">${p.name}<span class="k">✦</span></div>
-    <div class="h1s">${p.place||'—'} ${p.date?'· '+p.date:''}</div>
+   `<div class="eb"><span class="cer">☍ · </span>${esc(p.rel||'orbit')}<span class="cer"> · ☍</span></div>
+    <div class="h1 sf">${esc(p.name)}<span class="k">✦</span></div>
+    <div class="h1s">${esc(p.place||'—')} ${p.date?'· '+p.date:''}</div>
     ${p.date?`<div class="pnl">${miniWheel(p.date,190)}${big3(p)}</div>`:'<div class="card"><div class="empty"><div class="eg">☉</div><div class="et">no chart</div><div class="ed">add their birth date ✧</div></div></div>'}
     <div class="lab">their sky today</div>
     <div class="card">${p.date?theirSky(p):'<div style="font-size:13px;color:var(--dust)">add their birth date ✧</div>'}</div>
@@ -1318,8 +1318,8 @@ function openPerson(i){
       <button class="row" onclick="openComp(${i})"><span class="ic">◍</span><span><span class="t">composite</span><div class="s">the third chart</div></span><span class="c">›</span></button>`:''}
     <div class="lab">log an interaction</div>
     <div class="card"><div class="ilog">${INTER.map(t=>
-      `<button onclick="openInter('${p.name}','${t[1]}')"><div class="g">${t[0]}</div><div class="n">${t[1]}</div></button>`).join('')}</div></div>
-    <div class="lab">the record · ${p.name} · ${es.length}</div>
+      `<button onclick="openInter('${esc(jsq(p.name))}','${t[1]}')"><div class="g">${t[0]}</div><div class="n">${t[1]}</div></button>`).join('')}</div></div>
+    <div class="lab">the record · ${esc(p.name)} · ${es.length}</div>
     ${es.length?es.map(entHTML).join(''):'<div class="card" style="font-size:13px;color:var(--dust)">nothing logged. every interaction, pull, and pattern about them lands here — cross-referenced with the sky it happened under.</div>'}`;
   nav('person');
 }
@@ -1335,7 +1335,7 @@ function openSyn(i){
       hits.push([`your ${x} ${nm} their ${y}`,mn,Math.abs(df-ang)]);});}));
   hits.sort((x,y)=>x[2]-y[2]);
   sheet(`<div class="gb"></div><div class="cap" style="font-size:9.5px;color:var(--deep);text-align:center">♡ · synastry · ♡</div>
-    <div class="sf" style="font-size:23px;text-align:center;margin-top:3px">you & ${p.name}</div>
+    <div class="sf" style="font-size:23px;text-align:center;margin-top:3px">you & ${esc(p.name)}</div>
     <div style="font-size:11.5px;color:var(--dust);text-align:center;margin-top:3px">${hits.length} contacts between the personal planets</div>
     <div class="card">${hits.length?hits.slice(0,8).map(x=>
       `<div class="ex"><button class="exh" onclick="this.parentElement.classList.toggle('open')"><span class="g">♡</span>
@@ -1349,7 +1349,7 @@ function openComp(i){
     if(Math.abs(x-y)>180)m=(m+180)%360;mid[k]=m;});
   sheet(`<div class="gb"></div><div class="cap" style="font-size:9.5px;color:var(--deep);text-align:center">◍ · composite · ◍</div>
     <div class="sf" style="font-size:23px;text-align:center;margin-top:3px">the third chart</div>
-    <div style="font-size:11.5px;color:var(--dust);text-align:center;margin-top:3px">you + ${p.name} as its own being</div>
+    <div style="font-size:11.5px;color:var(--dust);text-align:center;margin-top:3px">you + ${esc(p.name)} as its own being</div>
     <div class="pnl"><div class="card" style="margin:0;border:none;box-shadow:none;padding:0">
       ${Object.keys(mid).slice(0,7).map(k=>{const si=signOf(mid[k]);
         return `<div class="nr"><span class="g">${PGL[k]}</span><span class="n">${k}</span><span class="w2">${SIGNS[si]} ${GLY[si]} · ${degIn(mid[k]).toFixed(0)}°</span></div>`;}).join('')}
