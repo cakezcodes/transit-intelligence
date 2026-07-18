@@ -1,0 +1,17 @@
+/* welcome · account gate — same tokens as the prototype, same type law */
+.wl-wrap{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 32px;position:relative}
+.wl-glow{position:fixed;top:-120px;left:50%;transform:translateX(-50%);width:560px;max-width:150vw;height:340px;border-radius:999px;background:radial-gradient(closest-side,var(--glow),transparent 72%);pointer-events:none;filter:blur(6px);opacity:.7}
+.wl-card{width:100%;max-width:360px;position:relative;z-index:1}
+.wl-caps{font-family:var(--caps);text-transform:uppercase;font-weight:500;letter-spacing:.28em;font-size:10px;color:var(--deep);text-align:center}
+.wl-title{font-family:var(--pf);font-style:italic;text-transform:lowercase;font-weight:600;font-size:34px;text-align:center;margin-top:8px}
+.wl-orn{text-align:center;color:var(--accent);font-size:13px;letter-spacing:.4em;margin:14px 0 6px}
+.wl-sub{text-align:center;font-size:13px;color:var(--dust);margin-bottom:26px}
+.wl-field{margin-top:12px}
+.wl-field label{font-family:var(--caps);text-transform:uppercase;font-weight:600;letter-spacing:.2em;font-size:9px;color:var(--deep);display:block;margin-bottom:6px;margin-left:2px}
+.wl-btn{display:block;width:100%;margin-top:22px;background:var(--accent);color:#fff;border-radius:14px;padding:14px;text-align:center;font-weight:700;font-size:14.5px;transition:transform .26s,opacity .26s}
+.wl-btn:active{transform:scale(.97)}
+.wl-btn[disabled]{opacity:.55}
+.wl-swap{display:block;margin:18px auto 0;font-size:12.5px;color:var(--dust);text-align:center}
+.wl-swap b{color:var(--deep);font-weight:600}
+.wl-err{margin-top:14px;font-size:12.5px;color:#B4543E;text-align:center;line-height:1.5}
+.wl-note{margin-top:16px;background:var(--soft);border:1px solid var(--accent);border-radius:14px;padding:13px 15px;font-size:13px;line-height:1.55;text-align:center}
