@@ -255,7 +255,7 @@ function nav(id){
   if(id==='journal')renderJournal(); if(id==='pat')renderPat(); if(id==='orbit')renderOrbit();
   if(id==='layers')renderLayers(); if(id==='me')renderMe(); if(id==='natal')renderNatal(); if(id==='deck')renderDeck();
 }
-let tt;function toast(m){const t=document.getElementById('toast');t.innerHTML=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2500);}
+let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2500);}
 
 /* ══════════ THEME ══════════ */
 const THEMES=[
@@ -1470,8 +1470,8 @@ function renderShelf(){
            <ol class="spos">${sp.p.map(p=>`<li>${p}</li>`).join('')}</ol>
            <div class="splog">
              <input type="date" value="${key(new Date())}">
-             <input class="ci3" placeholder="cards + read" readonly onclick="openPull(0,'${sp.n.replace(/'/g,"\\'")}')">
-             <button class="lg" onclick="openPull(0,'${sp.n.replace(/'/g,"\\'")}')">log</button>
+             <input class="ci3" placeholder="cards + read" readonly onclick="openPull(0,'${jsq(sp.n)}')">
+             <button class="lg" onclick="openPull(0,'${jsq(sp.n)}')">log</button>
            </div>
          </div></div>`).join('')}`).join('')}
       <div class="lab">the deck</div>
@@ -1548,6 +1548,8 @@ async function getReading(cards,ctx){
 }
 /* escape external text before it joins innerHTML — model output, geocoder rows, cloud rows */
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+/* escape a string embedded inside a single-quoted inline handler — backslashes first */
+const jsq=s=>String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 function aiHTML(t){
   t=esc(t);
   const move=t.match(/the move:([\s\S]*)$/i);
@@ -1635,7 +1637,7 @@ function openSpread(name){
     ${sprLay(sp,past[0]?past[0].cards:null)}
     <ol class="spos">${sp.p.map(p=>`<li>${p}</li>`).join('')}</ol>
     ${past.length?`<div class="lab">you've pulled this ${past.length}×</div>${past.slice(0,2).map(entHTML).join('')}`:''}
-    <button class="btn" onclick="closeSheet();openPull(0,'${name.replace(/'/g,"\\'")}')">✦ lay it down</button>`);
+    <button class="btn" onclick="closeSheet();openPull(0,'${jsq(name)}')">✦ lay it down</button>`);
 }
 
 /* ══════════ CARD SHEET ══════════ */
@@ -1913,16 +1915,16 @@ function entHTML(e){
   return `<div class="ent"><div class="eh"><span class="g">${EG[e.type]||'❦'}</span>
       <div><div class="d">${fmt(parse(e.date))} · ${e.type}</div></div>
       <span class="sky">${e.sky||''}</span></div>
-    ${e.title?`<div class="tt">${e.title}</div>`:''}
-    ${e.body?`<div class="bd">${e.body}</div>`:''}
+    ${e.title?`<div class="tt">${esc(e.title)}</div>`:''}
+    ${e.body?`<div class="bd">${esc(e.body)}</div>`:''}
     ${e.cards&&e.cards.length?`<div class="cds">${e.cards.map(c=>`<img src="${IMG[c.k]}" class="${c.rev?'rv':''}" title="${byKey(c.k).n}">`).join('')}</div>`:''}
     ${e.photos&&e.photos.length?`<div class="ph">${e.photos.map(p=>`<img src="${p}">`).join('')}</div>`:''}
     ${e.meta&&(e.meta.prot||(e.meta.feels&&e.meta.feels.length))?`<div class="chips" style="margin-top:8px">
       ${e.meta.prot?`<span class="tag">${e.meta.prot}</span>`:''}
       ${(e.meta.feels||[]).map(f=>`<span class="tag">${f}</span>`).join('')}
       ${e.meta.cycle?`<span class="tag">◉ ${e.meta.cycle}</span>`:''}</div>`:''}
-    ${e.who?`<div style="font-size:10px;color:var(--faint);margin-top:7px;font-family:var(--caps);letter-spacing:.16em;text-transform:uppercase;font-weight:600">☍ ${e.who}</div>`:''}
-    ${e.ai?`<div class="ai"><div class="al">✦ the read</div>${e.ai.split(/\n\n+/)[0]}</div>`:''}
+    ${e.who?`<div style="font-size:10px;color:var(--faint);margin-top:7px;font-family:var(--caps);letter-spacing:.16em;text-transform:uppercase;font-weight:600">☍ ${esc(e.who)}</div>`:''}
+    ${e.ai?`<div class="ai"><div class="al">✦ the read</div>${esc(e.ai.split(/\n\n+/)[0])}</div>`:''}
     ${e.cards&&e.cards.length?`<button class="btn g sm" style="margin-top:9px" onclick="rereadEntry(${e.id})">${e.ai?'✦ the full read':'✦ read these cards'}</button>`:''}</div>`;
 }
 function renderJournal(){
@@ -2063,7 +2065,7 @@ function renderNatal(){
 function renderMe(){
   document.getElementById('meSw').innerHTML=swHTML();
   const tn=document.getElementById('thName');if(tn)tn.textContent='· '+THEMES[S.accent][0];
-  document.getElementById('meName').innerHTML=(S.me.name||'you')+'<span class="k">✦</span>';
+  document.getElementById('meName').innerHTML=esc(S.me.name||'you')+'<span class="k">✦</span>';
   document.getElementById('meSub').textContent=S.me.date?`${S.me.date} · ${S.me.time||'—'} · ${S.me.place||'—'}`:'the cosmos, made personal';
   const bd=document.getElementById('bdVal');if(bd)bd.textContent=(S.me.date||'add it')+' ›';
   const lv=document.getElementById('layVal');if(lv)lv.textContent=Object.values(LON).filter(Boolean).length+' on ›';
