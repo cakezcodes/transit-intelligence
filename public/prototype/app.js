@@ -1661,7 +1661,7 @@ function openPull(past,spread,pre){
   sheet(`<div class="gb"></div>
     <div class="cap" style="font-size:9.5px;color:var(--deep);text-align:center">✦ · ${past?'restore the record':'log a pull'} · ✦</div>
     <div class="sf" style="font-size:24px;text-align:center;margin-top:3px">${past?'a past night':'what came up'}</div>
-    <div style="font-size:12px;color:var(--dust);text-align:center;margin-top:4px">${spread?'spread · '+spread:'photo it, or pick it ✦'}</div>
+    <div style="font-size:12px;color:var(--dust);text-align:center;margin-top:4px">${spread?'spread · '+esc(spread):'photo it, or pick it ✦'}</div>
     <div class="ob-f" style="margin-top:14px">
       <input id="puD" type="date" value="${today}">
       <input id="puT" placeholder="what was the question?">
