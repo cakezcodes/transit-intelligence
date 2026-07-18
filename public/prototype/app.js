@@ -1830,7 +1830,7 @@ function openCycle(){
     <div style="font-size:11.5px;color:var(--dust);text-align:center;margin-top:3px">one log fills the whole month ✧</div>
     <div class="ob-f" style="margin-top:14px">
       <div><div style="font-size:11px;font-family:var(--caps);letter-spacing:.16em;text-transform:uppercase;color:var(--faint);font-weight:600;margin-bottom:5px">period started</div>
-        <input id="cyS" type="date" value="${last?last.cycle.start:key(new Date())}"></div>
+        <input id="cyS" type="date" value="${last?esc(last.cycle.start):key(new Date())}"></div>
       <div><div style="font-size:11px;font-family:var(--caps);letter-spacing:.16em;text-transform:uppercase;color:var(--faint);font-weight:600;margin-bottom:5px">cycle length · days</div>
         <input id="cyL" type="number" value="${last?last.cycle.len:28}"></div>
       <div><div style="font-size:11px;font-family:var(--caps);letter-spacing:.16em;text-transform:uppercase;color:var(--faint);font-weight:600;margin-bottom:5px">period length · days</div>
@@ -1920,9 +1920,9 @@ function entHTML(e){
     ${e.cards&&e.cards.length?`<div class="cds">${e.cards.map(c=>`<img src="${IMG[c.k]}" class="${c.rev?'rv':''}" title="${byKey(c.k).n}">`).join('')}</div>`:''}
     ${e.photos&&e.photos.length?`<div class="ph">${e.photos.map(p=>`<img src="${p}">`).join('')}</div>`:''}
     ${e.meta&&(e.meta.prot||(e.meta.feels&&e.meta.feels.length))?`<div class="chips" style="margin-top:8px">
-      ${e.meta.prot?`<span class="tag">${e.meta.prot}</span>`:''}
-      ${(e.meta.feels||[]).map(f=>`<span class="tag">${f}</span>`).join('')}
-      ${e.meta.cycle?`<span class="tag">◉ ${e.meta.cycle}</span>`:''}</div>`:''}
+      ${e.meta.prot?`<span class="tag">${esc(e.meta.prot)}</span>`:''}
+      ${(e.meta.feels||[]).map(f=>`<span class="tag">${esc(f)}</span>`).join('')}
+      ${e.meta.cycle?`<span class="tag">◉ ${esc(e.meta.cycle)}</span>`:''}</div>`:''}
     ${e.who?`<div style="font-size:10px;color:var(--faint);margin-top:7px;font-family:var(--caps);letter-spacing:.16em;text-transform:uppercase;font-weight:600">☍ ${esc(e.who)}</div>`:''}
     ${e.ai?`<div class="ai"><div class="al">✦ the read</div>${esc(e.ai.split(/\n\n+/)[0])}</div>`:''}
     ${e.cards&&e.cards.length?`<button class="btn g sm" style="margin-top:9px" onclick="rereadEntry(${e.id})">${e.ai?'✦ the full read':'✦ read these cards'}</button>`:''}</div>`;
