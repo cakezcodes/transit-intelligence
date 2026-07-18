@@ -1,5 +1,32 @@
 # Changelog
 
+## 2026-07-18 — Information architecture rework (feature tabs → daily-life loop)
+
+Reorganized the app around the user's day instead of its feature list. No new visual identity,
+no removed features — this is re-parenting + one synthesizing home + copy/structure reframes.
+
+- **Navigation: 6 → 5 tabs** — `Sky · Life · People · Library · Me`. Record folds into Life.
+  Done via the `TAB` map (sub-views re-parent onto their journey tab) + the tab bar; every
+  existing `nav` id and render function is preserved.
+- **Sky is now a synthesis home.** New `composeToday()` stitches the moon, the plot twist
+  (retrograde/void/season), today's tarot pull, the matched working, and people lighting up
+  into ONE paragraph ("today's intelligence"), followed by "today's mission" and "today's
+  timing" (lean in / hold off). Assembled client-side from existing math and voice-approved
+  strings — no new paid AI call (CLAUDE.md rule 2). The old read/expanded cards remain below
+  as "dive deeper."
+- **Life** = the calendar reframed as a timeline; every day opens its scrapbook
+  (`openDayPage`, already built). New **"what happened?"** chooser (`openWhatHappened()`)
+  fronts the existing loggers — tarot · ritual · journal · dream · sign · mood · photo ·
+  someone · cycle. `openEntry` gained a preset-type arg so dream/sign/mood/photo log directly.
+- **Library** (grimoire) reframed as your archive. **People** (orbit) surfaces "lighting up
+  today" (shared `peopleLightingUp()`, also feeding Sky).
+- **Intelligence engine** — the old "layers" screen, reframed as "what shapes your guidance."
+  `LAYERS` regrouped by data source (🌌 sky · 🪞 chart · 👥 relationships · 📖 life · 🌸 body),
+  each toggle showing "included in …", plus a live "your guidance is currently built from: …"
+  sentence that recomputes as you flip sources. Reached from Me ("intelligence engine") and Life.
+- Verified in headless Chromium: all 5 tabs + the chooser + the engine render, the built-from
+  line updates on toggle, zero JS errors. `npm run build` compiles.
+
 ## 2026-06-25
 
 - Created fresh `transit-intelligence` repo foundation.
