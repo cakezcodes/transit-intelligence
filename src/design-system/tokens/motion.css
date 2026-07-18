@@ -1,0 +1,38 @@
+:root {
+  --ease-pop: cubic-bezier(0.2, 0.6, 0.3, 1);
+  --ease-sheet: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --dur-fast: 0.15s;
+  --dur-base: 0.22s;
+  --dur-slow: 0.3s;
+  --dur-theme: 0.3s;
+
+  --press-scale: 0.96;
+  --press-scale-soft: 0.985;
+
+  --transition-theme: background-color var(--dur-theme) ease, color var(--dur-theme) ease, border-color var(--dur-theme) ease;
+}
+
+@keyframes cc-fadein {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cc-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cc-glowin {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -1,0 +1,25 @@
+:root {
+  --shadow: 0 16px 50px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
+  --small-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-tabbar: 0 10px 30px rgba(0, 0, 0, 0.14);
+  --shadow-sheet: 0 -8px 40px rgba(0, 0, 0, 0.18);
+  --glow-accent: 0 8px 24px var(--accent-soft);
+  --halo: radial-gradient(closest-side, var(--accent-soft), transparent 72%);
+  --shadow-card: var(--shadow);
+  --shadow-contact: var(--small-shadow);
+}
+
+[data-theme="dark"] {
+  --shadow: none;
+  --small-shadow: none;
+  --shadow-card: none;
+  --shadow-contact: none;
+}
+
+[data-theme="afterdark"] {
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --small-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --shadow-contact: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-tabbar: 0 12px 34px rgba(0, 0, 0, 0.5);
+}

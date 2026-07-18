@@ -1,0 +1,17 @@
+:root {
+  --r-xs: 6px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 14px;
+  --r-xl: 16px;
+  --r-2xl: 18px;
+  --r-3xl: 22px;
+  --r-4xl: 24px;
+  --r-sheet: 26px;
+  --r-pill: 999px;
+
+  --r-button: var(--r-xl);
+  --r-input: var(--r-xl);
+  --r-card: var(--r-2xl);
+  --r-panel: var(--r-3xl);
+}

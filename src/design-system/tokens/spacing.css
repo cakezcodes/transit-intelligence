@@ -1,0 +1,23 @@
+:root {
+  --space-0: 0;
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 6px;
+  --space-4: 8px;
+  --space-5: 10px;
+  --space-6: 12px;
+  --space-7: 14px;
+  --space-8: 16px;
+  --space-10: 20px;
+  --space-12: 24px;
+  --space-14: 28px;
+  --space-16: 32px;
+  --space-20: 40px;
+
+  --gutter: 16px;
+  --stack-gap: 10px;
+  --section-gap: 18px;
+  --content-max: 460px;
+  --content-max-wide: 600px;
+  --tabbar-clearance: 110px;
+}
