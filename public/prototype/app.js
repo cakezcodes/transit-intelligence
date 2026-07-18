@@ -197,36 +197,39 @@ function dailyRead(d){
 }
 
 /* ══════════ LAYERS ══════════ */
+/* IA rework: regrouped by where the data COMES FROM (Syd's data-flow taxonomy), not by
+   astrology jargon. Every `id` is preserved — the events engine keys off these. `inc` =
+   which surfaces each source feeds, shown as "included in" microcopy + the live built-from line. */
 const LAYERS=[
- {g:'the almanac',items:[
-  {id:'lunation',n:'new & full moons',d:'the lunations, named',c:'var(--accent)',on:1,gl:'◑'},
-  {id:'sabbat',n:'sabbats',d:'the eight power days',c:'var(--accent)',on:1,gl:'✧'},
-  {id:'retro',n:'retrogrades & stations',d:'the plot twists',c:'var(--accent)',on:1,gl:'℞'},
-  {id:'ingress',n:'sun ingresses',d:'season changes, sign by sign',c:'var(--accent)',on:1,gl:'⇢'},
-  {id:'lunar',n:'lunar transits',d:'the moon\'s walk through the signs',c:'var(--accent)',on:1,gl:'☽'},
-  {id:'void',n:'void of course',d:'the dead zones',c:'#9A9A9F',on:1,gl:'⊘'},
-  {id:'venus',n:'venus windows',d:'magnetism, love, the flavor of it',c:'#C77E93',on:0,gl:'♀︎'}]},
- {g:'transit intelligence · just you',items:[
-  {id:'natal',n:'transits to natal',d:'direct hits to your chart',c:'var(--accent)',on:1,gl:'✦'},
-  {id:'lunret',n:'lunar return',d:'the moon comes home',c:'var(--accent)',on:1,gl:'☾'},
-  {id:'prof',n:'annual profections',d:'the house running your year',c:'var(--accent)',on:0,gl:'◈'},
-  {id:'firdaria',n:'firdaria · timelords',d:'who holds the keys',c:'#A8842F',on:0,gl:'♄'},
-  {id:'zr',n:'zodiacal releasing',d:'chapters & peaks',c:'var(--accent)',on:0,gl:'⟳'},
-  {id:'rulers',n:'house rulers on the move',d:'where your ruler walks',c:'var(--accent)',on:0,gl:'⌂'},
-  {id:'sixmo',n:'six-month plan',d:'new moons as checkpoints',c:'var(--accent)',on:1,gl:'◐'}]},
- {g:'energetic entanglements',items:[
-  {id:'theirs',n:'their transits',d:'when they\'re peaking or unstable',c:'#C77E93',on:1,gl:'☍'},
-  {id:'syn',n:'synastry hits',d:'the sky touches you both',c:'var(--accent)',on:0,gl:'♡'},
-  {id:'comp',n:'composite transits',d:'the third chart',c:'var(--accent)',on:0,gl:'◍'},
-  {id:'inter',n:'interactions',d:'intimacy, contact, conflict — logged',c:'var(--accent)',on:1,gl:'◉'}]},
- {g:'venus vs uterus',items:[
-  {id:'cycle',n:'cycle & ovulation',d:'period · fertile · luteal · pms',c:'var(--accent)',on:1,gl:'◉'},
-  {id:'body',n:'body-sync days',d:'full moons rule body parts',c:'#C77E93',on:0,gl:'♀︎'},
-  {id:'beauty',n:'beauty timing',d:'hair, skin, ink — by moon phase',c:'var(--accent)',on:0,gl:'✧'}]},
- {g:'the grimoire',items:[
-  {id:'ritual',n:'rituals & workings',d:'planned & performed',c:'#A8842F',on:1,gl:'✧'},
-  {id:'pull',n:'tarot pulls',d:'every card, on its date',c:'var(--accent)',on:1,gl:'✦'},
-  {id:'entry',n:'journal entries',d:'notes · photos · signs',c:'var(--accent)',on:1,gl:'❦'}]}];
+ {g:'🌌 the sky',items:[
+  {id:'lunar',n:'the moon',d:'the moon\'s walk through the signs',c:'var(--accent)',on:1,gl:'☽',inc:['today','timeline','ai','calendar']},
+  {id:'ingress',n:'the sun & seasons',d:'season changes, sign by sign',c:'var(--accent)',on:1,gl:'⇢',inc:['today','calendar']},
+  {id:'lunation',n:'new & full moons',d:'the lunations, named',c:'var(--accent)',on:1,gl:'◑',inc:['today','timeline','calendar']},
+  {id:'retro',n:'retrogrades & stations',d:'the plot twists',c:'var(--accent)',on:1,gl:'℞',inc:['today','ai','calendar']},
+  {id:'void',n:'void of course',d:'the dead zones',c:'#9A9A9F',on:1,gl:'⊘',inc:['today','timing','calendar']},
+  {id:'sabbat',n:'sabbats',d:'the eight power days',c:'var(--accent)',on:1,gl:'✧',inc:['timeline','calendar']},
+  {id:'venus',n:'venus windows',d:'magnetism, love, the flavor of it',c:'#C77E93',on:0,gl:'♀︎',inc:['calendar']}]},
+ {g:'🪞 your chart',items:[
+  {id:'natal',n:'transits to natal',d:'direct hits to your chart',c:'var(--accent)',on:1,gl:'✦',inc:['today','ai','calendar']},
+  {id:'lunret',n:'lunar return',d:'the moon comes home',c:'var(--accent)',on:1,gl:'☾',inc:['today','calendar']},
+  {id:'prof',n:'annual profections',d:'the house running your year',c:'var(--accent)',on:0,gl:'◈',inc:['calendar']},
+  {id:'firdaria',n:'firdaria · timelords',d:'who holds the keys',c:'#A8842F',on:0,gl:'♄',inc:['calendar']},
+  {id:'zr',n:'zodiacal releasing',d:'chapters & peaks',c:'var(--accent)',on:0,gl:'⟳',inc:['calendar']},
+  {id:'rulers',n:'house rulers on the move',d:'where your ruler walks',c:'var(--accent)',on:0,gl:'⌂',inc:['calendar']},
+  {id:'sixmo',n:'six-month plan',d:'new moons as checkpoints',c:'var(--accent)',on:1,gl:'◐',inc:['timeline','calendar']}]},
+ {g:'👥 relationships',items:[
+  {id:'theirs',n:'their transits',d:'when they\'re peaking or unstable',c:'#C77E93',on:1,gl:'☍',inc:['today','people','calendar']},
+  {id:'syn',n:'synastry hits',d:'the sky touches you both',c:'var(--accent)',on:0,gl:'♡',inc:['people','calendar']},
+  {id:'comp',n:'composite transits',d:'the third chart',c:'var(--accent)',on:0,gl:'◍',inc:['people','calendar']},
+  {id:'inter',n:'interactions',d:'intimacy, contact, conflict — logged',c:'var(--accent)',on:1,gl:'◉',inc:['timeline','people','ai']}]},
+ {g:'📖 your life',items:[
+  {id:'pull',n:'tarot pulls',d:'every card, on its date',c:'var(--accent)',on:1,gl:'✦',inc:['today','timeline','ai','patterns']},
+  {id:'ritual',n:'rituals & workings',d:'planned & performed',c:'#A8842F',on:1,gl:'✧',inc:['timeline','calendar']},
+  {id:'entry',n:'journal · dreams · signs · moods',d:'notes · photos · what you clocked',c:'var(--accent)',on:1,gl:'❦',inc:['timeline','ai','patterns']}]},
+ {g:'🌸 the body',items:[
+  {id:'cycle',n:'cycle & ovulation',d:'period · fertile · luteal · pms',c:'var(--accent)',on:1,gl:'◐',inc:['today','timeline','calendar']},
+  {id:'body',n:'body-sync days',d:'full moons rule body parts',c:'#C77E93',on:0,gl:'♀︎',inc:['calendar']},
+  {id:'beauty',n:'beauty timing',d:'hair, skin, ink — by moon phase',c:'var(--accent)',on:0,gl:'✧',inc:['calendar']}]}];
 let LON={}; LAYERS.forEach(g=>g.items.forEach(i=>LON[i.id]=!!i.on));
 const layMeta=id=>{for(const g of LAYERS)for(const i of g.items)if(i.id===id)return i;};
 
@@ -245,7 +248,8 @@ const fmt=d=>d.toLocaleDateString('en-us',{month:'short',day:'numeric'}).toLower
 const fmtL=d=>d.toLocaleDateString('en-us',{weekday:'long',month:'long',day:'numeric'}).toLowerCase();
 
 /* ══════════ NAV ══════════ */
-const TAB={sky:'sky',cal:'cal',layers:'cal',event:'cal',grim:'grim',lib:'grim',deck:'grim',pat:'grim',journal:'journal',orbit:'orbit',person:'orbit',me:'me',natal:'me'};
+/* IA rework: 6 feature tabs → 5 journey tabs. sub-views re-parent onto the tab they belong to. */
+const TAB={sky:'sky',cal:'life',layers:'life',event:'life',journal:'life',orbit:'people',person:'people',grim:'library',lib:'library',deck:'library',pat:'library',me:'me',natal:'me'};
 function nav(id){
   document.querySelectorAll('.v').forEach(v=>v.classList.remove('on'));
   document.getElementById('v-'+id).classList.add('on');
@@ -799,9 +803,45 @@ const LOCATE=[['the magician','the power surfacing','the source it comes from'],
  ['wheel of fortune','the cycle you know is turning','the karmic root spinning it']];
 
 /* ══════════ SKY VIEW ══════════ */
+/* ══════════ TODAY — the synthesis (assembled from the same math, voiced) ══════════ */
+/* who in orbit is getting hit by today's sky — shared by Sky (notice) and Orbit (investigate) */
+function peopleLightingUp(d){
+  const si=signOf(moonLon(d));
+  const out=[];
+  (S.people||[]).forEach((p,i)=>{
+    if(!p.date)return;
+    const nb=parse(p.date), nsun=signOf(sunLon(nb)), nmoon=signOf(moonLon(nb));
+    let note=null;
+    if(si===nsun)note='moon’s sitting on their sun — they’re feeling extremely themselves today.';
+    else if(si===nmoon)note='lunar return for them — raw, resetting, and won’t admit it.';
+    if(note)out.push({i,name:p.name,rel:p.rel,note});
+  });
+  return out;
+}
+/* ONE paragraph that connects the moon, the plot twist, your cards, the working, and your people —
+   stitched from voice-approved strings (MOOD/SIGN_READ) so it stays on-voice by construction. */
+function composeToday(d){
+  const p=phase(d),pn=phaseName(p),ms=SIGNS[signOf(moonLon(d))],ss=SIGNS[signOf(sunLon(d))];
+  const vd=voidWindow(d);
+  const rx=['mercury','venus','mars','jupiter','saturn'].filter(x=>isRx(x,d));
+  const pull=(S.entries||[]).find(e=>e.type==='pull'&&e.date===key(d)&&e.cards&&e.cards.length);
+  const rit=RIT.find(x=>x.ph.includes(pn))||RIT[0];
+  const ppl=peopleLightingUp(d);
+  const bits=[];
+  bits.push(`the moon’s in <b>${ms} ${GLY[SIGNS.indexOf(ms)]}</b>, so ${MOOD[pn].toLowerCase()} ${SIGN_READ[ms][1]}`);
+  if(rx.length)bits.push(`${rx.map(x=>PGL[x]+' '+x).join(' + ')} ${rx.length>1?'are':'is'} retrograde, so that whole department is in review, not launch — don’t force the redo into a first draft.`);
+  else if(vd.active)bits.push(`heads up — the moon goes void in ~${vd.hrs}h, and anything you swear to in that window just evaporates. draft it, don’t send it. ⏳`);
+  else bits.push(`the sun’s still cooking in <b>${ss}</b>, and that’s the background hum under all of it.`);
+  if(pull){const top=byKey(pull.cards[0].k);if(top)bits.push(`and your <b>${esc(top.n)}</b> pull${pull.cards[0].rev?' (reversed)':''} is saying the exact same thing from a different mouth.`);}
+  bits.push(`if you’re moving energy today, <b>${esc(rit.n)}</b> is the working that actually fits this sky.`);
+  if(ppl.length)bits.push(`also — <b>${esc(ppl[0].name)}</b> is lit up right now, so don’t act shocked when they text.`);
+  return bits.join(' ');
+}
 function renderSky(){
   const d=new Date(); const p=phase(d),pn=phaseName(p),ml=moonLon(d),si=signOf(ml),sl=sunLon(d),ssi=signOf(sl);
   const r=dailyRead(d), vd=voidWindow(d), ill=Math.round((1-Math.cos(2*Math.PI*p))/2*100);
+  const rxList=['mercury','venus','mars','jupiter','saturn'].filter(x=>isRx(x,d));
+  const ppl=peopleLightingUp(d);
   document.getElementById('skyDate').innerHTML=fmtL(d);
 
   /* moon hero + 7-day phase ring */
@@ -819,6 +859,19 @@ function renderSky(){
       ${vd.active?`<div class="vd">⊘ void · ${vd.hrs}h — don't send it</div>`:''}
       <div class="mring">${ring}</div>
     </div>
+    <div class="lab">today's intelligence</div>
+    <div class="intel"><div class="il-h">✦ the through-line</div>
+      <p>${composeToday(d)}</p></div>
+    <div class="mission"><div class="ms-k">today's mission</div>
+      <div class="ms-v">${r.move}</div></div>
+    <div class="lab">today's timing</div>
+    <div class="timing">
+      <div class="tm-row good"><span class="tm-g">✧</span><div><b>lean in</b><span>${p<.5?'build, add, draw it in — the moon\'s waxing.':'cut, release, clear it out — the moon\'s waning.'} ${SIGN_READ[SIGNS[si]][0]}.</span></div></div>
+      <div class="tm-row bad"><span class="tm-g">⊘</span><div><b>hold off</b><span>${vd.active?`void moon ~${vd.hrs}h out — don't send, sign, or swear to a single thing.`:(rxList.length?`${rxList.map(x=>x+' ℞').join(' · ')} — review it, don't relaunch it.`:'clear skies — no traps in the timing today.')}</span></div></div>
+    </div>
+    ${ppl.length?`<div class="lab">people lighting up <button class="lk" onclick="nav('orbit')">orbit ›</button></div>
+      <div class="lit">${ppl.map(x=>`<button class="lit-row" onclick="openPerson(${x.i})"><span class="disc" style="flex:0 0 34px;height:34px;font-size:14px">${esc((x.name||'?')[0])}</span><span><span class="t">${esc(x.name)}</span><div class="s">${x.note}</div></span><span class="c">›</span></button>`).join('')}</div>`:''}
+    <div class="lab">dive deeper <button class="lk" onclick="openRead()">the full read ›</button></div>
     <button class="read" onclick="openRead()" style="width:100%;text-align:left">
       <div class="rl">✦ today's read <span style="margin-left:auto;color:var(--faint);font-weight:400">tap for the full sky ›</span></div>
       <p>${r.l1}</p><p>${r.l2}</p>
@@ -1157,18 +1210,35 @@ function openDayPage(k){
       <div style="font-size:12.5px;color:var(--dust);margin-top:5px;line-height:1.6">${rit.d||''}</div></div>
     <div class="lab">the record</div>
     ${jn.length?jn.map(e=>entHTML(e)).join(''):`<div class="card" style="font-size:13px;color:var(--dust)">nothing written for this day yet.</div>`}
-    <button class="btn ghost" style="margin-top:12px;width:100%" onclick="closeDayPage();nav('journal')">record this day ✎</button>`;
+    <button class="btn ghost" style="margin-top:12px;width:100%" onclick="closeDayPage();openWhatHappened('${k}')">＋ add to this day ✎</button>`;
   document.getElementById('dayPage').classList.add('on');
   document.getElementById('dpBody').scrollTop=0;
 }
 function closeDayPage(){document.getElementById('dayPage').classList.remove('on');}
+const INC={today:'today',timeline:'timeline',ai:'ai summaries',calendar:'calendar',people:'people',patterns:'patterns',timing:'timing'};
+/* the live sentence — these switches decide what the app actually pays attention to */
+function builtFrom(){
+  const parts=[];
+  if(LON.lunar)parts.push('🌙 moon');
+  if(LON.ingress)parts.push('☀️ sun');
+  if(LON.retro)parts.push('℞ retrogrades');
+  if(LON.natal)parts.push('✦ your chart');
+  if(LON.pull)parts.push('🃏 tarot');
+  if(LON.entry)parts.push('📖 journal');
+  if(LON.ritual)parts.push('🕯️ rituals');
+  if(LON.theirs||LON.inter)parts.push('💕 relationships');
+  if(LON.cycle)parts.push('🌸 cycle');
+  return `<div class="lab">🤖 what shapes your guidance</div>
+    <div class="builtfrom"><b>your guidance is currently built from:</b><br>${parts.length?parts.join(' · '):'nothing yet — flip a few on ✧'}</div>`;
+}
 function renderLayers(){
   document.getElementById('layerGroups').innerHTML=LAYERS.map(g=>
    `<div class="lab">${g.g}</div><div class="card">${g.items.map(i=>
-     `<button class="lay" onclick="LON['${i.id}']=!LON['${i.id}'];renderLayers();toast('${i.n} ${LON[i.id]?'off':'on'}')">
+     `<button class="lay" onclick="LON['${i.id}']=!LON['${i.id}'];renderLayers();toast('${jsq(i.n)} ${LON[i.id]?'off':'on'}')">
         <span class="lg" style="color:${i.c}">${i.gl}</span>
-        <span class="ln">${i.n}<div class="ld">${i.d}</div></span>
-        <span class="tog${LON[i.id]?' on':''}"></span></button>`).join('')}</div>`).join('');
+        <span class="ln">${i.n}<div class="ld">${i.d}</div>${i.inc?`<div class="linc">included in · ${i.inc.map(x=>INC[x]||x).join(' · ')}</div>`:''}</span>
+        <span class="tog${LON[i.id]?' on':''}"></span></button>`).join('')}</div>`).join('')
+   + builtFrom();
 }
 function openEv(dk,id){
   const d=parse(dk), ev=evForDate(d).find(e=>e.id===id)||{t:'the sky',s:'',lay:'lunar',gl:'☽'};
@@ -1283,6 +1353,12 @@ function renderOrbit(){
    :`<div class="empty"><div class="eg">☉</div><div class="et">no chart yet</div>
       <div class="ed">the cosmos, made personal ✦</div>
       <button class="btn" onclick="obReplay()">cast my chart</button></div>`;
+  /* who's getting hit by today's sky — the same signal Sky surfaces, here to investigate */
+  const lit=peopleLightingUp(new Date());
+  const litLab=document.getElementById('orbitLitLab');
+  document.getElementById('orbitLit').innerHTML= lit.length? lit.map(x=>
+    `<button class="lit-row" onclick="openPerson(${x.i})"><span class="disc" style="flex:0 0 34px;height:34px;font-size:14px">${esc((x.name||'?')[0])}</span><span><span class="t">${esc(x.name)}</span><div class="s">${x.note}</div></span><span class="c">›</span></button>`).join(''):'';
+  if(litLab)litLab.style.display=lit.length?'':'none';
   document.getElementById('orbitList').innerHTML= S.people.length? S.people.map((p,i)=>{
     const n=S.entries.filter(e=>e.who===p.name).length;
     return `<button class="row" onclick="openPerson(${i})">
@@ -1764,7 +1840,7 @@ function rereadEntry(id){
 }
 
 /* ══════════ ENTRIES ══════════ */
-let entPhotos=[], interSel=null, interWho=null;
+let entPhotos=[], interSel=null, interWho=null, entType='note';
 
 /* ── log an interaction with someone in orbit (intimacy, contact, conflict…) */
 function openInter(who,kind){
@@ -1861,29 +1937,54 @@ function saveCycle(){
 }
 
 /* ── new entry (note / working) */
-function openEntry(dk,who){
-  entPhotos=[];
+/* the "what happened?" chooser — users think in events, not database tables.
+   every option routes to a flow that already exists. */
+function openWhatHappened(dk){
+  const D=dk||'';
+  const opts=[
+   ['✦','tarot','pull or log a spread',`openPull()`],
+   ['✧','ritual','a working you did',`openEntry('${D}',null,'ritual')`],
+   ['❦','journal','what happened today',`openEntry('${D}',null,'note')`],
+   ['☾','a dream','before it fades',`openEntry('${D}',null,'dream')`],
+   ['✷','a sign','111, a feather, a song',`openEntry('${D}',null,'sign')`],
+   ['♡','mood','how you actually feel',`openEntry('${D}',null,'mood')`],
+   ['◉','photo','altar, spread, the sky',`openEntry('${D}',null,'photo')`],
+   ['☍','someone','a text, a link, a fight',`openInter(null,'intimacy')`],
+   ['◐','cycle','period, ovulation, pms',`openCycle()`]];
+  sheet(`<div class="gb"></div>
+    <div class="cap" style="font-size:9.5px;color:var(--deep);text-align:center">❦ · what happened? · ❦</div>
+    <div class="sf" style="font-size:24px;text-align:center;margin-top:3px">log it</div>
+    <div style="font-size:11.5px;color:var(--dust);text-align:center;margin-top:3px">you're not "recording" — you're just telling me what happened ✦</div>
+    <div class="whgrid">${opts.map(o=>`<button onclick="${o[3]}"><span class="g">${o[0]}</span><span class="n">${o[1]}</span><span class="d">${o[2]}</span></button>`).join('')}</div>`);
+}
+function openEntry(dk,who,preType){
+  entPhotos=[]; entType=preType||'note';
+  const seg=!preType;   // the type switcher only shows for the generic "new entry"
+  const LBL={note:'new note',ritual:'log a working',dream:'log a dream',sign:'log a sign',mood:'log your mood',photo:'add a photo'};
   sheet(`<div class="gb"></div>
     <div class="cap" style="font-size:9.5px;color:var(--deep);text-align:center">❦ · the record · ❦</div>
-    <div class="sf" style="font-size:24px;text-align:center;margin-top:3px">new entry</div>
-    <div class="seg" id="etype" style="margin-top:14px">
+    <div class="sf" style="font-size:24px;text-align:center;margin-top:3px">${preType?(LBL[preType]||'new entry'):'new entry'}</div>
+    ${seg?`<div class="seg" id="etype" style="margin-top:14px">
       <button data-t="note" class="on">❦ note</button><button data-t="ritual">✧ working</button>
-      <button data-t="inter">◉ someone</button><button data-t="cycle">◉ cycle</button></div>
+      <button data-t="inter">◉ someone</button><button data-t="cycle">◉ cycle</button></div>`:''}
     <div id="etBody"></div>`);
-  document.querySelectorAll('#etype button').forEach(b=>b.onclick=()=>{
+  if(seg)document.querySelectorAll('#etype button').forEach(b=>b.onclick=()=>{
     if(b.dataset.t==='inter')return openInter(null,'intimacy');
     if(b.dataset.t==='cycle')return openCycle();
+    entType=b.dataset.t;
     document.querySelectorAll('#etype button').forEach(x=>x.classList.toggle('on',x===b));
     etBody(dk,who);});
   etBody(dk,who);
 }
 function etBody(dk,who){
-  const t=document.querySelector('#etype button.on').dataset.t;
+  const t=document.querySelector('#etype button.on')?.dataset.t||entType;
+  const TP={note:['title','what happened…'],ritual:['which working?','how did it go? what shifted?'],dream:['dream title','what did you see? who was there?'],sign:['what did you see?','where were you, and what were you thinking about?'],mood:['one word for it','what\'s underneath it?'],photo:['caption','what is this?']};
+  const ph=TP[t]||TP.note;
   document.getElementById('etBody').innerHTML=
    `<div class="ob-f" style="margin-top:12px">
       <input id="enD" type="date" value="${dk||key(new Date())}">
-      <input id="enT" placeholder="${t==='ritual'?'which working?':'title'}" value="${who?'about '+who:''}">
-      <textarea id="enB" rows="4" placeholder="${who?'what happened with '+who+'?':'what happened…'}"></textarea>
+      <input id="enT" placeholder="${ph[0]}" value="${who?'about '+who:''}">
+      <textarea id="enB" rows="4" placeholder="${who?'what happened with '+who+'?':ph[1]}"></textarea>
     </div>
     ${S.people.length?`<div class="lab">tag someone</div><div class="pchip" id="enW">${S.people.map(p=>
       `<button class="${who===p.name?'on':''}" onclick="document.querySelectorAll('#enW button').forEach(b=>b.classList.remove('on'));this.classList.add('on')">
@@ -1897,7 +1998,7 @@ function etBody(dk,who){
       document.getElementById('enP').innerHTML=entPhotos.map(p=>`<img src="${p}">`).join('');};r.readAsDataURL(f);});};
 }
 function saveEntry(){
-  const t=document.querySelector('#etype button.on').dataset.t;
+  const t=document.querySelector('#etype button.on')?.dataset.t||entType;
   const d=document.getElementById('enD').value||key(new Date());
   const b=document.getElementById('enB').value.trim();
   if(!b&&!entPhotos.length)return toast('write something or add a photo ❦');
@@ -1910,7 +2011,7 @@ function saveEntry(){
   renderJournal();renderGrim();renderOrbit();renderCal();
 }
 
-const EG={note:'❦',pull:'✦',ritual:'✧',cycle:'◉',inter:'◉',sex:'◉'};
+const EG={note:'❦',pull:'✦',ritual:'✧',cycle:'◉',inter:'◉',sex:'◉',dream:'☾',sign:'✷',mood:'♡',photo:'◉'};
 function entHTML(e){
   return `<div class="ent"><div class="eh"><span class="g">${EG[e.type]||'❦'}</span>
       <div><div class="d">${fmt(parse(e.date))} · ${e.type}</div></div>
