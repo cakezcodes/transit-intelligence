@@ -978,8 +978,8 @@ function mergeCloud(out,k){
     if(dupe)return;
     out.push({id:'ge-'+e.event_type_key+'-'+k,lay,date:k,
       gl:GE_GL[e.event_type_key]||(e.event_category==='eclipse'?'✧':e.event_category==='ingress'?'⇢':'✦'),
-      t:(e.title||e.event_type_key.replace(/_/g,' ')).toLowerCase(),
-      s:(e.description||'').toLowerCase(),
+      t:esc((e.title||e.event_type_key.replace(/_/g,' ')).toLowerCase()),
+      s:esc((e.description||'').toLowerCase()),
       big:e.event_category==='eclipse'?1:0});
   });
   return out;
@@ -1546,7 +1546,10 @@ async function getReading(cards,ctx){
   const d=await r.json();
   return (d.text||'').trim();
 }
+/* escape external text before it joins innerHTML — model output, geocoder rows, cloud rows */
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 function aiHTML(t){
+  t=esc(t);
   const move=t.match(/the move:([\s\S]*)$/i);
   const body=move?t.slice(0,t.toLowerCase().lastIndexOf('the move:')):t;
   return body.trim().split(/\n\n+/).map(p=>`<p>${p.trim()}</p>`).join('')+
@@ -2155,7 +2158,7 @@ function cityDraw(inp,dd){
   cityHi=-1;
   dd.innerHTML=cityRes.map((c,i)=>
     `<button class="ci2" data-i="${i}" onclick="cityPick('${inp.id}','${dd.id}',${i})">
-       <span class="cg">◎</span><span class="cn">${c.n}</span><span class="cr">${c.r}</span></button>`).join('');
+       <span class="cg">◎</span><span class="cn">${esc(c.n)}</span><span class="cr">${esc(c.r)}</span></button>`).join('');
   dd.classList.add('on');
 }
 function cityPick(inpId,ddId,i){
