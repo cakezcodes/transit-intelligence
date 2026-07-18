@@ -845,7 +845,7 @@ function renderSky(){
         <p>that stacks. the working that fits both right now is <b>${cs.ritual.n}</b> — ${cs.ritual.v}.</p>
         <div class="mini"><button class="btn sm" onclick="nav('lib');setShelf('work');setTimeout(()=>jumpRit('${cs.ritual.n}'),90)">open it ✧</button></div></div></div>`:''}
     <div class="ex"><button class="exh" onclick="this.parentElement.classList.toggle('open')"><span class="g">❦</span>
-      <span><span class="a">journal prompt</span><div class="b">${PROMPTS[pn]}</div></span><span class="c">›</span></button>
+      <span><span class="a">journal prompt</span><div class="b sf" style="font-size:13.5px">&ldquo;${PROMPTS[pn]}&rdquo;</div></span><span class="c">›</span></button>
       <div class="exb"><p><b>${pn}</b> asks a specific question. a full moon would ask a different one.</p>
         <div class="mini"><button class="btn sm" onclick="openEntry()">write it ❦</button></div></div></div>
     <div class="ex"><button class="exh" onclick="this.parentElement.classList.toggle('open')"><span class="g">✧</span>
@@ -974,6 +974,7 @@ function mergeCloud(out,k){
       (e.event_type_key==='full_moon'&&o.id.startsWith('fm-'))||
       (e.event_category==='void_moon'&&o.lay==='void')||
       (e.event_category==='station'&&o.lay==='retro')||
+      (e.event_category==='ingress'&&o.lay==='ingress')||
       (e.event_category==='sabbat')));
     if(dupe)return;
     out.push({id:'ge-'+e.event_type_key+'-'+k,lay,date:k,
@@ -1002,8 +1003,12 @@ function evForDate(d){
   if(LON.body)FULLMOON.filter(x=>x[0]===k).forEach(x=>out.push({id:'bd-'+k,lay:'body',gl:'♀︎',
     t:'body-sync day',s:x[5],date:k,alm:{kind:'body',d:x}}));
   /* ── computed */
-  if(LON.lunar&&signOf(moonLon(new Date(d.getTime()-86400000)))!==si)
+  const yd=new Date(d.getTime()-86400000), entered=signOf(moonLon(yd))!==si;
+  if(LON.lunar&&entered)
     out.push({id:'ms-'+k,lay:'lunar',gl:'☽',t:`moon enters ${SIGNS[si]}`,s:SIGN_READ[SIGNS[si]][0],date:k});
+  if(LON.ingress){const ss2=signOf(sunLon(d));
+    if(signOf(sunLon(yd))!==ss2)out.push({id:'ig-'+k,lay:'ingress',gl:'⇢',
+      t:`sun enters ${SIGNS[ss2]}`,s:'season shift. the background hum changes key.',date:k});}
   if(LON.void){const v=voidWindow(d);if(v.active)out.push({id:'v-'+k,lay:'void',gl:'⊘',t:'moon goes void',s:`~${v.hrs}h — don't launch`,date:k});}
   if(LON.natal&&S.me.date){
     const nb=parse(S.me.date), nsun=signOf(sunLon(nb)), nmoon=signOf(moonLon(nb));
@@ -1020,8 +1025,38 @@ function evForDate(d){
     if(si===pm)out.push({id:'pl-'+k+pp.name,lay:'theirs',gl:'☾',
       t:`${pp.name} · lunar return`,s:'they\'re raw and resetting. won\'t admit it.',date:k,who:pp.name});
   });
+  /* ── entanglements: synastry — the moon walks over a planet in BOTH charts at once */
+  if(LON.syn&&S.me.date&&entered){
+    const myB=parse(S.me.date), PERS=['sun','moon','venus','mars'];
+    S.people.filter(pp=>pp.date).forEach(pp=>{
+      const thB=parse(pp.date);
+      const mine=PERS.filter(p=>signOf(PL[p](myB))===si), th=PERS.filter(p=>signOf(PL[p](thB))===si);
+      if(mine.length&&th.length)out.push({id:'sy-'+k+pp.name,lay:'syn',gl:'♡',
+        t:`synastry hit · you & ${pp.name}`,
+        s:`moon's sitting on your ${mine[0]} and their ${th[0]} at the same time. same weather, both charts.`,date:k,who:pp.name});
+    });
+  }
+  /* ── entanglements: composite — moon crosses the midpoint sun of you two */
+  if(LON.comp&&S.me.date&&entered){
+    const myS=sunLon(parse(S.me.date));
+    S.people.filter(pp=>pp.date).forEach(pp=>{
+      const thS=sunLon(parse(pp.date)), df=nm(thS-myS);
+      const cSun=df<=180?nm(myS+df/2):nm(thS+(360-df)/2);
+      if(signOf(cSun)===si)out.push({id:'cp-'+k+pp.name,lay:'comp',gl:'◍',
+        t:`composite lit · you & ${pp.name}`,
+        s:'the moon crosses the sun of the third chart. the relationship itself is the main character today.',date:k,who:pp.name});
+    });
+  }
   /* ── cycle: predicted from logs */
   if(LON.cycle)cyclePredict(d).forEach(c=>out.push({...c,date:k}));
+  /* ── beauty timing: the four turns of the moon, translated to hair/skin/ink */
+  if(LON.beauty&&pn!==phaseName(pv)){
+    const BT={'new moon':['skin reset','strip it back. hydrate, rest, book nothing. blank canvas day.'],
+      'first quarter':['growth window opens','cut hair now if you want it back fast. lashes, brows, gloss — everything you want MORE of.'],
+      'full moon':['glow peak','gloss, glaze, get photographed. skin drinks everything tonight.'],
+      'last quarter':['removal window','wax, detox, trim ends to slow regrowth. fresh ink heals clean on the wane.']};
+    if(BT[pn])out.push({id:'bt-'+k,lay:'beauty',gl:'✧',t:`beauty timing · ${BT[pn][0]}`,s:BT[pn][1],date:k});
+  }
   /* ── rituals matched to sky */
   if(LON.ritual&&(pn==='new moon'||pn==='full moon')){
     const r=RIT.find(x=>x.ph.includes(pn));
@@ -1098,7 +1133,7 @@ function renderCal(){
   document.getElementById('dSel').innerHTML=ev.length?ev.map(e=>evRow(e)).join('')
     :`<div class="card" style="font-size:13px;color:var(--dust)">nothing on the books. the sky's quiet — ${MOOD[phaseName(p)].toLowerCase()}</div>`;
   document.getElementById('quickLay').innerHTML=LAYERS.flatMap(g=>g.items).slice(0,7).map(i=>
-    `<button class="chip${LON[i.id]?' on':''}" onclick="LON['${i.id}']=!LON['${i.id}'];renderCal()">${i.gl} ${i.n}</button>`).join('');
+    `<button class="chip${LON[i.id]?' on':''}" onclick="LON['${i.id}']=!LON['${i.id}'];renderCal();tiSave()">${i.gl} ${i.n}</button>`).join('');
   document.getElementById('sixPlan').innerHTML=NEWMOON.filter(x=>x[0]>=key(new Date())).slice(0,6).map(x=>
     `<button class="six" style="width:100%;text-align:left" onclick="S.sel='${x[0]}';S.cursor=parse('${x[0]}');renderCal();openEv('${x[0]}','6-${x[0]}')">
       <div class="sh"><span class="sd">${fmt(parse(x[0]))}</span><span class="sn">new moon in ${x[1]}</span></div>
@@ -1165,7 +1200,7 @@ function closeDayPage(){document.getElementById('dayPage').classList.remove('on'
 function renderLayers(){
   document.getElementById('layerGroups').innerHTML=LAYERS.map(g=>
    `<div class="lab">${g.g}</div><div class="card">${g.items.map(i=>
-     `<button class="lay" onclick="LON['${i.id}']=!LON['${i.id}'];renderLayers();toast('${i.n} ${LON[i.id]?'off':'on'}')">
+     `<button class="lay" onclick="LON['${i.id}']=!LON['${i.id}'];renderLayers();tiSave();toast('${i.n} ${LON[i.id]?'off':'on'}')">
         <span class="lg" style="color:${i.c}">${i.gl}</span>
         <span class="ln">${i.n}<div class="ld">${i.d}</div></span>
         <span class="tog${LON[i.id]?' on':''}"></span></button>`).join('')}</div>`).join('');
@@ -2365,6 +2400,7 @@ function tiSnapshot(){
   });
   const de=document.documentElement;
   out.__ui={mode:de.dataset.mode,type:de.dataset.type,grad:de.dataset.grad};
+  out.__lon={...LON};
   return out;
 }
 function tiRestore(state){
@@ -2374,6 +2410,7 @@ function tiRestore(state){
     const v=state[k];
     S[k]=(v&&typeof v==='object'&&v.__date)?new Date(v.__date):v;
   });
+  if(state.__lon)Object.keys(LON).forEach(k=>{if(k in state.__lon)LON[k]=!!state.__lon[k];});
   if(state.__ui){
     const de=document.documentElement;
     if(state.__ui.mode)de.dataset.mode=state.__ui.mode;
