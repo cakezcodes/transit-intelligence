@@ -1,0 +1,618 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transit Intelligence — the app, all concepts</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap');
+  /* Falls back to Georgia italic + system sans when fonts can't load — same bones. */
+  :root{
+    --canvas:#EFEBE3; --ink:#2a2118; --gold:#A8842F; --gold-soft:rgba(168,132,47,.16);
+    --page:#F2F2F7; --card:#fff; --line:rgba(60,60,67,.12); --hair:rgba(60,60,67,.08);
+    --moon:#1C1C1E; --dust:rgba(60,60,67,.62); --faint:rgba(60,60,67,.45);
+    --parch:#FBF8F0; --parchline:rgba(168,132,47,.28);
+    --cosmic1:#2a2540; --cosmic2:#4a3a5e; --cosmic3:#6b4a3a;
+    --sans:"DM Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --serif:"Playfair Display",Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--canvas);color:var(--ink);font-family:var(--sans);margin:0;display:flex;flex-direction:column;align-items:center;padding:26px 14px 50px}
+  .se{font-family:var(--serif)}
+  .bhead{max-width:392px;width:100%;margin-bottom:36px}
+  .bhead .se{font-style:italic;font-size:26px;font-weight:600}
+  .bhead p{font-size:12.5px;color:rgba(60,50,40,.62);margin:5px 0 0;line-height:1.5}
+  .phone{width:392px;max-width:100%;height:852px;background:var(--page);border-radius:34px;box-shadow:0 12px 36px rgba(0,0,0,.16);overflow:hidden;position:relative}
+  .view{position:absolute;inset:0;display:none;flex-direction:column}
+  .view.on{display:flex;animation:rise .22s cubic-bezier(.2,.7,.2,1)}
+  @keyframes rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion: reduce){.view.on{animation:none}}
+  .scroll{flex:1;overflow-y:auto;padding-bottom:110px}
+  .status{display:flex;align-items:center;justify-content:space-between;padding:13px 26px 0;font-size:13px;font-weight:600;flex:0 0 auto}
+  .status i{font-style:normal;font-size:11px;letter-spacing:.4px}
+  .eyebrow{font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+  .vtitle{font-style:italic;font-weight:600;font-size:28px;line-height:1.05;margin-top:5px}
+  .halo{position:absolute;top:-60px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,var(--gold-soft),transparent 64%);pointer-events:none}
+  button{font-family:var(--sans);cursor:pointer;-webkit-tap-highlight-color:transparent;color:inherit}
+  button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .press{transition:transform .15s cubic-bezier(.2,.6,.3,1)}
+  .press:active{transform:scale(.975)}
+  .back{position:absolute;left:18px;top:10px;font-size:21px;color:var(--gold);background:none;border:none;padding:2px 8px;z-index:2}
+  .avbtn{width:30px;height:30px;border-radius:50%;background:var(--cosmic2);color:#fff;border:none;font-size:13px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(42,37,64,.35)}
+  .caps{margin:11px 18px 0;display:grid;grid-template-columns:repeat(4,1fr);background:var(--card);border:1px solid var(--line);border-radius:15px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .caps>div{padding:10px 4px;text-align:center}
+  .caps>div+div{border-left:1px solid var(--hair)}
+  .caps b{font-size:15px;font-weight:700;display:block}
+  .caps .se{font-size:14px;font-weight:600;font-style:italic}
+  .caps small{font-size:8.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);display:block;margin-top:2px}
+  .sechd{display:flex;align-items:center;gap:11px;padding:15px 18px 8px}
+  .sechd b{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+  .sechd i{flex:1;height:1px;background:var(--line);font-style:normal}
+  .sechd button{font-size:10.5px;font-weight:600;color:var(--gold);background:none;border:none;padding:0}
+  .pcard{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:11px 13px;margin:0 18px 8px;box-shadow:0 1px 2px rgba(0,0,0,.04);text-align:left;width:calc(100% - 36px)}
+  .pav{flex:0 0 40px;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px}
+  .pnm{font-style:italic;font-weight:600;font-size:16.5px;line-height:1.1}
+  .prole{font-size:11px;color:var(--dust);margin-top:1px;display:block}
+  .pgly{font-size:10.5px;color:var(--gold);letter-spacing:.06em;margin-top:3px;display:block}
+  .pchip{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.04em;background:var(--parch);border:1px solid var(--parchline);color:#8a6a1f;border-radius:999px;padding:2px 7px;margin-top:4px}
+  .pchev{margin-left:auto;color:var(--faint);font-size:15px;flex:0 0 auto}
+  .tabbar{position:absolute;left:50%;transform:translateX(-50%);bottom:15px;display:flex;gap:3px;padding:6px 8px;background:rgba(248,248,250,.86);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid rgba(60,60,67,.14);border-radius:999px;box-shadow:0 6px 24px rgba(0,0,0,.16);z-index:5}
+  .tabbar>button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 8px;color:var(--faint);background:none;border:none}
+  .tabbar>button span{font-size:9px;font-weight:600}
+  .tabbar>button.on{color:var(--gold)}
+  .tabbar>button.on span{font-weight:700}
+  .seg{display:flex;background:rgba(60,60,67,.07);border-radius:999px;padding:3px;margin:12px 18px 0}
+  .seg>button{flex:1;text-align:center;font-size:11.5px;font-weight:600;color:var(--dust);padding:6px 0;border-radius:999px;border:none;background:none}
+  .seg>button.on{background:var(--card);color:var(--moon);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+  .blkcard{margin:10px 18px 0;background:var(--card);border:1px solid var(--line);border-radius:17px;padding:13px 14px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .nlab{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  .xrow{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--hair)}
+  .xrow:last-child{border-bottom:none;padding-bottom:2px}
+  .xgl{flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:var(--parch);border:1px solid var(--parchline);display:flex;align-items:center;justify-content:center;font-size:13px;color:#8a6a1f}
+  .xnm{font-style:italic;font-weight:600;font-size:14.5px;line-height:1.15}
+  .xsub{font-size:11px;color:var(--dust);line-height:1.45;margin-top:2px;display:block}
+  .orb{margin-left:auto;flex:0 0 auto;font-size:9.5px;font-weight:700;border-radius:999px;padding:3px 8px;background:var(--gold-soft);color:var(--gold)}
+  .orb.loose{background:rgba(60,60,67,.07);color:var(--dust)}
+  .parchnote{margin:10px 18px 0;background:var(--parch);border:1px solid var(--parchline);border-radius:13px;padding:11px 13px;font-size:11.5px;line-height:1.5;color:#5b4a1f}
+  .flip{display:flex;background:rgba(60,60,67,.07);border-radius:999px;padding:2px;font-size:9.5px;font-weight:700}
+  .flip>button{padding:4px 9px;border-radius:999px;border:none;background:none;color:var(--dust);font-weight:700;font-size:9.5px}
+  .flip>button.on{background:var(--card);color:var(--moon);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+  .field{margin:0 0 11px}
+  .field label{display:block;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:5px}
+  .field input{width:100%;background:rgba(60,60,67,.06);border:1px solid transparent;border-radius:12px;padding:11px 13px;font-size:13.5px;color:var(--moon);font-family:var(--sans)}
+  .field input:focus{outline:none;border-color:var(--gold)}
+  .field input::placeholder{color:var(--faint)}
+  .field input:disabled{opacity:.4}
+  .chiprow{display:flex;gap:6px;flex-wrap:wrap}
+  .chiprow button{font-size:11px;font-weight:600;border-radius:999px;padding:6px 12px;background:rgba(60,60,67,.06);color:var(--dust);border:none}
+  .chiprow button.on{background:var(--gold);color:#fff;box-shadow:0 4px 10px rgba(168,132,47,.35)}
+  .hint{font-size:10.5px;color:var(--faint);margin-top:5px;line-height:1.45}
+  .cta{display:block;width:100%;border:none;border-radius:15px;background:var(--gold);color:#fff;font-weight:800;font-size:15px;padding:15px;box-shadow:0 8px 24px var(--gold-soft)}
+  .sw{width:40px;height:24px;border-radius:999px;background:rgba(60,60,67,.18);position:relative;flex:0 0 auto;border:none;padding:0}
+  .sw i{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .15s}
+  .sw.on{background:var(--gold)}
+  .sw.on i{left:18px}
+  .toast{position:absolute;left:50%;transform:translateX(-50%);bottom:96px;background:var(--ink);color:#fff;font-size:12px;font-weight:600;border-radius:999px;padding:9px 16px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:9;white-space:nowrap}
+  .toast.show{opacity:1}
+  .eyebtn{width:28px;height:28px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;padding:0}
+  .moondisc{flex:0 0 26px;width:26px;height:26px;border-radius:50%;background:#241f38;box-shadow:inset -6px 0 0 0 #E9DFC4,0 0 0 1px rgba(168,132,47,.35)}
+  .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:9px}
+  .calgrid>div{text-align:center;padding:6px 0 4px;border-radius:10px;font-size:12px;color:var(--moon);position:relative;min-height:34px}
+  .calgrid>div.hd{font-size:8.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);min-height:auto;padding:2px 0}
+  .calgrid>div.dim{color:var(--faint)}
+  .calgrid>div.today{background:var(--gold);color:#fff;font-weight:700;box-shadow:0 4px 10px rgba(168,132,47,.35)}
+  .calgrid>div em{position:absolute;left:50%;transform:translateX(-50%);bottom:2px;font-size:7.5px;font-style:normal;line-height:1}
+  .setrow{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--hair)}
+  .setrow:last-child{border-bottom:none}
+  .setrow .lbl{font-size:13.5px;font-weight:600}
+  .setrow .sub{font-size:10.5px;color:var(--faint);margin-top:2px;line-height:1.4}
+  .grimhero{margin:10px 18px 0;position:relative;border-radius:17px;overflow:hidden;background:linear-gradient(150deg,var(--cosmic1),var(--cosmic2) 60%,var(--cosmic3));padding:14px 17px;box-shadow:0 8px 22px rgba(42,37,64,.3);width:calc(100% - 36px);border:none;text-align:left;display:block}
+  @media (prefers-reduced-motion: no-preference){ .pulse{animation:pulse 3.2s ease-in-out infinite} @keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}} }
+</style>
+
+<div class="bhead">
+  <div class="se">transit intelligence — the whole app ✦</div>
+  <p>every concept packaged into one navigable prototype. the tab bar works; so do the orbit files, the flip, the eye, the library, the me-chart taps, and the switches. the me-chart and today's sky are your <b>real stored data</b> — porphyry houses, mercury actually retrograde.</p>
+</div>
+
+<div class="phone">
+  <div class="view on" id="v-cal"><div class="status"><span>9:41</span><i>5G&nbsp;&nbsp;100%</i></div><div class="scroll" id="calBody"></div></div>
+  <div class="view" id="v-orbit"><div class="status"><span>9:41</span><i>5G&nbsp;&nbsp;100%</i></div><div class="scroll"><div style="position:relative;padding:12px 18px 0"><div class="halo"></div><div style="display:flex;align-items:flex-end;justify-content:space-between"><div><div class="eyebrow">✦ · THE ORBIT · ✦</div><div class="se vtitle">the entanglements</div></div><div style="display:flex;align-items:center;gap:8px;padding-bottom:4px"><span style="font-size:11.5px;color:var(--faint)" id="countLbl"></span><button class="eyebtn press" id="eye" aria-label="hide the orbit">👁</button></div></div></div><div id="orbitBody"></div></div></div>
+  <div class="view" id="v-grim"><div class="status"><span>9:41</span><i>5G&nbsp;&nbsp;100%</i></div><div class="scroll" id="grimBody"></div></div>
+  <div class="view" id="v-rem"><div class="status"><span>9:41</span><i>5G&nbsp;&nbsp;100%</i></div><div class="scroll" id="remBody"></div></div>
+  <div class="view" id="v-set"><div class="status"><span>9:41</span><i>5G&nbsp;&nbsp;100%</i></div><div class="scroll" id="setBody"></div></div>
+  <!-- sub-views -->
+  <div class="view" id="v-file"><div class="status"><span>9:41</span><i>5G&nbsp;&nbsp;100%</i></div><div class="scroll" id="fileBody"></div></div>
+  <div class="view" id="v-add"><div class="status"><span>9:41</span><i>5G&nbsp;&nbsp;100%</i></div><div class="scroll" id="addBody"></div></div>
+  <div class="view" id="v-me"><div class="status"><span>9:41</span><i>5G&nbsp;&nbsp;100%</i></div><div class="scroll" id="meBody"></div></div>
+  <div class="view" id="v-health"><div class="status"><span>9:41</span><i>5G&nbsp;&nbsp;100%</i></div><div class="scroll" id="healthBody"></div></div>
+  <div class="view" id="v-lib"><div class="status"><span>9:41</span><i>5G&nbsp;&nbsp;100%</i></div><div class="scroll" id="libBody"></div></div>
+
+  <div class="tabbar" id="tabbar">
+    <button data-view="cal" class="on"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 9.5h17M8 3v3.5M16 3v3.5"/></svg><span>Calendar</span></button>
+    <button data-view="orbit"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3.4"/><ellipse cx="12" cy="12" rx="9.5" ry="4.2" transform="rotate(-18 12 12)"/></svg><span>Orbit</span></button>
+    <button data-view="grim"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10 4.8 7.4 4.4 4.5 4.7v13.6c2.9-.3 5.5.1 7.5 1.8 2-1.7 4.6-2.1 7.5-1.8V4.7c-2.9-.3-5.5.1-7.5 1.8z"/><path d="M12 6.5v13.6"/></svg><span>Grimoire</span></button>
+    <button data-view="rem"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l2.5 2.5L16 8"/><rect x="3.5" y="4.5" width="17" height="16" rx="3.5"/><path d="M8 3v3M16 3v3"/></svg><span>Reminders</span></button>
+    <button data-view="set"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M21.5 12h-3M5.5 12h-3"/></svg><span>Settings</span></button>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ================= real data (from the live DB) ================= */
+/* Syd's natal_positions — Celestine + Porphyry, computed & stored 2026-07-12 */
+var NATAL=[
+  {k:'☉ sun',sign:'scorpio',deg:'12°55′',house:8,line:'eighth-house scorpio sun. you don’t do surface. depth or nothing, and everyone feels it in the first five minutes.'},
+  {k:'☽ moon',sign:'aries',deg:'25°56′',house:2,line:'aries moon in the 2nd. feelings arrive fast and want receipts. security = momentum you built yourself.'},
+  {k:'☿ mercury',sign:'scorpio',deg:'2°22′',house:8,line:'scorpio mercury, 8th house. you archive everything. people think they got away with it. they did not.'},
+  {k:'♀ venus',sign:'sagittarius',deg:'2°59′',house:9,line:'sag venus in the 9th. attraction needs a horizon — you fall for worldviews before faces.'},
+  {k:'♂ mars',sign:'sagittarius',deg:'11°33′',house:9,line:'sag mars in the 9th. your drive is a pilgrimage. small goals bore you into a coma.'},
+  {k:'♃ jupiter',sign:'sagittarius',deg:'16°59′',house:9,line:'jupiter at home in sag, 9th house, 0°53′ off your midheaven. luck arrives through leaps of faith — publicly.'},
+  {k:'♄ saturn',sign:'pisces',deg:'18°13′',house:1,rx:true,line:'saturn retrograde in your 1st. the inner critic wears your face. it’s a renovation, not a verdict.'},
+  {k:'♅ uranus',sign:'capricorn',deg:'26°54′',house:11,line:'uranus in the 11th. your people are the plot twist. the group chat is genuinely fate-bearing.'},
+  {k:'♆ neptune',sign:'capricorn',deg:'23°03′',house:11,line:'neptune in the 11th. you idealize the collective — audit who actually shows up.'},
+  {k:'♇ pluto',sign:'scorpio',deg:'29°52′',house:9,line:'pluto at the anaretic degree in the 9th. beliefs don’t change quietly in your chart — they detonate and rebuild.'},
+  {k:'⚷ chiron',sign:'libra',deg:'8°10′',house:7,line:'chiron in the 7th. partnership is where the bruise lives — and where the medicine is.'},
+  {k:'☊ north node',sign:'libra',deg:'26°27′',house:8,line:'north node libra, 8th. the assignment: shared depth without losing the self. lifelong syllabus.'}
+];
+var ANGLES={asc:'pisces 8°32′',mc:'sagittarius 17°53′'};
+/* today's sky_positions snapshot + buildSkyState chains (live math) */
+var CHAINS=[
+  {body:'☿ mercury',motion:'retrograde',where:'cancer · your 5th house',route:'cancer is ruled by the moon — your moon is aries, 2nd house',contact:'opposing your natal neptune · 1.7°',rank:'loudest today',
+   para:'mercury is retrograde in cancer, in your 5th — so the rewind button is parked on romance, art, and fun-you-used-to-have. cancer hands the mic to the moon, and your moon is aries in the 2nd: every feeling wants to spend money or make a move about it, immediately. with the transit opposing your natal neptune, the fog is thick and the ex reads as “misunderstood.” they are understood. perfectly. tonight’s move: draft the text, save the draft, buy nothing over $40.'},
+  {body:'♇ pluto',motion:'retrograde',where:'aquarius · your 11th house',route:'dual ruler: saturn (pisces, 1st) + uranus (capricorn, 11th)',contact:'sextile your natal venus · 1.2° applying',rank:'slow burn',
+   para:'pluto retrograde in your 11th is auditing the friend group, and because aquarius answers to both saturn and uranus, the audit runs through your 1st-house saturn (who am i in this group) and your 11th-house uranus (do these people still fit the plot). the venus sextile applying means the answer arrives gently, through one honest hangout. accept the invitation you’d normally cancel.'},
+  {body:'☉ sun',motion:'direct',where:'cancer · your 5th house',route:'routes through your aries moon, 2nd house',contact:'trine your natal saturn · 2.0°',rank:'steady',
+   para:'the sun crossing your 5th trines your first-house saturn: for once, discipline and delight are on the same team. the thing you make today — post it. saturn’s co-signing.'}
+];
+var TODAY={moonPhase:'waning crescent',moonSign:'cancer',phaseNote:'new moon tomorrow — cancer season resets the board',voc:'void 6:12–9:42p'};
+
+/* July 2026 — real anchors: new moon jul 14 (cancer), full moon jul 29 (aquarius) */
+var CAL_EVENTS={14:'🌑',29:'🌕',13:'☽',1:'✦',18:'☿'};
+var CAL_LIST=[
+  {d:'today · jul 13',t:'waning crescent in cancer',s:'release day. the void runs 6:12–9:42p — don’t send anything binding.',gl:'☽'},
+  {d:'tue · jul 14',t:'new moon in cancer 🌑',s:'the reset. home, feelings, foundations. set intentions after 9:42p.',gl:'🌑'},
+  {d:'all month',t:'mercury retrograde in cancer ☿',s:'feelings-mail gets lost in transit. re-say important things twice.',gl:'☿'},
+  {d:'wed · jul 29',t:'full moon in aquarius 🌕',s:'harvest of the january intentions. the group chat delivers a verdict.',gl:'🌕'},
+  {d:'sat · aug 1',t:'lammas ✦',s:'first harvest sabbat. bake something. brag about it.',gl:'✦'}
+];
+
+/* orbit cast — shapes mirror the live synastry table */
+var PEOPLE=[
+  {id:'jordan',name:'jordan',role:'situationship 🔥',cat:'talking',accent:'#A684D0',sun:'♎',big3:'☉ ♎  ☽ ♍  ↑ ♎',timeKnown:true,houseSystem:'placidus',archived:false,
+   tag:{t:'♀ △ ☽ · 0.5°',sub:'their sun → your 8th'},
+   crossings:[
+     {gl:'△',nm:'their venus trine your moon',orb:'0.5° tight',tight:true,sub:'affection lands where you actually live. this is why the good days feel easy.'},
+     {gl:'☌',nm:'their sun conjunct your mercury',orb:'1.4°',tight:true,sub:'they talk, you archive. every conversation goes in your permanent record.'},
+     {gl:'□',nm:'their mars square your saturn',orb:'3.8°',tight:false,sub:'their gas pedal, your brake. the recurring fight has an address now.'}],
+   inYours:[
+     {gl:'☉',nm:'their sun → your 8th house',sub:'they walked straight into the deep end. surface-level was never on the menu.'},
+     {gl:'♀',nm:'their venus → your 7th house',sub:'partner-shaped energy, whether or not anyone’s said the word.'},
+     {gl:'♂',nm:'their mars → your 12th house',sub:'their heat operates below your radar. name it before it names you.'}],
+   inTheirs:[
+     {gl:'☉',nm:'your sun → their 2nd house',sub:'you read as an asset. make sure that’s a compliment.'},
+     {gl:'☽',nm:'your moon → their 7th house',sub:'your moods register as partnership weather. they take you seriously.'},
+     {gl:'♄',nm:'your saturn → their 5th house',sub:'you make their fun feel graded. loosen the rubric, sometimes.'}],
+   note:'☽ <b>one honest note:</b> jordan’s rising is from a screenshot of a placidus app — their file stays placidus so the houses match what they’d recognize. yours stays porphyry. the math holds both.',
+   placements:[['☉ sun','libra 19°'],['☽ moon','virgo 7°'],['↑ rising','libra 3°'],['☿ mercury','scorpio 2°'],['♀ venus','virgo 25°'],['♂ mars','scorpio 10°']]},
+  {id:'sam',name:'sam',role:'the 2am text ♟',cat:'talking',accent:'#C9A24B',sun:'♐',big3:'☉ ♐  ☽ ♒  ↑ —',timeKnown:false,houseSystem:'porphyry',archived:false,
+   tag:null,chip:'birth time unknown · houses off',
+   crossings:[
+     {gl:'△',nm:'their sun trine your moon',orb:'2.1°',tight:false,sub:'they make your reactions feel reasonable. dangerous at 2am.'},
+     {gl:'□',nm:'their moon square your venus',orb:'2.8°',tight:false,sub:'what soothes them spends what delights you. check the exchange rate.'}],
+   inYours:[
+     {gl:'☉',nm:'their sun → your 10th house',sub:'somehow everyone you work with knows their name. you did that.'},
+     {gl:'☿',nm:'their mercury → your 9th house',sub:'the conversations go somewhere. that’s the hook, and you know it.'}],
+   inTheirs:null,
+   note:'☽ <b>one honest note:</b> no birth time yet, so their chart runs at noon — rising + houses stay off and “in their houses” stays empty. the crossings above are real either way (planet-to-planet doesn’t need a time). ask casually.',
+   placements:[['☉ sun','sagittarius 0°'],['☽ moon','aquarius 14°'],['↑ rising','— time unknown'],['☿ mercury','sagittarius 9°'],['♀ venus','capricorn 21°'],['♂ mars','virgo 27°']]},
+  {id:'riley',name:'riley',role:'the one that left · archived',cat:'talking',accent:'#C65A2E',sun:'♍',big3:'☉ ♍  ☽ ♑  ↑ ♊',timeKnown:true,houseSystem:'porphyry',archived:true,
+   tag:null,
+   crossings:[
+     {gl:'☍',nm:'their saturn opposite your sun',orb:'1.9°',tight:true,sub:'you kept auditioning; they kept the clipboard. archived for a reason.'},
+     {gl:'△',nm:'their venus trine your venus',orb:'2.4°',tight:false,sub:'same taste, wrong timing. it happens.'}],
+   inYours:[
+     {gl:'♄',nm:'their saturn → your 5th house',sub:'joy felt supervised. noted, filed, released.'},
+     {gl:'☉',nm:'their sun → your 6th house',sub:'they lived in your routines. that’s why the quiet feels loud.'}],
+   inTheirs:[
+     {gl:'☽',nm:'your moon → their 8th house',sub:'you were the intensity they said they wanted. said.'}],
+   note:'☽ <b>archive note:</b> the file keeps the math but stops surfacing it — no daily crossings, no notifications. it’s here if you need receipts, not reminders.',
+   placements:[['☉ sun','virgo 21°'],['☽ moon','capricorn 5°'],['↑ rising','gemini 12°'],['♀ venus','libra 8°'],['♂ mars','cancer 16°'],['♄ saturn','pisces 19°']]},
+  {id:'nova',name:'nova',role:'ride or die 🌈',cat:'people',accent:'#4FA89B',sun:'♓',big3:'☉ ♓  ☽ ♋  ↑ ♌',timeKnown:true,houseSystem:'porphyry',archived:false,
+   tag:{t:'☽ ☌ ☽ · 1.1°',sub:'moons conjunct'},
+   crossings:[
+     {gl:'☌',nm:'their moon conjunct your moon',orb:'1.1° tight',tight:true,sub:'same emotional weather system. you don’t explain moods, you just point.'},
+     {gl:'△',nm:'their sun trine your sun',orb:'1.8°',tight:true,sub:'the friendship that doesn’t require maintenance. water finds water.'},
+     {gl:'⚹',nm:'their venus sextile your jupiter',orb:'2.3°',tight:false,sub:'they gas you up and somehow it’s never empty calories.'}],
+   inYours:[
+     {gl:'☉',nm:'their sun → your 1st house',sub:'they see you the way you’re trying to see yourself. keep them.'},
+     {gl:'☽',nm:'their moon → your 2nd house',sub:'their care shows up as groceries and gas money. love language: logistics.'}],
+   inTheirs:[
+     {gl:'☉',nm:'your sun → their 4th house',sub:'you’re family to them. capital F. acts accordingly.'},
+     {gl:'♃',nm:'your jupiter → their 10th house',sub:'you talk them into the promotion. you always have.'}],
+   note:null,
+   placements:[['☉ sun','pisces 26°'],['☽ moon','cancer 24°'],['↑ rising','leo 9°'],['☿ mercury','aries 3°'],['♀ venus','aquarius 17°'],['♂ mars','taurus 11°']]},
+  {id:'dani',name:'dani',role:'work wife / enabler',cat:'people',accent:'#B89BC9',sun:'♐',big3:'☉ ♐  ☽ ♌  ↑ ♏',timeKnown:true,houseSystem:'porphyry',archived:false,
+   tag:null,
+   crossings:[
+     {gl:'☌',nm:'their sun conjunct your venus',orb:'1.6°',tight:true,sub:'they think your worst ideas are charming. hence: enabler.'},
+     {gl:'□',nm:'their mercury square your mercury',orb:'3.1°',tight:false,sub:'you two agree loudly in two different languages. it works anyway.'}],
+   inYours:[
+     {gl:'☉',nm:'their sun → your 9th house',sub:'every conversation ends with a plan for a trip neither of you booked.'},
+     {gl:'☿',nm:'their mercury → your 10th house',sub:'half your best career moves were their idea. tell no one.'}],
+   inTheirs:[
+     {gl:'♀',nm:'your venus → their 11th house',sub:'you’re their favorite plus-one. the group thread agrees.'}],
+   note:null,
+   placements:[['☉ sun','sagittarius 8°'],['☽ moon','leo 19°'],['↑ rising','scorpio 27°'],['☿ mercury','sagittarius 24°'],['♀ venus','libra 29°'],['♂ mars','gemini 6°']]}
+];
+var MAP=[{id:'jordan',x:223,y:49},{id:'nova',x:120,y:83},{id:'sam',x:262,y:88},{id:'dani',x:70,y:44},{id:'riley',x:305,y:55}];
+
+/* grimoire — round-5 content */
+var SPREADS=[
+  {nm:'the “what the fuck is really going on?” spread',sub:'7 cards · when everyone is talking and none of it makes sense'},
+  {nm:'the exit exam',sub:'6 cards · closing a chapter like you mean it',match:true,pulls:'2 pulls'},
+  {nm:'the damage report',sub:'5 cards · after the thing happens. triage first, meaning later'},
+  {nm:'the road opener',sub:'5 cards · for when every door looks painted on'},
+  {nm:'obsession or destiny?',sub:'6 cards · the question you already know the answer to'}
+];
+var WORKINGS=[
+  {nm:'cord-cutting',sub:'veil work · best under a waning moon',match:true},
+  {nm:'the sweetening',sub:'honey jar · venus hours, friday best'},
+  {nm:'door slam & deadbolt',sub:'protection · salt, iron, no apologies'}
+];
+var LORE=[
+  {nm:'find your significator',sub:'court cards → your zodiac. yours: queen of cups ♏'},
+  {nm:'read by color',sub:'the flower lens — warm pulls vs cool pulls'},
+  {nm:'knight directions',sub:'which way the horse faces matters. it always did'}
+];
+
+/* reminders */
+var REMS=[
+  {t:'don’t send the text',s:'void window 6:12–9:42p tonight — nothing binding, nothing brave',gl:'☽',on:true},
+  {t:'new moon intentions',s:'tomorrow after 9:42p · cancer season resets the board',gl:'🌑',on:true},
+  {t:'log tonight’s pull',s:'the streak is at 12 🔥 don’t break it for a man',gl:'🔮',on:true},
+  {t:'jordan’s venus trine peaks thu',s:'plan the good date THIS week, not next',gl:'♀',on:false},
+  {t:'refill: rose water + black salt',s:'the cabinet is running on vibes',gl:'✦',on:false}
+];
+
+/* ================= state ================= */
+var hidden=false, fileTab='synastry', flipDir='yours', activeId=null, grimTab='spreads', lastMain='cal', entMaster=true;
+
+function el(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function toast(msg){var t=el('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('show');},2200);}
+var MAIN={cal:1,orbit:1,grim:1,rem:1,set:1};
+function nav(v){
+  document.querySelectorAll('.view').forEach(function(x){x.classList.remove('on');});
+  el('v-'+v).classList.add('on');
+  el('v-'+v).querySelector('.scroll').scrollTop=0;
+  if(MAIN[v])lastMain=v;
+  document.querySelectorAll('#tabbar>button').forEach(function(b){b.classList.toggle('on',b.dataset.view===(MAIN[v]?v:lastMain));});
+}
+function head(eyebrow,title,sub,backTo){
+  return '<div style="position:relative;padding:10px 18px 0;text-align:center">'+
+    (backTo?'<button class="back" data-nav="'+backTo+'" aria-label="back">‹</button>':'')+
+    '<div class="eyebrow">'+eyebrow+'</div><div class="se vtitle" style="font-size:26px">'+title+'</div>'+
+    (sub?'<div style="font-size:11.5px;color:var(--dust);margin-top:4px">'+sub+'</div>':'')+'</div>';
+}
+function xrows(list){
+  return list.map(function(x){
+    return '<div class="xrow"><span class="xgl">'+x.gl+'</span><span style="flex:1"><span class="se xnm">'+esc(x.nm)+'</span><span class="xsub">'+esc(x.sub)+'</span></span>'+(x.orb?'<span class="orb'+(x.tight?'':' loose')+'">'+esc(x.orb)+'</span>':'')+'</div>';
+  }).join('');
+}
+
+/* ================= CALENDAR (home) ================= */
+function renderCal(){
+  var h='<div style="position:relative;padding:12px 18px 0"><div class="halo"></div>'+
+    '<div style="display:flex;align-items:flex-end;justify-content:space-between">'+
+    '<div><div class="eyebrow">☽ · TRANSIT INTELLIGENCE · ☾</div><div class="se vtitle">monday, july 13</div></div>'+
+    '<button class="avbtn press" data-nav="me" aria-label="your chart" style="margin-bottom:4px">♏</button></div></div>';
+  /* tonight ribbon */
+  h+='<div style="margin:11px 18px 0;display:flex;align-items:center;gap:11px;background:var(--parch);border:1px solid var(--parchline);border-radius:13px;padding:10px 13px">'+
+    '<span class="moondisc"></span>'+
+    '<span style="flex:1;font-size:12.5px;color:#3a3a3e;line-height:1.3"><b>'+TODAY.moonPhase+'</b> in <span class="se" style="font-style:italic;font-weight:600;font-size:14px">'+TODAY.moonSign+'</span> <span style="color:var(--gold)">♋︎</span><span style="display:block;font-size:10.5px;color:#8a6a1f;margin-top:1px">'+TODAY.phaseNote+' · '+TODAY.voc+'</span></span><span style="color:var(--gold);font-size:13px">✧</span></div>';
+  /* illuminations — the engine, voiced */
+  h+='<div class="sechd"><b>tonight’s illuminations</b><i></i><span style="font-size:10px;color:var(--faint)">ranked by the engine ✦</span></div>';
+  CHAINS.forEach(function(c,i){
+    h+='<button class="pcard press" data-illum="'+i+'" style="align-items:flex-start">'+
+      '<span class="xgl" style="margin-top:2px">'+c.body.split(' ')[0]+'</span>'+
+      '<span style="flex:1"><span class="se pnm" style="font-size:15px">'+esc(c.body.split(' ')[1])+' '+esc(c.motion)+'</span>'+
+      '<span class="prole">'+esc(c.where)+' · '+esc(c.contact)+'</span>'+
+      '<span class="xsub" id="illum-'+i+'" style="display:none;margin-top:6px;font-size:11.5px">'+esc(c.para)+'<br><i style="color:var(--faint);font-size:10px">— routed: '+esc(c.route)+'</i></span></span>'+
+      '<span style="text-align:right;flex:0 0 auto"><span class="orb'+(i===0?'':' loose')+'">'+esc(c.rank)+'</span><span style="display:block;font-size:9.5px;color:var(--faint);margin-top:4px" id="illumhint-'+i+'">tap to voice ✦</span></span></button>';
+  });
+  /* cycle ribbon → health */
+  h+='<button class="pcard press" data-nav="health"><span class="pav" style="background:#C08497">🌗</span><span style="flex:1"><span class="se pnm" style="font-size:15px">cycle · day 17, luteal</span><span class="prole">luteal × waning crescent — double release energy. protect the calendar.</span></span><span class="pchev">›</span></button>';
+  /* month grid */
+  h+='<div class="blkcard"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="nlab">july ♋︎</span><span style="font-size:11px;font-weight:600;color:var(--gold)">＋ event</span></div><div class="calgrid">';
+  ['m','t','w','t','f','s','s'].forEach(function(d){h+='<div class="hd">'+d+'</div>';});
+  /* jul 1 2026 = wednesday → offset 2 blanks (mon,tue) */
+  h+='<div class="dim"></div><div class="dim"></div>';
+  for(var d=1;d<=31;d++){
+    h+='<div'+(d===13?' class="today"':'')+'>'+d+(CAL_EVENTS[d]?'<em>'+CAL_EVENTS[d]+'</em>':'')+'</div>';
+  }
+  h+='</div></div>';
+  /* event list */
+  h+='<div class="blkcard"><div class="nlab" style="margin-bottom:4px">the sky, upcoming</div>'+
+    CAL_LIST.map(function(e){return '<div class="xrow"><span class="xgl">'+e.gl+'</span><span style="flex:1"><span style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700">'+esc(e.d)+'</span><span class="se xnm" style="display:block;margin-top:2px">'+esc(e.t)+'</span><span class="xsub">'+esc(e.s)+'</span></span></div>';}).join('')+'</div>';
+  h+='<div class="parchnote">✧ global layer = one almanac for everyone (251 events seeded for 2026) · your layer = custom events + reminders, merged right here.</div>';
+  el('calBody').innerHTML=h;
+}
+
+/* ================= ORBIT ================= */
+function personCard(p){
+  var right='';
+  if(p.tag)right='<span style="text-align:right"><span class="orb">'+esc(p.tag.t)+'</span><span style="display:block;font-size:9.5px;color:var(--faint);margin-top:4px">'+esc(p.tag.sub)+'</span></span>';
+  return '<button class="pcard press" data-open="'+p.id+'"'+(p.archived?' style="opacity:.55"':'')+'>'+
+    '<span class="pav" style="background:'+p.accent+'">'+p.sun+'</span>'+
+    '<span style="flex:1"><span class="se pnm">'+esc(p.name)+'</span><span class="prole">'+esc(p.role)+'</span><span class="pgly">'+p.big3+'</span>'+(p.chip?'<span class="pchip">'+esc(p.chip)+'</span>':'')+'</span>'+
+    right+'<span class="pchev">›</span></button>';
+}
+function renderOrbit(){
+  el('countLbl').textContent=PEOPLE.length+' charts ✧';
+  var h='';
+  if(hidden||!entMaster){
+    h='<div class="blkcard" style="margin-top:14px;text-align:center;padding:26px 14px"><div style="font-size:22px">👁</div><div class="se" style="font-style:italic;font-size:16px;margin-top:6px">just a very boring list of names</div><div style="font-size:11.5px;color:var(--dust);margin-top:4px;line-height:1.5">'+PEOPLE.map(function(p){return esc(p.name);}).join(' · ')+'</div><div style="font-size:10.5px;color:var(--faint);margin-top:8px">'+(entMaster?'tap the eye when the coast is clear':'master switch is off — settings › hide all entanglements')+'</div></div>';
+    el('orbitBody').innerHTML=h;return;
+  }
+  h+='<div style="margin:11px 18px 0;position:relative;border-radius:17px;overflow:hidden;background:linear-gradient(150deg,var(--cosmic1),var(--cosmic2) 60%,var(--cosmic3));padding:14px 17px 12px;box-shadow:0 8px 22px rgba(42,37,64,.3)">'+
+    '<div style="position:absolute;top:8px;right:14px;color:rgba(255,255,255,.35);font-size:13px;letter-spacing:5px" class="pulse">✧ ⋆ ☽</div>'+
+    '<svg width="100%" height="128" viewBox="0 0 340 128" fill="none" aria-label="orbit map">'+
+    '<ellipse cx="170" cy="64" rx="150" ry="52" stroke="rgba(255,255,255,.22)" stroke-width="1"/>'+
+    '<ellipse cx="170" cy="64" rx="104" ry="35" stroke="rgba(255,255,255,.30)" stroke-width="1"/>'+
+    '<ellipse cx="170" cy="64" rx="58" ry="19" stroke="rgba(255,255,255,.38)" stroke-width="1"/>'+
+    '<text x="170" y="70" text-anchor="middle" fill="#E9DFC4" font-size="15">✦</text>'+
+    MAP.map(function(m){var p=PEOPLE.find(function(x){return x.id===m.id;});if(!p)return '';
+      return '<g data-open="'+p.id+'" style="cursor:pointer"'+(p.archived?' opacity=".55"':'')+'><circle cx="'+m.x+'" cy="'+m.y+'" r="12" fill="transparent"/><circle cx="'+m.x+'" cy="'+m.y+'" r="9" fill="'+p.accent+'"/><text x="'+m.x+'" y="'+(m.y+3.5)+'" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">'+esc(p.name.charAt(0).toUpperCase())+'</text></g>';}).join('')+
+    '</svg>'+
+    '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:4px"><span class="se" style="font-style:italic;font-size:13.5px;color:#fff">closeness = tightest crossing, live</span><span style="font-size:10px;color:rgba(255,255,255,.6)">tap a body to open the file ›</span></div></div>';
+  h+='<div class="caps"><div><b>'+PEOPLE.length+'</b><small>in orbit</small></div><div><span class="se">nova ✦</span><small>tightest bond</small></div><div><b>'+PEOPLE.filter(function(p){return p.cat==='talking'&&!p.archived;}).length+' 🔥</b><small>talking</small></div><div><span class="se">♀ △ ☽</span><small>crossing of the day</small></div></div>';
+  h+='<div class="sechd"><b>talking 🔥</b><i></i><button data-nav="add">＋ someone</button></div>';
+  h+=PEOPLE.filter(function(p){return p.cat==='talking';}).map(personCard).join('');
+  h+='<div class="sechd"><b>your people ✦</b><i></i></div>';
+  h+=PEOPLE.filter(function(p){return p.cat==='people';}).map(personCard).join('');
+  h+='<button class="pcard press" data-nav="add" style="border-style:dashed;background:transparent;box-shadow:none"><span class="pav" style="background:rgba(60,60,67,.08);color:var(--gold)">＋</span><span style="flex:1"><span class="se pnm" style="color:var(--gold)">add someone</span><span class="prole">new entanglement — date + city is enough now ✧</span></span><span class="pchev">›</span></button>';
+  el('orbitBody').innerHTML=h;
+}
+function renderFile(){
+  var p=PEOPLE.find(function(x){return x.id===activeId;});if(!p)return;
+  var h=head('✧ ENTANGLEMENT FILE ✧','syd × '+esc(p.name),'♏ scorpio 8th-house sun &nbsp;·&nbsp; '+p.big3,'orbit');
+  h+='<div style="margin:12px 18px 0;background:var(--card);border:1px solid var(--line);border-radius:17px;padding:12px 14px 9px;box-shadow:0 1px 2px rgba(0,0,0,.04)">'+
+    '<svg width="100%" height="150" viewBox="0 0 340 150" fill="none" aria-label="two charts, one orbit">'+
+    '<ellipse cx="170" cy="75" rx="152" ry="60" stroke="rgba(168,132,47,.45)" stroke-width="1.2"/>'+
+    '<ellipse cx="170" cy="75" rx="100" ry="38" stroke="'+(p.timeKnown?'rgba(74,58,94,.45)':'rgba(74,58,94,.2)')+'" stroke-width="1.2"'+(p.timeKnown?'':' stroke-dasharray="4 4"')+'/>'+
+    '<text x="170" y="81" text-anchor="middle" fill="#A8842F" font-size="16">✦</text>'+
+    '<circle cx="60" cy="47" r="8" fill="#A8842F"/><text x="60" y="50.5" text-anchor="middle" fill="#fff" font-size="8.5">☽</text>'+
+    '<circle cx="290" cy="100" r="8" fill="#A8842F"/><text x="290" y="103.5" text-anchor="middle" fill="#fff" font-size="8.5">☉</text>'+
+    '<circle cx="248" cy="42" r="8" fill="#A8842F"/><text x="248" y="45.5" text-anchor="middle" fill="#fff" font-size="8.5">♀</text>'+
+    '<circle cx="92" cy="102" r="8" fill="#4a3a5e"/><text x="92" y="105.5" text-anchor="middle" fill="#fff" font-size="8.5">♀</text>'+
+    '<circle cx="226" cy="106" r="8" fill="#4a3a5e"/><text x="226" y="109.5" text-anchor="middle" fill="#fff" font-size="8.5">☉</text>'+
+    '<circle cx="118" cy="44" r="8" fill="#4a3a5e"/><text x="118" y="47.5" text-anchor="middle" fill="#fff" font-size="8.5">☽</text>'+
+    '<path d="M92 102 L60 47" stroke="rgba(168,132,47,.5)" stroke-width="1" stroke-dasharray="3 3"/>'+
+    '<path d="M226 106 L290 100" stroke="rgba(74,58,94,.4)" stroke-width="1" stroke-dasharray="3 3"/></svg>'+
+    '<div style="display:flex;justify-content:center;gap:16px;font-size:10px;color:var(--dust);padding-top:2px"><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#A8842F;margin-right:4px"></i>you</span><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#4a3a5e;margin-right:4px"></i>'+esc(p.name)+(p.timeKnown?'':' (dashed = no time)')+'</span><span style="color:var(--faint)">dotted = the crossings</span></div></div>';
+  h+='<div class="seg" role="tablist">'+['synastry','chart','journal'].map(function(t){return '<button data-tab="'+t+'"'+(fileTab===t?' class="on"':'')+' role="tab" aria-selected="'+(fileTab===t)+'">'+t+'</button>';}).join('')+'</div>';
+  if(fileTab==='synastry'){
+    h+='<div class="blkcard"><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="nlab">① the crossings — tightest first</span><span style="font-size:10px;color:var(--faint)">orb ≤ 2° = it’s loud</span></div>'+xrows(p.crossings)+'</div>';
+    var overlayList=flipDir==='yours'?p.inYours:p.inTheirs;
+    h+='<div class="blkcard"><div style="display:flex;justify-content:space-between;align-items:center"><span class="nlab">② where they land</span>'+
+      '<span class="flip"><button data-flip="yours"'+(flipDir==='yours'?' class="on"':'')+'>in your houses</button><button data-flip="theirs"'+(flipDir==='theirs'?' class="on"':'')+'>in theirs</button></span></div>'+
+      (overlayList?xrows(overlayList):'<div style="padding:16px 4px 6px;text-align:center"><div style="font-size:17px">☽</div><div class="se" style="font-style:italic;font-size:14px;margin-top:4px">their houses are off</div><div style="font-size:11px;color:var(--dust);margin-top:3px;line-height:1.5">no birth time = no ascendant = no houses.<br>the app doesn’t fake it. get the time, this fills in.</div></div>')+'</div>';
+    if(p.note)h+='<div class="parchnote">'+p.note+'</div>';
+  } else if(fileTab==='chart'){
+    h+='<div class="blkcard"><div class="nlab" style="margin-bottom:6px">their placements'+(p.timeKnown?'':' — noon chart, houses off')+'</div>'+
+      p.placements.map(function(pl){return '<div class="xrow" style="align-items:center"><span style="flex:1;font-size:13px;font-weight:600">'+esc(pl[0])+'</span><span class="se" style="font-style:italic;font-size:14px">'+esc(pl[1])+'</span></div>';}).join('')+'</div>';
+    h+='<div class="parchnote">✧ tap a placement in the real app to read it — placement meanings come from the 240-row reference layer, voiced fresh.</div>';
+  } else {
+    h+='<div class="blkcard"><div class="nlab" style="margin-bottom:8px">the record</div>'+
+      '<div class="xrow"><span class="xgl">☽</span><span style="flex:1"><span style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700">jul 3 · during moon □ their venus</span><span class="se xnm" style="display:block;margin-top:2px">"said i was being distant. i was being accurate."</span></span></div>'+
+      '<div class="xrow"><span class="xgl">✦</span><span style="flex:1"><span style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700">jun 28 · venus △ moon exact</span><span class="se xnm" style="display:block;margin-top:2px">"okay fine. it was a good day."</span></span></div></div>'+
+      '<div class="parchnote">✧ entries auto-stamp the sky between you — so the pattern has receipts.</div>';
+  }
+  el('fileBody').innerHTML=h;
+}
+function renderAdd(){
+  var h=head('✧ NEW ENTANGLEMENT ✧','add someone','a date and a city is enough — i’ll remember their sky ☽','orbit');
+  h+='<div class="blkcard" style="margin-top:14px"><div class="nlab" style="margin-bottom:10px">① who</div>'+
+    '<div class="field"><label>name</label><input id="afName" placeholder="who is it 👀"></div>'+
+    '<div class="field" style="margin-bottom:2px"><label>what they are to you</label><input id="afRole" placeholder="situationship / bestie / the ex…"></div></div>';
+  h+='<div class="blkcard"><div class="nlab" style="margin-bottom:10px">② the sky they arrived under</div>'+
+    '<div class="field"><label>birth date</label><input id="afDate" placeholder="october 12, 1996"></div>'+
+    '<div class="field"><label>birthplace</label><input id="afPlace" placeholder="louisville, kentucky"><div class="hint">timezone + daylight saving handled for you — even for the year they were born ✧</div></div>'+
+    '<div class="field" style="margin-bottom:2px"><label>birth time</label><div style="display:flex;align-items:center;gap:10px"><input id="afTime" placeholder="hh : mm" style="flex:1"><span style="display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:var(--dust)">unknown <button class="sw" id="afUnknown" role="switch" aria-checked="false" aria-label="birth time unknown"><i></i></button></span></div>'+
+    '<div class="hint">no time? no problem — but no faking either: their chart runs at noon and <b>houses + rising stay off</b> until you charm it out of them.</div></div></div>';
+  h+='<div class="blkcard"><div class="nlab" style="margin-bottom:10px">③ how they read themselves</div>'+
+    '<div class="chiprow" id="afHouses"><button class="on" data-h="porphyry">porphyry</button><button data-h="placidus">placidus</button><button data-h="whole sign">whole sign</button></div>'+
+    '<div class="hint">porphyry is house rules. pick placidus if they quote a screenshot app — their file will match what they know.</div></div>';
+  h+='<div style="margin:14px 18px 0"><button class="cta press" id="afSave">plug them in ✦</button><div style="text-align:center;font-size:10.5px;color:var(--faint);margin-top:8px">chart computes once, stays cached · crossings with you appear instantly</div></div>';
+  el('addBody').innerHTML=h;
+  wireAdd();
+}
+
+/* ================= ME (real chart) ================= */
+function renderMe(){
+  var h=head('♏ · THE CHART · ♓','me — the source chart','scorpio sun · aries moon · pisces rising','cal');
+  /* wheel: 12 spokes + planet dots at real longitudes (rotated so ASC sits at 9 o’clock) */
+  var ASC=338.541;
+  var dots=[['☉',222.92],['☽',25.94],['☿',212.36],['♀',242.99],['♂',251.55],['♃',257.0],['♄',348.21],['♅',296.91],['♆',293.05],['♇',239.86]];
+  var svg='<svg width="100%" height="230" viewBox="0 0 340 230" fill="none" aria-label="natal wheel">';
+  svg+='<circle cx="170" cy="115" r="100" stroke="rgba(168,132,47,.4)" stroke-width="1.2"/>';
+  svg+='<circle cx="170" cy="115" r="72" stroke="rgba(60,60,67,.15)" stroke-width="1"/>';
+  for(var i=0;i<12;i++){
+    var a=(180+ (i*30))*Math.PI/180; /* houses counterclockwise from ASC at left */
+    var x1=170+72*Math.cos(a),y1=115-72*Math.sin(a),x2=170+100*Math.cos(a),y2=115-100*Math.sin(a);
+    svg+='<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" stroke="rgba(60,60,67,.18)" stroke-width="1"/>';
+    var mid=(180+i*30+15)*Math.PI/180;
+    svg+='<text x="'+(170+86*Math.cos(mid)).toFixed(1)+'" y="'+(115-86*Math.sin(mid)+3).toFixed(1)+'" text-anchor="middle" fill="rgba(60,60,67,.4)" font-size="8">'+(i+1)+'</text>';
+  }
+  dots.forEach(function(d){
+    var a=(180+(d[1]-ASC))*Math.PI/180;
+    var x=170+100*Math.cos(a),y=115-100*Math.sin(a);
+    svg+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="9" fill="#A8842F"/><text x="'+x.toFixed(1)+'" y="'+(y+3.2).toFixed(1)+'" text-anchor="middle" fill="#fff" font-size="9">'+d[0]+'</text>';
+  });
+  svg+='<text x="170" y="120" text-anchor="middle" fill="#A8842F" font-size="15">✦</text></svg>';
+  h+='<div style="margin:12px 18px 0;background:var(--card);border:1px solid var(--line);border-radius:17px;padding:10px 8px 4px;box-shadow:0 1px 2px rgba(0,0,0,.04)">'+svg+
+    '<div style="display:flex;justify-content:center;gap:14px;font-size:10px;color:var(--dust);padding:0 0 8px"><span>↑ '+ANGLES.asc+'</span><span>mc '+ANGLES.mc+'</span><span style="color:var(--gold)">porphyry cusps ✧</span></div></div>';
+  h+='<div class="caps"><div><span class="se">♏ ☉</span><small>scorpio sun</small></div><div><span class="se">♈ ☽</span><small>aries moon</small></div><div><span class="se">♓ ↑</span><small>pisces rising</small></div><div><b>h8</b><small>sun’s house</small></div></div>';
+  h+='<div class="blkcard"><div class="nlab" style="margin-bottom:4px">placements — tap to read</div>'+
+    NATAL.map(function(p,i){return '<button class="xrow press" data-nat="'+i+'" style="width:100%;background:none;border:none;border-bottom:1px solid var(--hair);text-align:left;padding:9px 0">'+
+      '<span style="flex:0 0 92px;font-size:12.5px;font-weight:600">'+esc(p.k)+(p.rx?' <i style="color:var(--gold);font-style:normal;font-size:9px">Rx</i>':'')+'</span>'+
+      '<span style="flex:1"><span class="se" style="font-style:italic;font-size:13.5px">'+esc(p.sign)+' '+esc(p.deg)+'</span><span style="font-size:10px;color:var(--faint)"> · house '+p.house+'</span>'+
+      '<span class="xsub" id="nat-'+i+'" style="display:none;margin-top:5px">'+esc(p.line)+'</span></span><span class="pchev">＋</span></button>';}).join('')+'</div>';
+  h+='<div class="parchnote">✧ this is your actual stored chart — celestine computed it once, porphyry cusps from your own ASC/MC, cached in <b>natal_positions</b>. every screen in the app routes through it.</div>';
+  el('meBody').innerHTML=h;
+}
+
+/* ================= GRIMOIRE ================= */
+function renderGrim(){
+  var h='<div style="position:relative;padding:12px 18px 0"><div class="halo"></div>'+
+    '<div style="display:flex;align-items:flex-end;justify-content:space-between">'+
+    '<div><div class="eyebrow">☽ · THE GRIMOIRE · ☾</div><div class="se vtitle">book of shadows&nbsp;<span style="font-size:15px;color:var(--gold)">✧</span></div></div>'+
+    '<div style="font-size:11.5px;color:var(--faint);padding-bottom:4px">47 entries ✧</div></div></div>';
+  h+='<div style="padding:11px 18px 0"><button class="press" data-nav="lib" style="width:100%;display:flex;align-items:center;gap:10px;background:#F2EEE3;border:1px solid rgba(168,132,47,.22);border-radius:13px;padding:10px 14px;font-size:12px;font-weight:600;color:var(--gold);text-align:left"><span style="font-size:15px">📚</span><span style="flex:1">the library — tarot ✦ rituals ✦ mysteries</span><span style="color:rgba(168,132,47,.6)">›</span></button></div>';
+  h+='<button class="grimhero press" data-toast="camera opens in the real app 🔮"><div style="position:absolute;top:8px;right:14px;color:rgba(255,255,255,.35);font-size:13px;letter-spacing:5px">✧ ⋆ ☽</div>'+
+    '<div style="display:flex;align-items:center;gap:12px"><span style="font-size:22px">🔮</span><span style="flex:1"><span class="se" style="display:block;font-style:italic;font-size:17px;font-weight:600;color:#fff">read my cards</span><span style="display:block;font-size:11px;color:rgba(255,255,255,.72);margin-top:1px">the cards already know · come see ☽</span></span>'+
+    '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="1.4" stroke-linejoin="round"><path d="M12 2.5c1 5.5 4 8.5 9.5 9.5-5.5 1-8.5 4-9.5 9.5-1-5.5-4-8.5-9.5-9.5 5.5-1 8.5-4 9.5-9.5z"/></svg></div></button>';
+  h+='<div class="caps"><div><b>12 🔥</b><small>streak</small></div><div><b>☽ 9</b><small>this cycle</small></div><div><span class="se">☽ ×7</span><small>most drawn</small></div><div><span class="se" style="color:#4F7B8F">🜄 cups</span><small>your suit</small></div></div>';
+  h+='<div style="margin:9px 18px 0;display:flex;align-items:center;gap:11px;background:var(--parch);border:1px solid var(--parchline);border-radius:13px;padding:10px 13px">'+
+    '<span class="moondisc"></span><span style="flex:1;font-size:12.5px;color:#3a3a3e;line-height:1.3"><b>'+TODAY.moonPhase+'</b> in <span class="se" style="font-style:italic;font-weight:600;font-size:14px">'+TODAY.moonSign+'</span> <span style="color:var(--gold)">♋︎</span><span style="display:block;font-size:10.5px;color:#8a6a1f;margin-top:1px">banishing weather — release, cut, cleanse ✧ · '+TODAY.voc+'</span></span><span style="color:var(--gold);font-size:13px">✧</span></div>';
+  h+='<div class="sechd"><b>⭑ the magic match</b><i></i></div>'+
+    '<button class="pcard press" data-nav="lib"><span class="pav" style="background:var(--parch);color:#8a6a1f;border:1px solid var(--parchline);font-size:15px">🃏</span><span style="flex:1"><span class="se pnm" style="font-size:15px">the exit exam</span><span class="prole">the pull for this moon — tap for the spread</span></span><span class="pchev">›</span></button>'+
+    '<button class="pcard press" data-nav="lib"><span class="pav" style="background:var(--parch);color:#8a6a1f;border:1px solid var(--parchline);font-size:15px">🕯️</span><span style="flex:1"><span class="se pnm" style="font-size:15px">cord-cutting</span><span class="prole">the working — tap for items + steps</span></span><span class="pchev">›</span></button>';
+  h+='<div class="parchnote" style="margin-top:6px"><b>tonight’s micro:</b> burn the charge clean — then cold water on the wrists. ☽</div>';
+  h+='<div class="sechd"><b>july ♋︎</b><i></i><button data-toast="new entry ✦">＋ entry</button></div>';
+  h+='<div style="padding:0 18px">'+
+    '<div style="display:flex;gap:13px;padding-bottom:13px"><div style="flex:0 0 28px;display:flex;flex-direction:column;align-items:center"><div style="width:28px;height:28px;border-radius:50%;background:var(--card);border:1px solid rgba(60,60,67,.14);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--gold)">☽</div><div style="flex:1;width:1.5px;background:rgba(60,60,67,.1);margin-top:4px"></div></div>'+
+    '<div style="flex:1"><div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700">jul 3 · pull · 🌗 ♈︎</div><div class="se" style="font-style:italic;font-size:16px;font-weight:600;margin-top:2px">the tower ⟲ · king of cups ♏︎</div><div style="font-size:12.5px;color:var(--dust);line-height:1.5;margin-top:3px">he texted. i didn’t answer. growth, allegedly.</div></div></div>'+
+    '<div style="display:flex;gap:13px"><div style="flex:0 0 28px;display:flex;flex-direction:column;align-items:center"><div style="width:28px;height:28px;border-radius:50%;background:var(--card);border:1px solid rgba(60,60,67,.14);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--gold)">🔮</div></div>'+
+    '<div style="flex:1"><div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700">jul 1 · reading · 🌕 ♑︎</div><div style="display:flex;gap:11px;margin-top:4px"><div style="flex:0 0 46px;height:60px;border-radius:8px;background:linear-gradient(160deg,#2a2540,#4a3a5e);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);font-size:15px">✦</div><div class="se" style="font-style:italic;font-size:14px;font-weight:600;line-height:1.35">"you already know — the cards are just catching up."</div></div></div></div></div>';
+  el('grimBody').innerHTML=h;
+}
+function renderLib(){
+  var h=head('☽ · THE LIBRARY · ☾','the spreads','','grim');
+  h+='<div class="seg" role="tablist">'+[['spreads','🃏 spreads'],['workings','🕯️ workings'],['lore','📖 lore']].map(function(t){return '<button data-gtab="'+t[0]+'"'+(grimTab===t[0]?' class="on"':'')+'>'+t[1]+'</button>';}).join('')+'</div>';
+  h+='<div style="padding:10px 18px 2px;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)">🜍 scorpio sun · truth work</div>';
+  var list=grimTab==='spreads'?SPREADS:(grimTab==='workings'?WORKINGS:LORE);
+  list.forEach(function(s){
+    h+='<button class="pcard press" data-toast="'+esc(s.nm)+' opens ✦"><span style="flex:1"><span class="se pnm" style="font-size:15px">'+esc(s.nm)+'</span>'+(s.match?'<span class="pchip" style="margin-left:6px">⭑ TONIGHT’S MATCH</span>':'')+'<span class="prole" style="margin-top:3px">'+esc(s.sub)+(s.pulls?' · <b style="color:var(--gold)">'+s.pulls+'</b>':'')+'</span></span><span class="pchev">›</span></button>';
+  });
+  if(grimTab==='spreads')h+='<div class="parchnote">✧ 20 spreads live in the reference layer — each with a classic label + a bestie prompt. tonight’s match keys off the actual moon phase.</div>';
+  if(grimTab==='workings')h+='<div class="parchnote">✧ rituals are trigger-keyed: sign, element, moon phase, event type. tonight is waning — banishing weather, hence the match.</div>';
+  if(grimTab==='lore')h+='<div class="parchnote">✧ court cards → zodiac, knight directions, read-by-color, significators — the grimoire reference, browsable.</div>';
+  el('libBody').innerHTML=h;
+}
+
+/* ================= HEALTH ================= */
+function renderHealth(){
+  var h=head('☽ · THE CYCLE · ☾','day 17 — luteal','simple date math, no medical claims — just patterns','cal');
+  var pct=17/28;
+  var ang=pct*2*Math.PI-Math.PI/2;
+  var lx=170+80*Math.cos(ang),ly=95+80*Math.sin(ang);
+  h+='<div style="margin:12px 18px 0;background:var(--card);border:1px solid var(--line);border-radius:17px;padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,.04)">'+
+    '<svg width="100%" height="190" viewBox="0 0 340 190" fill="none" aria-label="cycle dial">'+
+    '<circle cx="170" cy="95" r="80" stroke="rgba(60,60,67,.12)" stroke-width="10"/>'+
+    '<circle cx="170" cy="95" r="80" stroke="#C08497" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+(2*Math.PI*80*pct).toFixed(1)+' 999" transform="rotate(-90 170 95)"/>'+
+    '<circle cx="'+lx.toFixed(1)+'" cy="'+ly.toFixed(1)+'" r="8" fill="#C08497"/>'+
+    '<text x="170" y="88" text-anchor="middle" fill="#1C1C1E" font-size="26" font-weight="700" font-family="inherit">day 17</text>'+
+    '<text x="170" y="108" text-anchor="middle" fill="rgba(60,60,67,.55)" font-size="11">luteal · ~11 to bleed</text></svg>'+
+    '<div style="display:flex;justify-content:center;gap:8px">'+['menstrual','follicular','ovulatory','luteal'].map(function(p,i){return '<span style="font-size:10px;font-weight:600;border-radius:999px;padding:4px 10px;'+(i===3?'background:#C08497;color:#fff':'background:rgba(60,60,67,.06);color:var(--dust)')+'">'+p+'</span>';}).join('')+'</div></div>';
+  h+='<div class="blkcard"><div class="nlab" style="margin-bottom:6px">cycle × sky</div>'+
+    '<div class="xrow"><span class="xgl">☽</span><span style="flex:1"><span class="se xnm">luteal × waning crescent</span><span class="xsub">body and moon on the same page: both in release mode. say no to one thing today and count it as wellness.</span></span></div>'+
+    '<div class="xrow"><span class="xgl">🌑</span><span style="flex:1"><span class="se xnm">next bleed ≈ jul 24 · new moon jul 14</span><span class="xsub">bleed lands mid-cycle of the lunation — energy trough around the full moon on the 29th. schedule gently.</span></span></div></div>';
+  h+='<div class="blkcard"><div class="nlab" style="margin-bottom:8px">log today</div><div class="chiprow"><button data-toast="logged ✦">cramps</button><button data-toast="logged ✦">fatigue</button><button data-toast="logged ✦" class="on">irritable (earned)</button><button data-toast="logged ✦">glowing</button><button data-toast="logged ✦">craving salt</button></div></div>';
+  h+='<div class="parchnote">✧ anchors live in <b>cycle_logs</b>; the phase is pure date math on your last anchor. the lunation overlay joins the same global almanac as the calendar.</div>';
+  el('healthBody').innerHTML=h;
+}
+
+/* ================= REMINDERS ================= */
+function renderRem(){
+  var h='<div style="position:relative;padding:12px 18px 0"><div class="halo"></div>'+
+    '<div style="display:flex;align-items:flex-end;justify-content:space-between">'+
+    '<div><div class="eyebrow">✧ · REMINDERS · ✧</div><div class="se vtitle">don’t forget, bestie</div></div>'+
+    '<button style="background:none;border:none;font-size:10.5px;font-weight:600;color:var(--gold);padding-bottom:6px" data-toast="new reminder ✦">＋ new</button></div></div>';
+  h+='<div class="blkcard" style="margin-top:12px"><div class="nlab" style="margin-bottom:4px">tonight</div>'+
+    REMS.slice(0,3).map(function(r,i){return remRow(r,i);}).join('')+'</div>';
+  h+='<div class="blkcard"><div class="nlab" style="margin-bottom:4px">this week</div>'+
+    REMS.slice(3).map(function(r,i){return remRow(r,i+3);}).join('')+'</div>';
+  h+='<div class="parchnote">✧ sky-aware reminders key off the same global events layer — void windows, lunations, stations. your custom ones merge in.</div>';
+  el('remBody').innerHTML=h;
+}
+function remRow(r,i){
+  return '<div class="xrow" style="align-items:center"><span class="xgl">'+r.gl+'</span><span style="flex:1"><span class="se xnm">'+esc(r.t)+'</span><span class="xsub">'+esc(r.s)+'</span></span><button class="sw'+(r.on?' on':'')+'" data-rem="'+i+'" role="switch" aria-checked="'+r.on+'" aria-label="toggle reminder"><i></i></button></div>';
+}
+
+/* ================= SETTINGS ================= */
+function renderSet(){
+  var h='<div style="position:relative;padding:12px 18px 0"><div class="halo"></div>'+
+    '<div><div class="eyebrow">✧ · SETTINGS · ✧</div><div class="se vtitle">the fine print</div></div></div>';
+  h+='<div class="blkcard" style="margin-top:12px"><div class="nlab" style="margin-bottom:2px">chart math</div>'+
+    '<div class="setrow"><div style="flex:1"><div class="lbl">house system</div><div class="sub">porphyry is house rules — whole sign + placidus stay available, per person</div><div class="chiprow" style="margin-top:8px"><button class="on">porphyry</button><button data-toast="each person keeps their own — set it on their file ✦">placidus</button><button data-toast="each person keeps their own — set it on their file ✦">whole sign</button></div></div></div>'+
+    '<div class="setrow"><div style="flex:1"><div class="lbl">engine</div><div class="sub">celestine · positions computed once, cached forever · detection is free math</div></div><span class="pchip">locked ✦</span></div></div>';
+  h+='<div class="blkcard"><div class="nlab" style="margin-bottom:2px">voice</div>'+
+    '<div class="setrow"><div style="flex:1"><div class="lbl">the bestie</div><div class="sub">feral but accurate · funny with receipts · no hedging, no fear-mongering · one real concept per reading</div></div><span class="pchip">locked ✦</span></div>'+
+    '<div class="setrow"><div style="flex:1"><div class="lbl">voicing budget</div><div class="sub">prose is written on demand, per event, when you open it — never batch-generated. identical facts never bill twice.</div></div></div></div>';
+  h+='<div class="blkcard"><div class="nlab" style="margin-bottom:2px">privacy</div>'+
+    '<div class="setrow"><div style="flex:1"><div class="lbl">hide all entanglements</div><div class="sub">master switch — kills orbit + the files. for when someone’s looking 👀</div></div><button class="sw'+(entMaster?'':' on')+'" id="setEnt" role="switch" aria-checked="'+(!entMaster)+'" aria-label="hide all entanglements"><i></i></button></div>'+
+    '<div class="setrow"><div style="flex:1"><div class="lbl">your data</div><div class="sub">every table is RLS’d to you. the almanac is the only shared layer.</div></div></div></div>';
+  h+='<div class="blkcard"><div class="nlab" style="margin-bottom:2px">views</div>'+
+    '<div class="setrow"><div style="flex:1"><div class="lbl">me — the source chart</div><div class="sub">scorpio sun · aries moon · pisces rising</div></div><button style="background:none;border:none;color:var(--gold);font-size:13px" data-nav="me">open ›</button></div>'+
+    '<div class="setrow"><div style="flex:1"><div class="lbl">health — the cycle</div><div class="sub">day 17 · luteal</div></div><button style="background:none;border:none;color:var(--gold);font-size:13px" data-nav="health">open ›</button></div></div>';
+  h+='<div class="parchnote">✧ built on: celestine (chart math) · astronomy-engine (global almanac) · supabase (memory) · one paid step: the voice.</div>';
+  el('setBody').innerHTML=h;
+}
+
+/* ================= add-someone wiring ================= */
+var afHouse='porphyry', afTimeUnknown=false;
+function wireAdd(){
+  afTimeUnknown=false;afHouse='porphyry';
+  el('afUnknown').addEventListener('click',function(){
+    afTimeUnknown=!afTimeUnknown;
+    this.classList.toggle('on',afTimeUnknown);
+    this.setAttribute('aria-checked',String(afTimeUnknown));
+    el('afTime').disabled=afTimeUnknown;
+    if(afTimeUnknown)el('afTime').value='';
+  });
+  el('afHouses').addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b)return;
+    afHouse=b.dataset.h;
+    this.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b);});
+  });
+  el('afSave').addEventListener('click',function(){
+    var name=(el('afName').value.trim()||'someone').toLowerCase();
+    var role=el('afRole').value.trim()||'new entanglement';
+    var accents=['#7BB0C4','#86946A','#C08497','#8A9EC9'];
+    PEOPLE.push({id:'p'+Date.now(),name:name,role:role,cat:'talking',accent:accents[PEOPLE.length%accents.length],sun:'✦',
+      big3:afTimeUnknown?'☉ ✦  ☽ ✦  ↑ —':'☉ ✦  ☽ ✦  ↑ ✦',
+      timeKnown:!afTimeUnknown,houseSystem:afHouse,archived:false,tag:null,
+      chip:afTimeUnknown?'birth time unknown · houses off':null,
+      crossings:[{gl:'✦',nm:'computing the crossings…',orb:'',tight:false,sub:'chart computes once from date + city, then this fills in instantly.'}],
+      inYours:[{gl:'✦',nm:'mapping their planets into your houses…',sub:'one compute, cached forever.'}],
+      inTheirs:afTimeUnknown?null:[{gl:'✦',nm:'mapping your planets into their houses…',sub:'one compute, cached forever.'}],
+      note:afTimeUnknown?'☽ <b>one honest note:</b> no birth time yet — their chart runs at noon, houses + rising stay off until you charm it out of them.':null,
+      placements:[['☉ sun','computing…']]});
+    renderOrbit();nav('orbit');
+    toast('plugged in ✦ crossings incoming');
+  });
+}
+
+/* ================= global wiring ================= */
+document.addEventListener('click',function(e){
+  var b;
+  if((b=e.target.closest('[data-open]'))){activeId=b.dataset.open;fileTab='synastry';flipDir='yours';renderFile();nav('file');return;}
+  if((b=e.target.closest('#tabbar>button')))
+    {nav(b.dataset.view);return;}
+  if((b=e.target.closest('[data-nav]'))){if(b.dataset.nav==='add')renderAdd();nav(b.dataset.nav);return;}
+  if((b=e.target.closest('[data-tab]'))){fileTab=b.dataset.tab;renderFile();return;}
+  if((b=e.target.closest('[data-flip]'))){flipDir=b.dataset.flip;renderFile();return;}
+  if((b=e.target.closest('[data-gtab]'))){grimTab=b.dataset.gtab;renderLib();return;}
+  if((b=e.target.closest('[data-illum]'))){var i=b.dataset.illum;var d=el('illum-'+i),hint=el('illumhint-'+i);var open=d.style.display!=='none';d.style.display=open?'none':'block';hint.textContent=open?'tap to voice ✦':'voiced fresh ✦';return;}
+  if((b=e.target.closest('[data-nat]'))){var n=el('nat-'+b.dataset.nat);n.style.display=n.style.display==='none'?'block':'none';return;}
+  if((b=e.target.closest('[data-rem]'))){var r=REMS[+b.dataset.rem];r.on=!r.on;b.classList.toggle('on',r.on);b.setAttribute('aria-checked',String(r.on));return;}
+  if((b=e.target.closest('#setEnt'))){entMaster=!entMaster;b.classList.toggle('on',!entMaster);b.setAttribute('aria-checked',String(!entMaster));renderOrbit();toast(entMaster?'orbit is back ✦':'entanglements hidden 👁');return;}
+  if((b=e.target.closest('[data-toast]'))){toast(b.dataset.toast);return;}
+});
+el('eye').addEventListener('click',function(){hidden=!hidden;renderOrbit();toast(hidden?'orbit hidden 👁':'welcome back ✦');});
+
+renderCal();renderOrbit();renderGrim();renderRem();renderSet();renderMe();renderHealth();renderLib();
+})();
+</script>
