@@ -49,7 +49,12 @@ img{display:block;max-width:100%}
 .ent .ai .al{font-family:var(--caps);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--deep);font-weight:600;margin-bottom:5px}
 
 /* ═══ MOON HERO ═══ */
-.mhero{position:relative;text-align:center;padding:22px 0 4px}
+.mhero{position:relative;text-align:center;padding:30px 0 8px}
+/* the moon breathes — slow, alive, barely there */
+.mhero>svg{animation:breathe 9s ease-in-out infinite}
+.mhero .halo{animation:haloB 9s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+@keyframes haloB{0%,100%{opacity:.75;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.05)}}
 .mhero .halo{position:absolute;left:50%;top:14px;transform:translateX(-50%);width:190px;height:190px;border-radius:50%;
   background:radial-gradient(circle,var(--glow),transparent 68%);pointer-events:none}
 .mhero svg{position:relative;z-index:1;filter:drop-shadow(0 6px 24px var(--glow))}
@@ -180,6 +185,7 @@ img{display:block;max-width:100%}
 @keyframes fxfall{0%{transform:translateY(0) rotate(0deg);opacity:0}12%{opacity:var(--o,.7)}82%{opacity:var(--o,.7)}100%{transform:translateY(108vh) rotate(-28deg);opacity:0}}
 @keyframes fxdrift{0%,100%{transform:translateY(0);opacity:0}25%{opacity:var(--o,.14)}50%{transform:translateY(-14px);opacity:var(--o,.14)}75%{opacity:var(--o,.14)}}
 .fx-shoot{position:absolute;width:110px;height:1.5px;background:linear-gradient(90deg,transparent,var(--accent) 55%,#fff);border-radius:99px;transform:rotate(34deg);opacity:0;animation:fxshoot 1.15s ease-out forwards;filter:drop-shadow(0 0 6px var(--glow))}
+.fx-shoot.amb{position:fixed;z-index:0;pointer-events:none;animation-duration:1.35s}
 @keyframes fxshoot{0%{opacity:0;transform:rotate(34deg) translateX(0)}12%{opacity:.9}100%{opacity:0;transform:rotate(34deg) translateX(52vw)}}
 .sp-glyphs span{animation:twk 3.2s ease infinite}
 .mweek{display:flex;gap:13px;align-items:flex-end;justify-content:center;margin-top:26px}
@@ -360,9 +366,34 @@ img{display:block;max-width:100%}
 [data-type="ceremony"] .h1 .k{opacity:.9}
 .h1s{text-align:center;font-size:12.5px;color:var(--dust);margin-top:5px}
 .h1s b{color:var(--deep);font-weight:600}
-.lab{font-family:var(--sans);font-size:10.5px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--faint);margin:22px 0 9px;display:flex;align-items:center;gap:8px}
+/* one supporting-caps voice everywhere: Montserrat, spaced, quiet */
+.lab{font-family:var(--caps);font-size:9.5px;font-weight:600;letter-spacing:.3em;text-transform:uppercase;color:var(--faint);margin:30px 0 10px;display:flex;align-items:center;gap:8px}
 .lab .lk{margin-left:auto;letter-spacing:.02em;text-transform:lowercase;font-size:12.5px;font-weight:600;color:var(--deep)}
 .card{background:var(--ink);border:1px solid var(--line);border-radius:18px;padding:15px 16px;box-shadow:var(--cs);margin-top:10px;transition:background .8s,border-color .8s}
+/* ── the asks: no chrome, just air. BIG small BIG space. ── */
+.asks{margin:34px 10px 6px;text-align:center}
+.asks .ah{font-family:var(--caps);font-size:9px;letter-spacing:.34em;text-transform:uppercase;color:var(--deep);font-weight:600}
+.asks .ai{font-size:16px;font-weight:600;letter-spacing:-.01em;margin-top:13px}
+.asks .ai i{font-style:normal;font-family:var(--caps);font-size:9px;letter-spacing:.18em;color:var(--accent);margin-right:9px;vertical-align:2px}
+/* ── the day as a timeline: one rail, four moments ── */
+.tl{padding:4px 16px}
+.tlr{display:flex;width:100%;gap:11px;align-items:flex-start;text-align:left;padding:13px 0;border-bottom:1px solid var(--line)}
+.tlr:last-child{border-bottom:0}
+.tlr .tt{font-family:var(--caps);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);font-weight:600;flex:0 0 66px;padding-top:3px}
+.tlr .tg{flex:0 0 auto;font-size:14px;line-height:1.3}
+.tlr .tx{font-size:12.5px;color:var(--dust);line-height:1.45}
+.tlr .tx b{display:block;color:var(--moon);font-weight:600;font-size:13px;margin-bottom:1px}
+.tlr .c{margin-left:auto;color:var(--faint);font-size:15px;flex:0 0 auto;padding-top:4px}
+/* ── page-turn: home sections rise in sequence, like turning a page ── */
+#skyBody>*{animation:rise .55s var(--ease) both}
+#skyBody>*:nth-child(1){animation-delay:.03s}#skyBody>*:nth-child(2){animation-delay:.09s}
+#skyBody>*:nth-child(3){animation-delay:.15s}#skyBody>*:nth-child(4){animation-delay:.21s}
+#skyBody>*:nth-child(5){animation-delay:.27s}#skyBody>*:nth-child(6){animation-delay:.33s}
+#skyBody>*:nth-child(7){animation-delay:.39s}#skyBody>*:nth-child(8){animation-delay:.45s}
+#skyBody>*:nth-child(n+9){animation-delay:.5s}
+/* the star field breathes with the moon */
+[data-type="ceremony"] #stars{animation:starB 14s ease-in-out infinite}
+@keyframes starB{0%,100%{opacity:.8}50%{opacity:1}}
 .pnl{background:var(--ink);border:1px solid var(--line);border-radius:22px;padding:17px;box-shadow:var(--cs);margin-top:11px;transition:background .8s,border-color .8s}
 .row{display:flex;gap:12px;align-items:center;width:100%;background:var(--ink);border:1px solid var(--line);border-radius:18px;padding:14px 15px;box-shadow:var(--cs);margin-top:9px;transition:transform .26s var(--ease)}
 .row:active{transform:scale(.985)}
