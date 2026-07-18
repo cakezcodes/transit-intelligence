@@ -332,6 +332,14 @@ function stars(){const c=document.getElementById('stars'),x=c.getContext('2d');
     x.beginPath();x.arc(Math.random()*c.width,Math.random()*c.height,Math.random()*1.1+.25,0,7);x.fill();}
   x.globalAlpha=1;}
 addEventListener('resize',stars);
+/* ambient delight — every so often, a star lets go */
+function shootingStar(){
+  if(document.hidden||document.documentElement.dataset.type!=='ceremony')return;
+  const s=document.createElement('div');s.className='fx-shoot amb';
+  s.style.top=(6+Math.random()*32)+'vh';s.style.left=(Math.random()*45)+'vw';
+  document.body.appendChild(s);setTimeout(()=>s.remove(),1500);
+}
+setInterval(()=>{if(Math.random()<.45)shootingStar();},24000);
 
 /* ══════════ DECK (all 78 · real 1909 scans) ══════════ */
 const MAJ=[['m00','the fool','♅ uranus','the leap. beginnings, trust, the open road.','recklessness in a freedom costume. look before the cliff.','a yes to starting — pack light'],
@@ -799,9 +807,28 @@ const LOCATE=[['the magician','the power surfacing','the source it comes from'],
  ['wheel of fortune','the cycle you know is turning','the karmic root spinning it']];
 
 /* ══════════ SKY VIEW ══════════ */
+/* the sky has a volume knob — the phase sets it. one serif line rules the page. */
+const SKY_LINE={'new moon':'the sky starts a new sentence','waxing crescent':'the sky is clearing its throat',
+ 'first quarter':'the sky picks a side','waxing gibbous':'the sky is getting louder',
+ 'full moon':'the sky is at full volume','waning gibbous':'the sky starts telling the truth',
+ 'last quarter':'the sky is editing itself','waning crescent':'the sky lowers its voice'};
+const SKY_ASK={
+ 'new moon':['plant it in private','name the want precisely','tell no one yet'],
+ 'waxing crescent':['protect the small thing','feed it daily','skip the announcement'],
+ 'first quarter':['pick the harder right','move before you feel ready','stop asking permission'],
+ 'waxing gibbous':['edit, don\'t abandon','tighten the plan','trust the momentum'],
+ 'full moon':['say it in full light','let yourself be seen','release what already peaked'],
+ 'waning gibbous':['tell the truth about it','share what you learned','thank what worked'],
+ 'last quarter':['cut what\'s finished','archive, don\'t argue','make the ending clean'],
+ 'waning crescent':['rest like it\'s a task','close the open loops','leave room for the new']};
 function renderSky(){
   const d=new Date(); const p=phase(d),pn=phaseName(p),ml=moonLon(d),si=signOf(ml),sl=sunLon(d),ssi=signOf(sl);
   const r=dailyRead(d), vd=voidWindow(d), ill=Math.round((1-Math.cos(2*Math.PI*p))/2*100);
+  /* the masthead knows you — greeting up top, the sky's one serif sentence as the hero */
+  const hr=d.getHours(), who=S.me.name&&S.me.name!=='you'?', '+S.me.name:'';
+  const hi=(hr<5?'good evening':hr<12?'good morning':hr<18?'good afternoon':'good evening')+who;
+  document.getElementById('skyEb').innerHTML=`<span class="cer">☉ · </span>${hi}<span class="cer"> · ☽</span>`;
+  document.getElementById('skyH1').innerHTML=`${SKY_LINE[pn]}<span class="k">✦</span>`;
   document.getElementById('skyDate').innerHTML=fmtL(d);
 
   /* moon hero + 7-day phase ring */
@@ -824,9 +851,13 @@ function renderSky(){
       <p>${r.l1}</p><p>${r.l2}</p>
       <div class="mv"><b>today's move</b>${r.move}</div>
     </button>
+    <div class="asks"><div class="ah">✧ the sky is asking you to ✧</div>
+      ${SKY_ASK[pn].map((a,i)=>`<div class="ai"><i>0${i+1}</i>${a}</div>`).join('')}</div>
+    <div class="lab">today, in order</div>
+    <div class="card tl" id="skyTl"></div>
+    ${S.me.date?`<div class="lab">your chart, right now <button class="lk" onclick="nav('natal')">the wheel ›</button></div><div class="pnl" id="skyNatal"></div>`:''}
     <div class="lab">the sky, expanded</div>
     <div class="card" id="skyEx"></div>
-    ${S.me.date?`<div class="lab">your chart, right now <button class="lk" onclick="nav('natal')">the wheel ›</button></div><div class="pnl" id="skyNatal"></div>`:''}
     <div class="lab">the calendar <button class="lk" onclick="nav('cal')">full view ›</button></div>
     <div class="card" style="padding:12px"><div class="dow"><span>s</span><span>m</span><span>t</span><span>w</span><span>t</span><span>f</span><span>s</span></div>
       <div class="grid" id="homeGrid"></div></div>`;
@@ -838,22 +869,22 @@ function renderSky(){
   const today=S.entries.filter(e=>e.date===key(d));
   const rit=RIT.find(x=>x.ph.includes(pn));
   const cs=cycleSpell(d);
+  /* the day as a page, not a pile — morning to night, each hour hands you one thing */
+  document.getElementById('skyTl').innerHTML=
+   `<button class="tlr" onclick="openRead()"><span class="tt">morning</span><span class="tg">☀️</span>
+      <span class="tx"><b>the hum · sun in ${SIGNS[ssi]}</b>${SIGN_READ[SIGNS[ssi]][0]}. that's the background of every room you walk into today.</span><span class="c">›</span></button>
+    <button class="tlr" onclick="nav('cal')"><span class="tt">afternoon</span><span class="tg">🌤</span>
+      <span class="tx"><b>${vd.active?'the moon is void':'clear to send'}</b>${vd.active?`draft it, don't send it — ~${vd.hrs}h of dead air. sign nothing.`:`the window's open for ~${vd.hrs}h before the moon shifts. do the brave thing early.`}</span><span class="c">›</span></button>
+    <button class="tlr" onclick="nav('lib');setShelf('work');setTimeout(()=>jumpRit('${rit.n}'),90)"><span class="tt">evening</span><span class="tg">🌙</span>
+      <span class="tx"><b>matched working · ${rit.n}</b>${rit.v}</span><span class="c">›</span></button>
+    <button class="tlr" onclick="openEntry()"><span class="tt">night</span><span class="tg">🌌</span>
+      <span class="tx"><b>the page before sleep</b><span class="sf" style="font-size:13px">&ldquo;${PROMPTS[pn]}&rdquo;</span></span><span class="c">›</span></button>`;
   document.getElementById('skyDay').innerHTML=
    `${cs?`<div class="ex"><button class="exh" onclick="this.parentElement.classList.toggle('open')"><span class="g">◉</span>
       <span><span class="a">your body · ${cs.phase}</span><div class="b">the cycle and the moon, cross-referenced</div></span><span class="c">›</span></button>
       <div class="exb"><p>you're in <b>${cs.phase}</b> while the moon is <b>${cs.moon}</b>.</p>
         <p>that stacks. the working that fits both right now is <b>${cs.ritual.n}</b> — ${cs.ritual.v}.</p>
         <div class="mini"><button class="btn sm" onclick="nav('lib');setShelf('work');setTimeout(()=>jumpRit('${cs.ritual.n}'),90)">open it ✧</button></div></div></div>`:''}
-    <div class="ex"><button class="exh" onclick="this.parentElement.classList.toggle('open')"><span class="g">❦</span>
-      <span><span class="a">journal prompt</span><div class="b">${PROMPTS[pn]}</div></span><span class="c">›</span></button>
-      <div class="exb"><p><b>${pn}</b> asks a specific question. a full moon would ask a different one.</p>
-        <div class="mini"><button class="btn sm" onclick="openEntry()">write it ❦</button></div></div></div>
-    <div class="ex"><button class="exh" onclick="this.parentElement.classList.toggle('open')"><span class="g">✧</span>
-      <span><span class="a">matched working · ${rit.n}</span><div class="b">${rit.v}</div></span><span class="c">›</span></button>
-      <div class="exb"><p><b>why now:</b> it wants ${rit.ph.join(' or ')}. that's where the moon's standing.</p>
-        <p><b>you'll need:</b> ${rit.need.join(' · ')}</p>
-        <div class="mini"><button class="btn sm" onclick="nav('lib');setShelf('work');setTimeout(()=>jumpRit('${rit.n}'),90)">open it ✧</button>
-        <button class="btn g sm" onclick="logRitual('${rit.n}')">log it</button></div></div></div>
     <div class="ex"><button class="exh" onclick="openEntry()"><span class="g">＋</span>
       <span><span class="a" style="color:var(--deep)">add to today</span><div class="b">${today.length} ${today.length===1?'entry':'entries'}</div></span><span class="c">›</span></button></div>`;
 }
@@ -974,6 +1005,7 @@ function mergeCloud(out,k){
       (e.event_type_key==='full_moon'&&o.id.startsWith('fm-'))||
       (e.event_category==='void_moon'&&o.lay==='void')||
       (e.event_category==='station'&&o.lay==='retro')||
+      (e.event_category==='ingress'&&o.lay==='ingress')||
       (e.event_category==='sabbat')));
     if(dupe)return;
     out.push({id:'ge-'+e.event_type_key+'-'+k,lay,date:k,
@@ -1002,8 +1034,12 @@ function evForDate(d){
   if(LON.body)FULLMOON.filter(x=>x[0]===k).forEach(x=>out.push({id:'bd-'+k,lay:'body',gl:'♀︎',
     t:'body-sync day',s:x[5],date:k,alm:{kind:'body',d:x}}));
   /* ── computed */
-  if(LON.lunar&&signOf(moonLon(new Date(d.getTime()-86400000)))!==si)
+  const yd=new Date(d.getTime()-86400000), entered=signOf(moonLon(yd))!==si;
+  if(LON.lunar&&entered)
     out.push({id:'ms-'+k,lay:'lunar',gl:'☽',t:`moon enters ${SIGNS[si]}`,s:SIGN_READ[SIGNS[si]][0],date:k});
+  if(LON.ingress){const ss2=signOf(sunLon(d));
+    if(signOf(sunLon(yd))!==ss2)out.push({id:'ig-'+k,lay:'ingress',gl:'⇢',
+      t:`sun enters ${SIGNS[ss2]}`,s:'season shift. the background hum changes key.',date:k});}
   if(LON.void){const v=voidWindow(d);if(v.active)out.push({id:'v-'+k,lay:'void',gl:'⊘',t:'moon goes void',s:`~${v.hrs}h — don't launch`,date:k});}
   if(LON.natal&&S.me.date){
     const nb=parse(S.me.date), nsun=signOf(sunLon(nb)), nmoon=signOf(moonLon(nb));
@@ -1020,8 +1056,38 @@ function evForDate(d){
     if(si===pm)out.push({id:'pl-'+k+pp.name,lay:'theirs',gl:'☾',
       t:`${pp.name} · lunar return`,s:'they\'re raw and resetting. won\'t admit it.',date:k,who:pp.name});
   });
+  /* ── entanglements: synastry — the moon walks over a planet in BOTH charts at once */
+  if(LON.syn&&S.me.date&&entered){
+    const myB=parse(S.me.date), PERS=['sun','moon','venus','mars'];
+    S.people.filter(pp=>pp.date).forEach(pp=>{
+      const thB=parse(pp.date);
+      const mine=PERS.filter(p=>signOf(PL[p](myB))===si), th=PERS.filter(p=>signOf(PL[p](thB))===si);
+      if(mine.length&&th.length)out.push({id:'sy-'+k+pp.name,lay:'syn',gl:'♡',
+        t:`synastry hit · you & ${pp.name}`,
+        s:`moon's sitting on your ${mine[0]} and their ${th[0]} at the same time. same weather, both charts.`,date:k,who:pp.name});
+    });
+  }
+  /* ── entanglements: composite — moon crosses the midpoint sun of you two */
+  if(LON.comp&&S.me.date&&entered){
+    const myS=sunLon(parse(S.me.date));
+    S.people.filter(pp=>pp.date).forEach(pp=>{
+      const thS=sunLon(parse(pp.date)), df=nm(thS-myS);
+      const cSun=df<=180?nm(myS+df/2):nm(thS+(360-df)/2);
+      if(signOf(cSun)===si)out.push({id:'cp-'+k+pp.name,lay:'comp',gl:'◍',
+        t:`composite lit · you & ${pp.name}`,
+        s:'the moon crosses the sun of the third chart. the relationship itself is the main character today.',date:k,who:pp.name});
+    });
+  }
   /* ── cycle: predicted from logs */
   if(LON.cycle)cyclePredict(d).forEach(c=>out.push({...c,date:k}));
+  /* ── beauty timing: the four turns of the moon, translated to hair/skin/ink */
+  if(LON.beauty&&pn!==phaseName(pv)){
+    const BT={'new moon':['skin reset','strip it back. hydrate, rest, book nothing. blank canvas day.'],
+      'first quarter':['growth window opens','cut hair now if you want it back fast. lashes, brows, gloss — everything you want MORE of.'],
+      'full moon':['glow peak','gloss, glaze, get photographed. skin drinks everything tonight.'],
+      'last quarter':['removal window','wax, detox, trim ends to slow regrowth. fresh ink heals clean on the wane.']};
+    if(BT[pn])out.push({id:'bt-'+k,lay:'beauty',gl:'✧',t:`beauty timing · ${BT[pn][0]}`,s:BT[pn][1],date:k});
+  }
   /* ── rituals matched to sky */
   if(LON.ritual&&(pn==='new moon'||pn==='full moon')){
     const r=RIT.find(x=>x.ph.includes(pn));
@@ -1098,7 +1164,7 @@ function renderCal(){
   document.getElementById('dSel').innerHTML=ev.length?ev.map(e=>evRow(e)).join('')
     :`<div class="card" style="font-size:13px;color:var(--dust)">nothing on the books. the sky's quiet — ${MOOD[phaseName(p)].toLowerCase()}</div>`;
   document.getElementById('quickLay').innerHTML=LAYERS.flatMap(g=>g.items).slice(0,7).map(i=>
-    `<button class="chip${LON[i.id]?' on':''}" onclick="LON['${i.id}']=!LON['${i.id}'];renderCal()">${i.gl} ${i.n}</button>`).join('');
+    `<button class="chip${LON[i.id]?' on':''}" onclick="LON['${i.id}']=!LON['${i.id}'];renderCal();tiSave()">${i.gl} ${i.n}</button>`).join('');
   document.getElementById('sixPlan').innerHTML=NEWMOON.filter(x=>x[0]>=key(new Date())).slice(0,6).map(x=>
     `<button class="six" style="width:100%;text-align:left" onclick="S.sel='${x[0]}';S.cursor=parse('${x[0]}');renderCal();openEv('${x[0]}','6-${x[0]}')">
       <div class="sh"><span class="sd">${fmt(parse(x[0]))}</span><span class="sn">new moon in ${x[1]}</span></div>
@@ -1165,7 +1231,7 @@ function closeDayPage(){document.getElementById('dayPage').classList.remove('on'
 function renderLayers(){
   document.getElementById('layerGroups').innerHTML=LAYERS.map(g=>
    `<div class="lab">${g.g}</div><div class="card">${g.items.map(i=>
-     `<button class="lay" onclick="LON['${i.id}']=!LON['${i.id}'];renderLayers();toast('${i.n} ${LON[i.id]?'off':'on'}')">
+     `<button class="lay" onclick="LON['${i.id}']=!LON['${i.id}'];renderLayers();tiSave();toast('${i.n} ${LON[i.id]?'off':'on'}')">
         <span class="lg" style="color:${i.c}">${i.gl}</span>
         <span class="ln">${i.n}<div class="ld">${i.d}</div></span>
         <span class="tog${LON[i.id]?' on':''}"></span></button>`).join('')}</div>`).join('');
@@ -2365,6 +2431,7 @@ function tiSnapshot(){
   });
   const de=document.documentElement;
   out.__ui={mode:de.dataset.mode,type:de.dataset.type,grad:de.dataset.grad};
+  out.__lon={...LON};
   return out;
 }
 function tiRestore(state){
@@ -2374,6 +2441,7 @@ function tiRestore(state){
     const v=state[k];
     S[k]=(v&&typeof v==='object'&&v.__date)?new Date(v.__date):v;
   });
+  if(state.__lon)Object.keys(LON).forEach(k=>{if(k in state.__lon)LON[k]=!!state.__lon[k];});
   if(state.__ui){
     const de=document.documentElement;
     if(state.__ui.mode)de.dataset.mode=state.__ui.mode;
