@@ -2,11 +2,13 @@
   "name": "transit-intelligence",
   "version": "1.0.0",
   "description": "Transit Intelligence is a cosmic calendar and personal grimoire system by CakezCodes.",
-  "main": "index.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "validate:syd-chart": "node scripts/validate-syd-chart.mjs",
     "test:supabase-chart": "node scripts/test-supabase-chart.mjs",
     "inspect:chart-shape": "node scripts/inspect-celestine-chart-shape.mjs",
@@ -21,11 +23,19 @@
   "license": "UNLICENSED",
   "type": "commonjs",
   "dependencies": {
+    "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.45.4",
-    "celestine": "^0.2.1"
+    "celestine": "^0.2.1",
+    "next": "^15.3.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "private": true,
   "devDependencies": {
-    "supabase": "^2.108.0"
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "supabase": "^2.108.0",
+    "typescript": "^5.8.3"
   }
 }
