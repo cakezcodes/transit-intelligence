@@ -1749,7 +1749,7 @@ function rereadEntry(id){
   const dt=parse(e.date),si=signOf(moonLon(dt));
   const sp=findSpr(e.spread);
   sheet(`<div class="gb"></div><div class="cap" style="font-size:9.5px;color:var(--deep);text-align:center">✦ · the read · ✦</div>
-    <div class="sf" style="font-size:23px;text-align:center;margin-top:3px">${e.title}</div>
+    <div class="sf" style="font-size:23px;text-align:center;margin-top:3px">${esc(e.title)}</div>
     <div style="font-size:11.5px;color:var(--dust);text-align:center;margin-top:3px">${fmt(dt)} · ${e.sky||''}</div>
     ${sp?sprLay(sp,e.cards)+`<ol class="spos">${sp.p.map((p,i)=>`<li>${p}${e.cards[i]?' — <b>'+byKey(e.cards[i].k).n+(e.cards[i].rev?' ⟲':'')+'</b>':''}</li>`).join('')}</ol>`:`<div class="selr" style="justify-content:center;margin-top:14px">${e.cards.map(c=>`<span class="sc"><img src="${IMG[c.k]}" class="${c.rev?'rv':''}" style="width:56px"></span>`).join('')}</div>`}
     <div class="airead" id="aiBox"><div class="al">✦ the read</div>
@@ -1773,11 +1773,11 @@ function openInter(who,kind){
   const cs=cycleSpell(d);
   sheet(`<div class="gb"></div>
     <div class="cap" style="font-size:9.5px;color:var(--deep);text-align:center">◉ · entanglement · ◉</div>
-    <div class="sf" style="font-size:24px;text-align:center;margin-top:3px">${who?'with '+who:'log an interaction'}</div>
+    <div class="sf" style="font-size:24px;text-align:center;margin-top:3px">${who?'with '+esc(who):'log an interaction'}</div>
     <div style="font-size:11.5px;color:var(--dust);text-align:center;margin-top:3px">${phaseName(p)} in ${SIGNS[si]} ${GLY[si]}${cs?' · '+cs.phase:''}</div>
     ${!who?`<div class="lab">who</div><div class="pchip" id="iWho">${S.people.map(pp=>
-      `<button onclick="interWho='${pp.name}';document.querySelectorAll('#iWho button').forEach(b=>b.classList.remove('on'));this.classList.add('on')">
-        <span class="av">${pp.name[0]}</span>${pp.name}</button>`).join('')||'<div style="font-size:12.5px;color:var(--dust)">add someone to orbit first ☍</div>'}</div>`:''}
+      `<button onclick="interWho='${esc(jsq(pp.name))}';document.querySelectorAll('#iWho button').forEach(b=>b.classList.remove('on'));this.classList.add('on')">
+        <span class="av">${esc(pp.name[0])}</span>${esc(pp.name)}</button>`).join('')||'<div style="font-size:12.5px;color:var(--dust)">add someone to orbit first ☍</div>'}</div>`:''}
     <div class="lab">what happened</div>
     <div class="ilog" id="iKind">${INTER.map(t=>
       `<button class="${t[1]===interSel?'on':''}" onclick="interSel='${t[1]}';document.querySelectorAll('#iKind button').forEach(b=>b.classList.remove('on'));this.classList.add('on');document.getElementById('iX').innerHTML=interExtra()">
