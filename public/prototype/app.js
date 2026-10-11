@@ -1,3 +1,9 @@
+/* debug: surface JS errors on screen during boot (remove once stable) */
+window.addEventListener('error',function(e){
+  var d=document.createElement('div');d.style.cssText='position:fixed;bottom:60px;left:8px;right:8px;z-index:9999;background:#FF5A36;color:#fff;padding:10px;font:11px/1.4 monospace;border-radius:4px;max-height:30vh;overflow:auto';
+  d.textContent='JS error: '+e.message+' @ '+(e.filename||'').split('/').pop()+':'+e.lineno;
+  document.body.appendChild(d);setTimeout(function(){d.remove();},12000);
+});
 const IMG = /*CARDIMGS*/{};
 
 /* ══════════ REAL SKY MATH ══════════ */
@@ -942,6 +948,7 @@ function obR(){
   document.getElementById('obDots').innerHTML=[0,1,2,3].map(i=>`<span class="dt${i===obS?' on':''}"></span>`).join('');
   document.getElementById('obNext').textContent=OBL[obS];
 }
+try{
 document.getElementById('obLanes').innerHTML=LANES.map(l=>`<button class="chip${S.me.lanes.includes(l)?' on':''}" onclick="this.classList.toggle('on')">${l}</button>`).join('');
 document.getElementById('obSw').innerHTML=swHTML();
 document.getElementById('obNext').onclick=()=>{
@@ -953,6 +960,7 @@ document.getElementById('obNext').onclick=()=>{
   }
   if(obS<3){obS++;obR();}else obDone();
 };
+}catch(e){console.error('ob init:',e);}
 function obDone(){
   /* save birth data from onboarding */
   const n=document.getElementById('obName').value;
@@ -1115,8 +1123,10 @@ async function tiBoot(){
     try{const cloud=await window.tiCloud.loadState();tiRestore(cloud);tiLastSaved=JSON.stringify(tiSnapshot());}
     catch(e){/* first launch or offline — fresh S carries it */}
   }
-  stars();obR();renderSky();renderCal();renderShelf();renderJournal();renderGrim();renderOrbit();renderMe();
-  healTz();syncBackend();
+  const _run=[['stars',stars],['obR',obR],['renderSky',renderSky],['renderCal',renderCal],['renderShelf',renderShelf],['renderJournal',renderJournal],['renderGrim',renderGrim],['renderOrbit',renderOrbit],['renderMe',renderMe]];
+  for(const [n,fn] of _run){try{fn();}catch(e){console.error('tiBoot crash in '+n+':',e);}}
+  try{healTz();}catch(e){console.error('healTz:',e);}
+  try{syncBackend();}catch(e){console.error('syncBackend:',e);}
   tiSplash();
 }
 /* the greeting reads the actual sky before it opens its mouth */
@@ -1124,12 +1134,10 @@ function greetLine(){
   const now=new Date(), hr=now.getHours(), k=key(now);
   const nm=S.me.name&&S.me.name!=='you'?', '+S.me.name:'';
   const hi=(hr<5?'good evening':hr<12?'good morning':hr<18?'good afternoon':'good evening')+nm+'.';
-  const nmRow=NEWMOON.find(x=>x[0]===k), fmRow=FULLMOON.find(x=>x[0]===k);
-  if(fmRow&&/eclipse/i.test(fmRow[3]+fmRow[4]))return [hi,'today\'s sky asks for your attention.'];
-  if(nmRow&&/eclipse/i.test(nmRow[3]))return [hi,'today\'s sky asks for your attention.'];
-  if(fmRow)return [hi,'the full moon is waiting.'];
-  if(nmRow)return [hi,'it\'s time to plant something new.'];
-  if(isRx('mercury',now))return [hi,'mercury has something to say today.'];
+  /* use live moon phase instead of removed NEWMOON/FULLMOON tables */
+  const p=phase(now),pn=phaseName(p);
+  if(pn==='full moon')return [hi,'the full moon is waiting.'];
+  if(pn==='new moon')return [hi,'it\'s time to plant something new.'];
   if(hr>=22||hr<5)return [hi,'one last look at the sky?'];
   if(hr<12)return [hi,'your almanac is ready.'];
   if(hr<18)return [hi,'let\'s see what\'s changed.'];
