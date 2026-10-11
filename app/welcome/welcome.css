@@ -1,24 +1,34 @@
 /* welcome · account gate — astrocake design system: square, neutral, Inter Tight */
-.wl-wrap{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 32px;position:relative;background:var(--bg,#eeece8);color:var(--ink,#1a1917)}
+/* hardcoded colors — prototype.css redefines --ink/--line/etc. on [data-mode], so
+   CSS var fallbacks don't work here; use the actual values directly. */
+.wl-wrap{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 32px;position:relative;background:#eeece8;color:#1a1917}
 .wl-glow{position:fixed;top:-120px;left:50%;transform:translateX(-50%);width:560px;max-width:150vw;height:340px;border-radius:999px;background:radial-gradient(closest-side,rgba(199,176,245,.18),transparent 72%);pointer-events:none;filter:blur(6px);opacity:.5}
 .wl-card{width:100%;max-width:360px;position:relative;z-index:1}
-.wl-caps{font-family:'Inter Tight',sans-serif;text-transform:uppercase;font-weight:700;letter-spacing:.28em;font-size:10px;color:var(--ink,#1a1917);text-align:center}
+.wl-caps{font-family:'Inter Tight',sans-serif;text-transform:uppercase;font-weight:700;letter-spacing:.28em;font-size:10px;color:#1a1917;text-align:center}
 .wl-title{font-family:'Inter Tight',sans-serif;font-style:italic;text-transform:uppercase;font-weight:800;font-size:28px;text-align:center;margin-top:8px;letter-spacing:.04em}
-.wl-orn{text-align:center;color:var(--ink,#1a1917);font-size:13px;letter-spacing:.4em;margin:14px 0 6px;opacity:.45}
-.wl-sub{text-align:center;font-size:13px;color:var(--dust,#5a564f);margin-bottom:26px;font-family:'Inter Tight',sans-serif;letter-spacing:.12em;text-transform:uppercase;font-weight:500}
+.wl-orn{text-align:center;color:#1a1917;font-size:13px;letter-spacing:.4em;margin:14px 0 6px;opacity:.45}
+.wl-sub{text-align:center;font-size:13px;color:#5a564f;margin-bottom:26px;font-family:'Inter Tight',sans-serif;letter-spacing:.12em;text-transform:uppercase;font-weight:500}
 .wl-field{margin-top:12px}
-.wl-field label{font-family:'Inter Tight',sans-serif;text-transform:uppercase;font-weight:700;letter-spacing:.2em;font-size:9px;color:var(--ink,#1a1917);display:block;margin-bottom:6px;margin-left:2px}
-.wl-field input{width:100%;padding:13px 14px;border:1.5px solid var(--line,#cfcac1);border-radius:0;background:transparent;font:400 14px/1.4 'Inter Tight',sans-serif;color:var(--ink,#1a1917);outline:none;transition:border-color .2s}
-.wl-field input:focus{border-color:var(--ink,#1a1917)}
-.wl-field input::placeholder{color:var(--dust,#5a564f);opacity:.6}
-.wl-btn{display:block;width:100%;margin-top:22px;background:var(--ink,#1a1917);color:var(--bg,#eeece8);border:1.5px solid var(--ink,#1a1917);border-radius:0;padding:14px;text-align:center;font:700 13px/1 'Inter Tight',sans-serif;letter-spacing:.18em;text-transform:uppercase;transition:transform .26s,opacity .26s;cursor:pointer}
+.wl-field label{font-family:'Inter Tight',sans-serif;text-transform:uppercase;font-weight:700;letter-spacing:.2em;font-size:9px;color:#1a1917;display:block;margin-bottom:6px;margin-left:2px}
+.wl-field input{width:100%;padding:13px 14px;border:1.5px solid #cfcac1;border-radius:0;background:transparent;font:400 14px/1.4 'Inter Tight',sans-serif;color:#1a1917;outline:none;transition:border-color .2s}
+.wl-field input:focus{border-color:#1a1917}
+.wl-field input::placeholder{color:#5a564f;opacity:.6}
+.wl-btn{display:block;width:100%;margin-top:22px;background:#1a1917;color:#eeece8;border:1.5px solid #1a1917;border-radius:0;padding:14px;text-align:center;font:700 13px/1 'Inter Tight',sans-serif;letter-spacing:.18em;text-transform:uppercase;transition:transform .26s,opacity .26s;cursor:pointer}
 .wl-btn:active{transform:scale(.97)}
 .wl-btn[disabled]{opacity:.55}
-.wl-swap{display:block;margin:18px auto 0;font-size:12.5px;color:var(--dust,#5a564f);text-align:center;font-family:'Inter Tight',sans-serif;background:none;border:none;cursor:pointer}
-.wl-swap b{color:var(--ink,#1a1917);font-weight:700}
+.wl-swap{display:block;margin:18px auto 0;font-size:12.5px;color:#5a564f;text-align:center;font-family:'Inter Tight',sans-serif;background:none;border:none;cursor:pointer}
+.wl-swap b{color:#1a1917;font-weight:700}
 .wl-err{margin-top:14px;font-size:12.5px;color:#FF5A36;text-align:center;line-height:1.5;font-family:'Inter Tight',sans-serif}
-.wl-note{margin-top:16px;background:transparent;border:1.5px solid var(--line,#cfcac1);border-radius:0;padding:13px 15px;font-size:13px;line-height:1.55;text-align:center;font-family:'Inter Tight',sans-serif}
+.wl-note{margin-top:16px;background:transparent;border:1.5px solid #cfcac1;border-radius:0;padding:13px 15px;font-size:13px;line-height:1.55;text-align:center;font-family:'Inter Tight',sans-serif}
 
 /* dark mode */
-[data-mode="dark"] .wl-wrap{--bg:#1a1917;--ink:#eeece8;--dust:#b5ac9d;--line:#3a3835}
+[data-mode="dark"] .wl-wrap{background:#1a1917;color:#eeece8}
+[data-mode="dark"] .wl-caps,[data-mode="dark"] .wl-orn,[data-mode="dark"] .wl-field label{color:#eeece8}
+[data-mode="dark"] .wl-title{color:#eeece8}
+[data-mode="dark"] .wl-sub,[data-mode="dark"] .wl-swap,[data-mode="dark"] .wl-field input::placeholder{color:#b5ac9d}
+[data-mode="dark"] .wl-field input{color:#eeece8;border-color:#3a3835}
+[data-mode="dark"] .wl-field input:focus{border-color:#eeece8}
+[data-mode="dark"] .wl-btn{background:#eeece8;color:#1a1917;border-color:#eeece8}
+[data-mode="dark"] .wl-swap b{color:#eeece8}
+[data-mode="dark"] .wl-note{border-color:#3a3835}
 [data-mode="dark"] .wl-glow{background:radial-gradient(closest-side,rgba(199,176,245,.12),transparent 72%)}
