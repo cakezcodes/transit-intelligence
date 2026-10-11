@@ -1,10 +1,10 @@
+/* astrocake design system — typography tokens */
 :root {
-  --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif;
-  --font-serif: "Playfair Display", Georgia, "Times New Roman", serif;
-  --font-serif-alt: "DM Serif Display", Georgia, serif;
-  --font-caps: "Montserrat", var(--font-sans);
+  --font-sans: "Inter Tight", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif;
+  --font-serif: "Manufacturing Consent", "Inter Tight", sans-serif;
+  --font-caps: "Inter Tight", var(--font-sans);
 
-  --font-display: var(--font-serif);
+  --font-display: var(--font-sans);
   --font-body: var(--font-sans);
 
   --w-regular: 400;
@@ -12,6 +12,7 @@
   --w-semibold: 600;
   --w-bold: 700;
   --w-heavy: 800;
+  --w-black: 900;
 
   --t-display: 48px;
   --t-title: 29px;
@@ -34,31 +35,43 @@
   --leading-relaxed: 1.6;
 }
 
+/* astrocake type law: Inter Tight ALL CAPS ITALIC for headers */
 .t-eyebrow {
   font-family: var(--font-sans);
   font-size: var(--t-eyebrow);
-  font-weight: var(--w-heavy);
+  font-weight: var(--w-bold);
   letter-spacing: var(--track-eyebrow);
   text-transform: uppercase;
   color: var(--faint);
 }
 
 .t-title {
-  font-family: var(--font-serif);
-  font-weight: var(--w-semibold);
+  font-family: var(--font-sans);
+  font-weight: var(--w-heavy);
+  font-style: italic;
   font-size: var(--t-title);
-  color: var(--moon);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--ink);
 }
 
 .t-title-italic {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-style: italic;
-  font-weight: var(--w-semibold);
+  font-weight: var(--w-heavy);
+  text-transform: uppercase;
 }
 
 .t-ceremony {
   font-family: var(--font-caps);
-  font-weight: var(--w-medium);
+  font-weight: var(--w-bold);
   letter-spacing: var(--track-ceremony);
   text-transform: uppercase;
+}
+
+/* blackletter: Manufacturing Consent — small pops only */
+.t-blackletter {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  text-transform: none;
 }

@@ -1,62 +1,48 @@
+/* astrocake design system — surface tokens */
 :root {
-  --void: #F2F2F7;
-  --void2: #FFFFFF;
-  --ink: #FFFFFF;
-  --ink2: #F4F4F7;
-  --line: rgba(60, 60, 67, 0.16);
-  --moon: #1C1C1E;
-  --dust: rgba(60, 60, 67, 0.62);
-  --faint: rgba(60, 60, 67, 0.42);
+  --bg: #eeece8;
+  --bg-ad: #f2ebdd;
+  --ink: #1a1917;
+  --ink2: #2b2720;
+  --moon: #eeece8;
+  --dust: #5a564f;
+  --line: #1a1917;
+  --line-soft: #cfcac1;
+  --faint: rgba(26, 25, 23, 0.32);
 
   --green: #34A85B;
-  --red: #FF3B30;
-  --gold: #D2A24B;
+  --red: #FF5A36;
 
-  --accent: #A8842F;
-  --accent-soft: rgba(168, 132, 47, 0.16);
-  --glass: rgba(248, 248, 250, 0.72);
+  --accent: #1a1917;
+  --accent-soft: rgba(26, 25, 23, 0.08);
+  --glass: rgba(238, 236, 232, 0.72);
 
-  --text-body: var(--moon);
+  --text-body: var(--ink);
   --text-secondary: var(--dust);
   --text-tertiary: var(--faint);
-  --surface-page: var(--void);
-  --surface-raised: var(--void2);
-  --surface-card: var(--ink);
-  --surface-sunken: var(--ink2);
-  --border-hairline: var(--line);
+  --surface-page: var(--bg);
+  --surface-raised: var(--bg-ad);
+  --surface-card: var(--bg);
+  --surface-sunken: var(--bg-ad);
+  --border-hairline: var(--line-soft);
   --moonlight: var(--moon);
 
   color-scheme: light;
 }
 
-[data-theme="dark"] {
-  --void: #000000;
-  --void2: #1C1C1E;
-  --ink: #1C1C1E;
-  --ink2: #2C2C2E;
-  --line: rgba(84, 84, 88, 0.55);
-  --moon: #FFFFFF;
-  --dust: rgba(235, 235, 245, 0.64);
-  --faint: rgba(235, 235, 245, 0.40);
-  --green: #4FC177;
-  --red: #FF453A;
-  --gold: #D2A24B;
-  --glass: rgba(30, 30, 32, 0.74);
-  color-scheme: dark;
-}
+[data-mode="dark"], [data-theme="dark"] {
+  --bg: #1a1917;
+  --bg-ad: #2b2a28;
+  --ink: #eeece8;
+  --ink2: #d5d0c8;
+  --moon: #1a1917;
+  --dust: #b5ac9d;
+  --line: #eeece8;
+  --line-soft: #3a3835;
+  --faint: rgba(238, 236, 232, 0.32);
 
-[data-theme="afterdark"] {
-  --void: #0B0A0F;
-  --void2: #16131D;
-  --ink: #16131D;
-  --ink2: #1F1B29;
-  --line: rgba(214, 188, 255, 0.14);
-  --moon: #F6F1FB;
-  --dust: rgba(230, 222, 242, 0.62);
-  --faint: rgba(230, 222, 242, 0.40);
-  --green: #4FC177;
-  --red: #FF5577;
-  --gold: #D2A24B;
-  --glass: rgba(22, 19, 29, 0.74);
+  --accent: #eeece8;
+  --accent-soft: rgba(238, 236, 232, 0.08);
+  --glass: rgba(26, 25, 23, 0.74);
   color-scheme: dark;
 }

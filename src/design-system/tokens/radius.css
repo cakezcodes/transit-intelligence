@@ -1,17 +1,18 @@
+/* astrocake design system — square everything */
 :root {
-  --r-xs: 6px;
-  --r-sm: 8px;
-  --r-md: 12px;
-  --r-lg: 14px;
-  --r-xl: 16px;
-  --r-2xl: 18px;
-  --r-3xl: 22px;
-  --r-4xl: 24px;
-  --r-sheet: 26px;
-  --r-pill: 999px;
+  --r-xs: 0;
+  --r-sm: 0;
+  --r-md: 0;
+  --r-lg: 0;
+  --r-xl: 0;
+  --r-2xl: 0;
+  --r-3xl: 0;
+  --r-4xl: 0;
+  --r-sheet: 0;
+  --r-pill: 0;
 
-  --r-button: var(--r-xl);
-  --r-input: var(--r-xl);
-  --r-card: var(--r-2xl);
-  --r-panel: var(--r-3xl);
+  --r-button: 0;
+  --r-input: 0;
+  --r-card: 0;
+  --r-panel: 0;
 }
