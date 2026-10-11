@@ -1146,63 +1146,20 @@ function moonWeek(){
   }
   return h;
 }
-/* splash fx: rising sparkles, ambient zodiac glyphs, the occasional shooting star */
-function splashFx(id='spFx'){
-  const fx=document.getElementById(id); if(!fx)return;
-  const SPK=['✦','✧','⋆','✶','·','✦','✧','⋆'];
-  for(let i=0;i<22;i++){
-    const s=document.createElement('span'); s.className='fx-spk';
-    s.textContent=SPK[i%SPK.length];
-    s.style.left=Math.random()*100+'%';
-    s.style.fontSize=(7+Math.random()*10)+'px';
-    s.style.setProperty('--o',(.3+Math.random()*.55).toFixed(2));
-    s.style.animationDuration=(7+Math.random()*9)+'s';
-    s.style.animationDelay=(-Math.random()*14)+'s';
-    fx.appendChild(s);
-  }
-  const BIG=['✺','❋','✧','✶','✦'];
-  for(let i=0;i<7;i++){
-    const g=document.createElement('span'); g.className='fx-gly';
-    g.textContent=BIG[Math.floor(Math.random()*BIG.length)];
-    g.style.left=(4+Math.random()*88)+'%';
-    g.style.top=(6+Math.random()*82)+'%';
-    g.style.fontSize=(16+Math.random()*22)+'px';
-    g.style.setProperty('--o',(.05+Math.random()*.09).toFixed(2));
-    g.style.animationDuration=(9+Math.random()*8)+'s';
-    g.style.animationDelay=(-Math.random()*12)+'s';
-    fx.appendChild(g);
-  }
-  const shoot=()=>{
-    if(id==='spFx'&&document.getElementById('splash').classList.contains('off'))return;
-    if(id==='obFx'&&!document.getElementById('ob').classList.contains('on'))return;
-    const st=document.createElement('span'); st.className='fx-shoot';
-    st.style.top=(2+Math.random()*26)+'%';
-    st.style.left=(-8+Math.random()*22)+'%';
-    fx.appendChild(st);
-    setTimeout(()=>st.remove(),1300);
-    setTimeout(shoot,2600+Math.random()*3200);
-  };
-  setTimeout(shoot,1100);
-}
 /* next injects these scripts after the page 'load' event has already fired,
    so the splash runs by explicit call from tiBoot, not a load listener */
 function tiSplash(){
-  splashFx();splashFx('obFx');
-  const sps=document.querySelectorAll('.sp-s');
+  /* sparkle swipe on INTELLIGENCE */
+  setTimeout(()=>{const sw=document.getElementById('spSwipe');if(sw)sw.classList.add('glow');},1400);
   const returning=S.onboarded;
   if(returning){
-    /* brand splash → sky-aware greeting → straight into the app */
+    /* returning user: brand splash → sky-aware greeting toast → straight into the app */
     const g=greetLine();
-    setTimeout(()=>{
-      sps.forEach(s=>s.classList.remove('on'));
-      document.getElementById('grHi').textContent=g[0];
-      document.getElementById('grSub').textContent=g[1];
-      document.getElementById('grMoon').innerHTML=moonWeek();
-      document.querySelector('[data-sp="greet"]').classList.add('on');
-    },850);
-    setTimeout(()=>{document.getElementById('splash').classList.add('off');},2500);
+    setTimeout(()=>{document.getElementById('splash').classList.add('off');},1800);
+    setTimeout(()=>{toast(g[0]+' '+g[1]);},2200);
   } else {
-    setTimeout(()=>{document.getElementById('ob').classList.add('on');},2900);
-    setTimeout(()=>{document.getElementById('splash').classList.add('off');},3400);
+    /* new user: brand splash → onboarding */
+    setTimeout(()=>{document.getElementById('ob').classList.add('on');},2400);
+    setTimeout(()=>{document.getElementById('splash').classList.add('off');},2900);
   }
 }
