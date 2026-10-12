@@ -87,3 +87,13 @@ Ported the v11 prototype onto Next.js + Supabase auth + server-side OpenAI. See 
 ### Notes
 
 Migration `20261012000100_people_is_self.sql` must be applied (`supabase db push`) before self charts store; until then the route still returns the chart and the app keeps it in `app_state`. Verified in headless Chromium against a mock Supabase: welcome splash → sign-in → onboarding → cast (8°32′ Pisces rising, matches the Syd fixture) → all tabs, sheets, back nav, reload, dark mode — zero page errors.
+
+## 2026-10-12 (later) — aligned to the astrocake 2.0.0 handoff
+
+The design-system repo now holds the full rebrand (brand book, tokens, chart engine, calendar sheet, site, apps, shop kit). The app was brought into line with it:
+
+- **Calendar = the Cosmic Calendar sheet**: ✦astrocake masthead, engine natal line, square ink-edged layer keys, standing bar, sheet shorthand in day cells (default "sheet" view), double-framed What to Watch, sheet footer. Cosmic Sky is stone, flagged days tomato.
+- **Wheel = the Natal Blueprint `wheel()`**, ink only (3-letter signs, 2-letter bodies, solid ASC–DSC, dashed MC–IC, aspects < 4°).
+- **Splash**: lowercase blackletter ✦transit intelligence with the pink ✦, "an ✦astrocake app" at the foot.
+- **Color law**: removed pop-colored text/lines/focus rings; pops carry ink text; dark mode is flat ink with #232220 cards.
+- Fixed: calendar buttons were inflated by the `#ti-root button` font reset.

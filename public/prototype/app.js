@@ -74,7 +74,7 @@ const LAYERS=[
   {id:'lunret',n:'lunar return',d:'the moon comes home — your monthly reset',c:'#8FD0F2',on:0,gl:'☾'},
   {id:'cycle',n:'cycle & ovulation',d:'period, fertile window, luteal — logged and predicted',c:'#FF90E8',on:1,gl:'◉'}]},
  {g:'cosmic sky',items:[
-  {id:'global',n:'global transits',d:'what the sky is doing for everyone',c:'#FF9A3C',on:1,gl:'☉︎'},
+  {id:'global',n:'global transits',d:'what the sky is doing for everyone',c:'#5a564f',on:1,gl:'☉︎'},
   {id:'retro',n:'retrogrades',d:'stations, shadows, the whole mess',c:'#C7B0F5',on:0,gl:'℞'},
   {id:'rulers',n:'house rulers on the move',d:'where your chart ruler is walking today',c:'#7FE0B5',on:0,gl:'⌂'}]},
  {g:'cosmic natal',items:[
@@ -394,14 +394,14 @@ function evRow(e){const m=layMeta(e.lay)||{c:'#FF9A3C'};
   return `<button class="evrow" onclick="openEv('${e.date}','${e.id}')"><span class="g" style="background:${m.c}22;color:${m.c}">${e.gl}</span>
     <div><div class="e1">${e.t}</div><div class="e2">${e.s}</div></div><span class="w">${e.when||fmt(parse(e.date))}</span></button>`;}
 
-let CV='dots';
+let CV='words';   /* the sheet view — events written in the day, like the cosmic calendar sheet */
 const ccDot=c=>`<i class="cc-dot" style="background:${c}"></i>`;
 const lc=e=>(layMeta(e.lay)||{c:'var(--c-sky)'}).c;
 const layGroup=id=>{for(const g of LAYERS)if(g.items.some(i=>i.id===id))return g.g.replace(/^(the|your) /,'');return'sky';};
 const lunOf=d=>{const p=phase(d),pv=phase(new Date(d.getTime()-864e5));return pv>.9&&p<.1?'●':pv<.5&&p>=.5?'○':'';};
 const CC_LEG_GROUPS=[
  {n:'moon',ids:['lunar','lunation','void','lunret','cycle'],c:'#8FD0F2'},
- {n:'sky',ids:['global','retro','rulers'],c:'#FF9A3C'},
+ {n:'sky',ids:['global','retro','rulers'],c:'#5a564f'},
  {n:'natal',ids:['natal','promise','theirs','syn','comp'],c:'#F4CC2E'},
  {n:'convergence',ids:['prof','firdaria','zr','sixmo'],c:'#D6EC4F'},
  {n:'divination',ids:['pull','entry'],c:'#C7B0F5'},
@@ -409,6 +409,16 @@ const CC_LEG_GROUPS=[
 ];
 document.querySelectorAll('#ccView button').forEach(b=>b.onclick=()=>{CV=b.dataset.v;document.querySelectorAll('#ccView button').forEach(x=>x.classList.toggle('on',x===b));renderCal();});
 function ccToday(){const t=new Date();S.cursor=new Date(t.getFullYear(),t.getMonth(),1);S.sel=key(t);renderCal();}
+/* the sheet's shorthand, so a day cell reads like the printed cosmic calendar */
+const short=t=>String(t)
+  .replace(/^moon enters (\w+)$/,(m,g)=>`☽︎ → ${g}`)
+  .replace(/^new moon in (\w+)$/,(m,g)=>`● NM ${g}`)
+  .replace(/^full moon in (\w+)$/,(m,g)=>`○ FM ${g}`)
+  .replace(/^moon conjunct your natal (\w+)$/,(m,g)=>`☽︎ ☌ natal ${g}`)
+  .replace(/^moon goes void$/,'☽︎ void')
+  .replace(/^matched working · /,'✧ ')
+  .replace(/^mercury stations direct$/,'☿︎ direct')
+  .replace(/^total solar eclipse · /,'● eclipse ');
 /* ══════════ CALENDAR VIEW ══════════ */
 function renderCal(){
   const c=S.cursor,y=c.getFullYear(),m=c.getMonth(),dim=new Date(y,m+1,0).getDate(),tk=key(new Date());
@@ -416,10 +426,12 @@ function renderCal(){
   const all=D.flatMap(x=>x.ev),nf=D.filter(x=>x.flag).length,grp={};
   all.forEach(e=>{const g=layGroup(e.lay);grp[g]=(grp[g]||0)+1;});
   const lonN=Object.values(LON).filter(Boolean).length,layN=Object.keys(LON).length;
-  document.getElementById('ccMeta').innerHTML=`<button class="lk" onclick="pickHouseSystem()">${HSYS[S.set.house]||'porphyry'}</button> · ${esc(S.me.place||'location pending')}<br><button class="lk" onclick="nav('layers')">${lonN} of ${layN} layers on ›</button>`;
+  const mn=S.me.natal,sect=mn&&mn.timeKnown&&mn.cusps.porphyry?(houseOf(bodyOf(mn,'sun').lon,mn.cusps.porphyry)>=7?'day chart':'night chart'):'';
+  document.getElementById('ccMeta').innerHTML=`<button class="lk" onclick="pickHouseSystem()">${HSYS[S.set.house]||'porphyry'}</button>${sect?' · '+sect:''}<br>${esc(S.me.place||'location pending')}<br><button class="lk" onclick="nav('layers')">${lonN} of ${layN} layers on ›</button>`;
   const me=S.me;let nat;
-  if(me.natal){const b=big3Of(me);
-    nat=`☉︎ ${SIGNS[b.sun]} ${GLY[b.sun]} · ☽︎ ${SIGNS[b.moon]} ${GLY[b.moon]}${b.rise!=null?` · ↑ ${SIGNS[b.rise]} ${GLY[b.rise]}`:''} · <b>my chart ›</b>`;}
+  if(me.natal){const ch=me.natal,cu=cuspsOf(ch),pt=lon=>`${dm(degIn(lon))} ${GLY[signOf(lon)]}`;
+    const lit=k=>{const b=bodyOf(ch,k);if(!b)return'';const h=cu?houseOf(b.lon,cu):null;return `${k==='sun'?'☉︎':'☽︎'} ${pt(b.lon)}${h?' '+h+'H':''}`;};
+    nat=`${ch.timeKnown?`ASC ${pt(ch.asc)} · MC ${pt(ch.mc)} · `:''}${lit('sun')} · ${lit('moon')} · <b>my chart ›</b>`;}
   else if(me.date)nat='casting your chart with the engine… <b>open ›</b>';
   else nat='natal chart not cast · <b>add birth data ›</b> to see transits to natal';
   document.getElementById('ccNatal').innerHTML=nat;
@@ -445,7 +457,7 @@ function renderCal(){
     for(let i=0;i<pad;i++)o+='<div class="cc-day pad"></div>';
     D.forEach(x=>{
       const cols=[...new Set(x.ev.map(lc))].slice(0,6);
-      const body=CV==='words'?x.ev.slice(0,3).map(e=>`<span class="cc-ev">${ccDot(lc(e))}<span>${e.t}</span></span>`).join('')
+      const body=CV==='words'?x.ev.slice(0,3).map(e=>`<span class="cc-ev">${ccDot(lc(e))}<span>${short(e.t)}</span></span>`).join('')
         :`<span class="cc-pips">${cols.map(ccDot).join('')}</span>`;
       const cnt=CV==='words'?(x.ev.length>3?'+'+(x.ev.length-3):''):(x.ev.length>1?x.ev.length:'');
       o+=`<button class="cc-day${x.k===tk?' tod':''}${x.k===S.sel?' sel':''}${x.flag?' flag':''}" onclick="pickDay('${x.k}')" aria-label="${fmtL(x.d)}, ${x.ev.length} events">
@@ -467,12 +479,12 @@ function renderCal(){
   const W=[];
   if(ing)W.push({k:ing.k,d:ing.d,c:'var(--c-sky)',t:`sun enters ${SIGNS[(s0+1)%12]} ${GLY[(s0+1)%12]}`,s:'the season turns'});
   D.forEach(x=>x.ev.forEach(e=>{if(e.big||['lunation','retro','natal','lunret','zr','promise'].includes(e.lay))W.push({k:x.k,d:x.d,id:e.id,c:lc(e),t:e.t,s:e.s});}));
-  D.filter(x=>x.flag&&!W.some(w=>w.k===x.k)).forEach(x=>W.push({k:x.k,d:x.d,c:'var(--oxblood)',t:`${x.ev.length} things stack up`,s:x.ev.slice(0,3).map(e=>e.t).join(' · ')}));
+  D.filter(x=>x.flag&&!W.some(w=>w.k===x.k)).forEach(x=>W.push({k:x.k,d:x.d,c:'#FF5A36',t:`${x.ev.length} things stack up`,s:x.ev.slice(0,3).map(e=>e.t).join(' · ')}));
   W.sort((a,b)=>a.d-b.d);
   document.getElementById('ccWatch').innerHTML=W.length?W.slice(0,6).map(w=>`<button class="cc-wi" onclick="${w.id?`openEv('${w.k}','${w.id}')`:`pickDay('${w.k}')`}">
     <span class="cc-wd">${fmt(w.d)}</span><span><span class="cc-wt">${ccDot(w.c)}${w.t}</span><span class="cc-ws">${w.s}</span></span></button>`).join('')
     :'<div class="cc-ws" style="padding:8px 0">nothing loud this month with the layers you have on.</div>';
-  document.getElementById('ccFootL').innerHTML=`<button class="lk" onclick="nav('journal')">${esc(me.name||'you')} · the record ›</button>`;
+  document.getElementById('ccFootL').innerHTML=`<button class="lk" onclick="nav('journal')">${esc(me.name||'you')} · master event list ›</button>`;
   document.getElementById('ccFootR').innerHTML=`<button class="lk" onclick="document.querySelector('#ccView [data-v=ledger]').click()">sheet ${m+1} of 12 · ledger ›</button>`;
 }
 function mShift(n){S.cursor=new Date(S.cursor.getFullYear(),S.cursor.getMonth()+n,1);const t=new Date();
@@ -882,50 +894,50 @@ function aspectsOf(ch){
   return out.sort((x,y)=>x.orb-y.orb);
 }
 const dm=deg=>{const d=Math.floor(deg),m=Math.floor((deg-d)*60);return `${d}°${String(m).padStart(2,'0')}′`;};
-/* the wheel — the astrocake chart print, line-only: double-rule rim, zodiac band with
-   degree ticks, cusps as hairlines, angles in heavier ink, aspects woven in the core. */
+/* the wheel — a port of the Natal Blueprint wheel() (astrocake-design-system
+   chart-engine/template.html): ink only, three rings, 3-letter sign codes, 5° ticks,
+   bold 2-letter body codes, ASC–DSC solid, MC–IC dashed, aspects under 4° in the hub
+   (squares/oppositions solid, the rest dashed). The app adds: porphyry/placidus cusp
+   lines when that's the house system, and every code is tappable. */
+const WSG=['ARI','TAU','GEM','CAN','LEO','VIR','LIB','SCO','SAG','CAP','AQU','PIS'];
+const WAB={sun:'SU',moon:'MO',mercury:'ME',venus:'VE',mars:'MA',jupiter:'JU',saturn:'SA',uranus:'UR',neptune:'NE',pluto:'PL',chiron:'CH',north_node:'NN'};
 function wheelSVG(ch,who){
-  const W=360,C=W/2,R0=172,R1=164,R2=136,R3=126,RP=106,RD=88,RC=62;
-  const asc=ch.timeKnown&&ch.asc!=null?ch.asc:0;
-  const th=lon=>(180+(lon-asc))*Math.PI/180;
-  const X=(lon,r)=>(C+Math.cos(th(lon))*r).toFixed(2), Y=(lon,r)=>(C-Math.sin(th(lon))*r).toFixed(2);
-  const ln=(l1,r1,l2,r2,w,o,extra)=>`<line x1="${X(l1,r1)}" y1="${Y(l1,r1)}" x2="${X(l2,r2)}" y2="${Y(l2,r2)}" stroke="currentColor" stroke-width="${w}" opacity="${o}" ${extra||''}/>`;
+  const size=360,c=size/2,rO=c-2,rS=c-30,rH=c*.5,rA=rH-24,rP=rS-26;
+  const hasAng=ch.timeKnown&&ch.asc!=null, asc=hasAng?ch.asc:0;
+  const ang=lon=>Math.PI+(lon-asc)*Math.PI/180;
+  const xy=(r,lon)=>[(c+r*Math.cos(ang(lon))).toFixed(1),(c-r*Math.sin(ang(lon))).toFixed(1)];
+  const L=(r1,l1,r2,l2,extra)=>{const[a,b]=xy(r1,l1),[d,e]=xy(r2,l2);return `<line x1="${a}" y1="${b}" x2="${d}" y2="${e}" ${extra||''}/>`;};
   const wq=JSON.stringify(who).replace(/"/g,'&quot;');
-  let g=`<svg class="wheel" viewBox="-22 -22 ${W+44} ${W+44}" role="img" aria-label="natal chart wheel">`;
-  g+=`<circle cx="${C}" cy="${C}" r="${R0}" fill="none" stroke="currentColor" stroke-width="1"/>`;
-  g+=`<circle cx="${C}" cy="${C}" r="${R1}" fill="none" stroke="currentColor" stroke-width="1"/>`;
-  g+=`<circle cx="${C}" cy="${C}" r="${R2}" fill="none" stroke="currentColor" stroke-width="1"/>`;
-  g+=`<circle cx="${C}" cy="${C}" r="${RC}" fill="none" stroke="currentColor" stroke-width=".75"/>`;
-  for(let d=0;d<360;d++){const big=d%30===0,mid=d%10===0,five=d%5===0;
-    if(big)g+=ln(d,R2,d,R1,1,1);else g+=ln(d,R2,d,R2+(mid?7:five?5:2.5),.6,mid?.8:.5);}
-  for(let i=0;i<12;i++){const m=i*30+15;
-    g+=`<text class="wz" x="${X(m,(R1+R2)/2+2)}" y="${Y(m,(R1+R2)/2+2)}" onclick="explainSign(${i})">${GLY[i]}</text>`;}
-  const cusps=cuspsOf(ch);
-  if(cusps){
-    cusps.forEach((c,i)=>{const ang=i%3===0;
-      g+=ln(c,RC,c,R3,ang?1.4:.6,ang?1:.55);
-      const nx=cusps[(i+1)%12],mid=(c+((nx-c+360)%360)/2)%360;
-      g+=`<text class="wh" x="${X(mid,RC+9)}" y="${Y(mid,RC+9)}" onclick="explainHouse(${i+1})">${i+1}</text>`;});
-    [[ch.asc,'ASC'],[(ch.asc+180)%360,'DSC'],[ch.mc,'MC'],[(ch.mc+180)%360,'IC']].forEach(([l,t])=>{
-      g+=ln(l,R0,l,R0+8,1.4,1);
-      g+=`<text class="wa" x="${X(l,R0+16)}" y="${Y(l,R0+16)}" onclick="explainPlacement(${wq},'${t==='ASC'?'asc':t==='MC'?'mc':t.toLowerCase()}')">${t}</text>`;});
+  const hs=(S.set&&S.set.house)||'porphyry', cusps=cuspsOf(ch), whole=hs==='whole_sign'||!cusps;
+  let s=`<svg class="wheel" viewBox="0 0 ${size} ${size}" fill="none" stroke="currentColor" stroke-width="1" role="img" aria-label="natal chart wheel">`;
+  s+=`<circle cx="${c}" cy="${c}" r="${rO}"/><circle cx="${c}" cy="${c}" r="${rS}"/><circle cx="${c}" cy="${c}" r="${rH}"/>`;
+  const ascSign=Math.floor(asc/30)*30;
+  for(let i=0;i<12;i++){const b=i*30;
+    s+=L(whole&&hasAng?rH:rS,b,rO,b);
+    const[tx,ty]=xy((rO+rS)/2,b+15);
+    s+=`<text class="wz" x="${tx}" y="${ty}" font-size="${(size/42).toFixed(1)}" letter-spacing="1.5" font-weight="500" onclick="explainSign(${i})">${WSG[i]}</text>`;
+    if(whole&&hasAng){const hn=((i*30-ascSign)/30+12)%12+1,[hx,hy]=xy(rH-14,b+15);
+      s+=`<text class="wh" x="${hx}" y="${hy}" font-size="${(size/50).toFixed(1)}" onclick="explainHouse(${hn})">${hn}</text>`;}
   }
-  /* aspect web */
-  aspectsOf(ch).forEach(A=>{if(A.t.a===0)return;const a=bodyOf(ch,A.a),b=bodyOf(ch,A.b);
-    g+=`<line x1="${X(a.lon,RC)}" y1="${Y(a.lon,RC)}" x2="${X(b.lon,RC)}" y2="${Y(b.lon,RC)}" class="asp${A.t.soft?' soft':''}" opacity="${Math.max(.25,1-A.orb/A.t.o*.75).toFixed(2)}"/>`;});
-  /* planets — fanned so glyphs never collide, ticked at their true degree */
-  const P=ch.bodies.filter(b=>b.key!=='south_node').map(b=>({...b,pl:b.lon})).sort((a,b)=>a.lon-b.lon);
-  for(let pass=0;pass<40;pass++){let moved=false;
-    for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];let gap=(b.pl-a.pl+360)%360;
-      if(P.length>1&&gap<9){a.pl=(a.pl-(9-gap)/2+360)%360;b.pl=(b.pl+(9-gap)/2)%360;moved=true;}}
-    if(!moved)break;}
-  P.forEach(b=>{
-    g+=ln(b.lon,R3,b.lon,R2,1.2,1);
-    g+=ln(b.lon,R3-1,b.pl,RP+9,.5,.45);
-    g+=`<g class="wp" onclick="explainPlacement(${wq},'${b.key}')"><circle cx="${X(b.pl,RP)}" cy="${Y(b.pl,RP)}" r="9" fill="transparent"/><text class="wg" x="${X(b.pl,RP)}" y="${Y(b.pl,RP)}">${BG[b.key]||'•'}</text></g>`;
-    g+=`<text class="wd" x="${X(b.pl,RD)}" y="${Y(b.pl,RD)}">${Math.floor(b.deg)}${b.retro?'℞':''}</text>`;});
-  g+=`<path d="M${C} ${C-9} L${C+2} ${C-2} L${C+9} ${C} L${C+2} ${C+2} L${C} ${C+9} L${C-2} ${C+2} L${C-9} ${C} L${C-2} ${C-2} Z" fill="currentColor" class="wstar"/>`;
-  return g+'</svg>';
+  if(!whole&&hasAng){cusps.forEach((cu,i)=>{s+=L(rH,cu,rS,cu,'stroke-width=".8"');
+    const nx=cusps[(i+1)%12],mid=(cu+((nx-cu+360)%360)/2)%360,[hx,hy]=xy(rH-14,mid);
+    s+=`<text class="wh" x="${hx}" y="${hy}" font-size="${(size/50).toFixed(1)}" onclick="explainHouse(${i+1})">${i+1}</text>`;});}
+  for(let d=0;d<360;d+=5)s+=L(rS,d,rS+(d%10?4:7),d,'stroke-width=".7"');
+  if(hasAng){
+    s+=`<g class="wax" onclick="explainPlacement(${wq},'asc')">${L(rO,asc,rO,asc+180,'stroke-width="1.6"')}${L(rO,asc,rO,asc+180,'stroke="transparent" stroke-width="10"')}</g>`;
+    s+=`<g class="wax" onclick="explainPlacement(${wq},'mc')">${L(rO,ch.mc,rO,ch.mc+180,'stroke-width="1.6" stroke-dasharray="4 3"')}${L(rO,ch.mc,rO,ch.mc+180,'stroke="transparent" stroke-width="10"')}</g>`;
+  }
+  /* bodies, nudged apart */
+  const B=ch.bodies.filter(b=>WAB[b.key]).map(b=>({...b,pl:b.lon})).sort((a,b)=>a.lon-b.lon);
+  for(let k=0;k<4;k++)for(let i=0;i<B.length;i++){const a=B[i],b=B[(i+1)%B.length];const d=(b.pl-a.pl+360)%360;if(d<8){a.pl-=(8-d)/2;b.pl+=(8-d)/2;}}
+  B.forEach(b=>{s+=L(rS,b.lon,rS-6,b.lon,'stroke-width="1.4"');
+    const[x,y]=xy(rP,b.pl);
+    s+=`<g class="wp" onclick="explainPlacement(${wq},'${b.key}')"><rect x="${(+x-11).toFixed(1)}" y="${(+y-9).toFixed(1)}" width="22" height="18" fill="transparent" stroke="none"/><text class="wg" x="${x}" y="${y}" font-size="${(size/34).toFixed(1)}" font-weight="700">${WAB[b.key]}</text></g>`;});
+  /* aspect lines (major, tight) in the hub */
+  aspectsOf(ch).filter(A=>A.orb<4&&A.t.a!==0&&WAB[A.a]&&WAB[A.b]).forEach(A=>{const a=bodyOf(ch,A.a),b=bodyOf(ch,A.b);
+    s+=L(rA,a.lon,rA,b.lon,`stroke-width=".7"${A.t.n==='square'||A.t.n==='opposition'?'':' stroke-dasharray="3 3"'}`);});
+  s+=`<circle cx="${c}" cy="${c}" r="${rA}" stroke-width=".5"/>`;
+  return s+'</svg>';
 }
 function natalRowsHTML(ch,who){
   const wq=JSON.stringify(who).replace(/"/g,'&quot;');
@@ -949,7 +961,7 @@ function renderNatal(){
   const hs=HSYS[(S.set&&S.set.house)||'porphyry'];
   document.getElementById('natalSub').innerHTML=`${S.me.date} · ${S.me.time||'time unknown'} · ${esc(S.me.place||'—')}<br><button class="lk" onclick="pickHouseSystem()">${ch.timeKnown?hs+' houses':'no birth time — houses hidden'} ›</button>`;
   document.getElementById('wheelWrap').innerHTML=wheelSVG(ch,'me')+
-    `<div class="wleg"><span><i class="hard"></i>square · opposition</span><span><i class="soft"></i>trine · sextile</span><button class="lk" onclick="explain('wheel')">how to read it ›</button></div>`;
+    `<div class="wleg"><span><i class="hard"></i>square · opposition</span><span><i class="soft"></i>trine · sextile · conjunction</span><button class="lk" onclick="explain('wheel')">how to read it ›</button></div>`;
   document.getElementById('natalRows').innerHTML=natalRowsHTML(ch,'me');
   const A=aspectsOf(ch).slice(0,8);
   const ae=document.getElementById('natalAsp');
@@ -1019,7 +1031,7 @@ const GLOSS={
  rising:['↑ the rising','your ascendant — the zodiac sign that was rising on the eastern horizon the minute you were born. it sets every house in your chart, so it needs your exact birth time and place. the app casts it with the celestine engine — no time, no rising (we won\'t fake it).'],
  sun:['☉︎ the sun','where the sun was when you were born. your core identity, your engine, the thing you\'re built to become.'],
  moon:['☽︎ the moon','your emotional body. what you need to feel safe, how you self-soothe, what you do when nobody\'s watching.'],
- wheel:['◎ reading the wheel','the outer band is the zodiac, every tick a degree. the numbers inside are your houses — life departments — starting at the ASC on the left and running counter-clockwise. planets sit at their exact degree. lines across the middle are aspects: solid ink for squares and oppositions (friction), lilac dashes for trines and sextiles (flow). tap any glyph to open it.'],
+ wheel:['◎ reading the wheel','the outer band is the zodiac (ARI → PIS), ticked every 5°. the solid line across is your horizon — rising on the left, setting on the right; the dashed line is the MC–IC meridian. the small numbers are your houses, running counter-clockwise from the rising. planets sit at their exact degree as two-letter codes (SU sun, MO moon, ME mercury…). lines in the hub are aspects under 4°: solid for squares and oppositions, dashed for the easy ones. tap any code to open it.'],
  aspects:['☌ aspects','the angles between your planets. conjunction 0° (fused), sextile 60° (easy opening), square 90° (friction that builds muscle), trine 120° (natural talent), opposition 180° (a seesaw). the orb is how close to exact — tighter means louder.'],
  placements:['✦ placements','every body in your chart: which sign it\'s in (the style), which degree, and which house (the life department). ℞ means it was retrograde at your birth — the energy turns inward first.'],
  notifications:['◉ notifications','push reminders for voids, exact windows, lunations, and your returns are being built. for now the calendar is the source of truth — everything that would ping you is already on it.'],
@@ -1031,6 +1043,7 @@ const GLOSS={
  flag:['✦ flagged days','days where three or more things stack up, or something big lands (an eclipse, a station). worth planning around.'],
  stand:['☉︎ the sun\'s season','the sun spends about a month in each sign — that\'s the season everyone is living in. the arrow shows when it moves on.'],
  stats:['◇ the month at a glance','how many things are on the books this month with your current layers, how many days are flagged, and which part of the sky is loudest.'],
+ calendar:['✦ the calendar','this is the cosmic calendar sheet, live: your chart line up top, the layers you have on, the standing condition for the month in the black bar, every event written into its day, and what to watch underneath. tap any day, event, layer or line to open it.'],
  compare:['☍ synastry & composite','synastry lays two charts on top of each other — where your planets hit theirs. a composite blends both charts into one: the relationship as its own creature. both need a cast chart for each person.']};
 function explain(k,more){
   const g=GLOSS[k];if(!g)return;

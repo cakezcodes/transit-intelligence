@@ -1,6 +1,6 @@
 # Design System — astrocake (app v2)
 
-Canonical brand: `cakezcodes/astrocake-design-system` (`brand/`, plus `12-app/` for the app rules).
+Canonical brand: `cakezcodes/astrocake-design-system` — `docs/brand-book.md` (Apps section) and `docs/app-rules.md`. Tokens: `design-system/tokens.json`.
 This file is the app-side summary. When the two disagree, the design-system repo wins.
 
 ## Direction
@@ -34,18 +34,30 @@ new UI matches it, never the other way around.
 
 ## Splash
 
-One markup (`features/splash/splashMarkup.mjs`) rendered by both `/welcome` and `/app`.
-Arrival: splash → sign-in card rises in. Sign-in: splash fades back over → `/app` paints the
-same finished frame (pre-paint script sets `data-splash="seen"`) → fades into the app.
-`sessionStorage['ti-splash-at']` keeps it from replaying within two minutes.
+One markup (`features/splash/splashMarkup.mjs`) rendered by both `/welcome` and `/app`: the double frame, "welcome to",
+**✦transit intelligence** in lowercase blackletter with the pink ✦, the tagline, and "an ✦astrocake app" at the foot.
+Arrival: splash → sign-in card rises in. Sign-in: splash fades back over → `/app` paints the same finished frame
+(pre-paint script sets `data-splash="seen"`) → fades into the app.
+
+## The calendar
+
+The Cosmic Calendar sheet (`astrocake-design-system/calendar/cosmic-calendar-sheet.html`) at phone size:
+✦astrocake masthead, the engine's natal line (ASC · MC · ☉︎ · ☽︎ with houses), month in 800 italic + year, square
+layer keys with an ink hairline (Cosmic Sky in stone, flagged days in tomato), the black standing bar, a Mon–Sun
+grid with events written in sheet shorthand, What to Watch in the double frame, notes, and the sheet footer.
+"Sheet" is the default view; grid (pips) and ledger stay one tap away.
 
 ## The chart wheel
 
-Line-only astrocake chart print, drawn from engine data only (`wheelSVG` in `public/prototype/app.js`):
-double-rule rim · zodiac band with 1°/5°/10° ticks · house cusps as hairlines, angles in heavier ink
-with ASC/MC/DSC/IC labels · planets fanned to avoid collisions, ticked at their true degree ·
-aspect web in the core (solid ink = square/opposition, accent dashes = trine/sextile) · four-point
-star at the centre. ASC sits at 9 o'clock. Every glyph, sign, and house number is tappable.
+A port of the Natal Blueprint `wheel()` (`astrocake-design-system/chart-engine/template.html`), ink only: three rings,
+3-letter sign codes, 5° ticks, bold 2-letter body codes, ASC–DSC solid, MC–IC dashed, aspects under 4° in the hub
+(squares/oppositions solid, the rest dashed). The app draws Porphyry cusps by default; Whole Sign draws exactly like
+the Blueprint. Every code is tappable.
+
+## Color law
+
+Pops (the ribbon) are flat fills with ink text only — never pop-colored text, lines or focus rings. Dark mode is flat
+ink with `#232220` cards; the site gradient is light-mode only.
 
 ## Navigation
 

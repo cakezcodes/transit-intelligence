@@ -23,25 +23,26 @@
   --ease-out:cubic-bezier(.16,1,.3,1);
 }
 [data-mode="light"]{--sheet:var(--ac-cream);--scrim:rgba(26,25,23,.38)}
-[data-mode="dark"]{--sheet:var(--ac-dark);--scrim:rgba(0,0,0,.6)}
+[data-mode="dark"]{--sheet:#232220;--scrim:rgba(0,0,0,.6);--ink:#232220;--ink2:#1a1917}
 
 /* ─── splash · shared by /welcome and /app ─── */
 .ti-splash{position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;
   background:var(--void,#eeece8);color:var(--moon,#1a1917);font-family:var(--sans);text-transform:none;
   transition:opacity var(--t-slow) ease,visibility 0s linear var(--t-slow);overflow:hidden}
 [data-grad="on"] .ti-splash{background:linear-gradient(180deg,var(--ac-cream) 0%,var(--ac-blush) 38%,var(--ac-mist) 72%,var(--ac-cream) 100%)}
-[data-mode="dark"][data-grad="on"] .ti-splash{background:linear-gradient(180deg,#1a1917 0%,#1e1a20 38%,#1a1c20 72%,#1a1917 100%)}
+[data-mode="dark"] .ti-splash{background:#1a1917}
 .ti-splash.off{opacity:0;visibility:hidden;pointer-events:none}
 .tsp-frame{position:absolute;inset:calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));border:1px solid currentColor;outline:1px solid currentColor;outline-offset:-9px;opacity:0;animation:tspFrame 1s .15s var(--ease-out) forwards}
 .tsp-core{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center}
 .tsp-star{width:30px;height:30px;fill:currentColor;opacity:0;transform:scale(.2) rotate(-90deg);animation:tspStar .9s .1s var(--ease-out) forwards,tspPulse 2.4s 1.1s ease-in-out infinite}
-.tsp-l1{margin-top:16px;font-size:clamp(28px,8.6vw,38px);font-weight:300;letter-spacing:.16em;line-height:1;text-transform:uppercase;opacity:0;animation:tspUp .7s .35s var(--ease-out) forwards}
-.tsp-l2{margin-top:4px;font-size:clamp(28px,8.6vw,38px);font-weight:800;font-style:italic;letter-spacing:-.02em;line-height:1.05;text-transform:uppercase;opacity:0;animation:tspUp .7s .5s var(--ease-out) forwards}
-.tsp-shine{background:linear-gradient(100deg,currentColor 0 40%,var(--accent,#c7b0f5) 50%,currentColor 60% 100%);background-size:260% 100%;background-position:100% 0;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:tspShine 1.5s .95s ease-in-out forwards}
-.tsp-rule{width:0;height:1px;background:currentColor;margin:16px 0 12px;animation:tspRule .8s .8s var(--ease-out) forwards}
+.tsp-eb{margin-top:18px;font-size:10px;letter-spacing:.42em;text-transform:uppercase;font-weight:500;opacity:0;animation:tspFade .7s .3s ease forwards}
+.tsp-wm{margin-top:6px;font-family:var(--pf);font-size:clamp(46px,14vw,64px);line-height:.95;text-transform:lowercase;letter-spacing:-.015em;max-width:9ch;text-align:center;opacity:0;animation:tspUp .8s .45s var(--ease-out) forwards}
+.tsp-wm::before{content:"\2726";font-family:var(--sans);font-size:.46em;margin-right:.14em;position:relative;top:-.12em;color:#FF90E8;-webkit-text-stroke:1px #1a1917}
+.tsp-rule{width:0;height:1px;background:currentColor;margin:18px 0 12px;animation:tspRule .8s .85s var(--ease-out) forwards}
 .tsp-sub{font-size:10px;letter-spacing:.42em;text-transform:uppercase;font-weight:500;opacity:0;animation:tspFade .8s 1s ease forwards}
-.tsp-foot{position:absolute;bottom:calc(46px + env(safe-area-inset-bottom));font-family:var(--pf);font-size:22px;letter-spacing:.02em;text-transform:lowercase;opacity:0;animation:tspFade .8s 1.15s ease forwards}
-.tsp-foot .s{font-family:var(--sans);font-size:11px;margin-right:6px;vertical-align:3px}
+.tsp-foot{position:absolute;bottom:calc(46px + env(safe-area-inset-bottom));font-size:10px;letter-spacing:.3em;text-transform:uppercase;font-weight:500;opacity:0;animation:tspFade .8s 1.15s ease forwards}
+.tsp-by{font-family:var(--pf);font-size:20px;letter-spacing:.02em;text-transform:lowercase;margin:0 .2em}
+.tsp-by::before{content:"\2726";font-family:var(--sans);font-size:.5em;margin-right:.12em;position:relative;top:-.3em;color:#FF90E8;-webkit-text-stroke:1px #1a1917}
 .tsp-field i{position:absolute;left:var(--x);top:var(--y);width:var(--s);height:var(--s);opacity:0;color:var(--accent,#c7b0f5);animation:tspTwinkle 2.6s var(--d) ease-in-out infinite}
 .tsp-field i:nth-child(3n){color:currentColor}
 .tsp-field svg{width:100%;height:100%;fill:currentColor}
@@ -53,7 +54,6 @@
 @keyframes tspFade{to{opacity:1}}
 @keyframes tspRule{to{width:120px}}
 @keyframes tspFrame{from{opacity:0;transform:scale(1.03)}to{opacity:.85;transform:none}}
-@keyframes tspShine{to{background-position:0 0}}
 @keyframes tspTwinkle{0%,100%{opacity:0;transform:scale(.4) rotate(0)}50%{opacity:.9;transform:scale(1) rotate(45deg)}}
 
 /* ─── sparkle bursts (tap feedback) ─── */
@@ -69,7 +69,7 @@
   font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--moon);
   background:var(--void);border-bottom:1px solid var(--line)}
 [data-grad="on"] #ti-root .back{background:color-mix(in srgb,var(--void) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-#ti-root .back:hover{color:var(--accent)}
+#ti-root .back:hover{text-decoration:underline;text-underline-offset:3px}
 .tabs{padding:4px!important}
 .tab{min-height:52px;justify-content:center;font-size:9px!important;letter-spacing:.14em!important;position:relative}
 .tab .g{font-family:var(--glyph);font-size:18px}
@@ -79,7 +79,7 @@
 .v:focus{outline:none}
 .skip{position:fixed;left:12px;top:-60px;z-index:500;background:var(--moon);color:var(--void);padding:10px 14px;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
 .skip:focus{top:12px}
-#ti-root :focus-visible{outline:2px solid var(--accent)!important;outline-offset:2px}
+#ti-root :focus-visible{outline:2px solid var(--moon)!important;outline-offset:2px}
 .ob-back{position:absolute;top:calc(18px + env(safe-area-inset-top));left:20px;font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);font-weight:600;padding:8px;z-index:2}
 
 /* ─── sheets ─── */
@@ -126,22 +126,15 @@ body.sheet-open{overflow:hidden}
 .ent .d.lk,.ent .sky.lk{text-decoration:none!important}
 .cdb{padding:0;display:inline-block}
 
-/* ─── the wheel · astrocake chart print, line-only ─── */
+/* ─── the wheel · the Natal Blueprint wheel, ink only ─── */
 #ti-root .wheel{display:block;width:100%;max-width:380px;margin:6px auto 0;color:var(--moon);overflow:visible}
-.wheel text{font-family:var(--glyph);text-anchor:middle;dominant-baseline:central;fill:currentColor}
-.wheel .wz{font-size:15px;cursor:pointer}
-.wheel .wh{font-family:var(--sans);font-size:8px;font-weight:600;opacity:.6;cursor:pointer}
-.wheel .wa{font-family:var(--sans);font-size:8px;font-weight:800;letter-spacing:.12em;cursor:pointer}
-.wheel .wg{font-size:14px}
-.wheel .wd{font-family:var(--sans);font-size:7px;opacity:.7}
-.wheel .wp{cursor:pointer}
-.wheel .wp:hover .wg,.wheel .wz:hover{fill:var(--accent)}
-.wheel .asp{stroke:currentColor;stroke-width:.7}
-.wheel .asp.soft{stroke:var(--accent);stroke-dasharray:3 2;stroke-width:.9}
-.wheel .wstar{opacity:.85}
+.wheel text{font-family:var(--sans);text-anchor:middle;dominant-baseline:central;fill:currentColor;stroke:none;text-transform:none}
+.wheel .wz,.wheel .wh,.wheel .wp,.wheel .wax{cursor:pointer}
+.wheel .wh{opacity:.6}
+.wheel .wp:hover .wg,.wheel .wz:hover,.wheel .wh:hover{text-decoration:underline}
 .wleg{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-items:center;margin-top:12px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dust)}
 .wleg i{display:inline-block;width:18px;height:0;border-top:1px solid var(--moon);vertical-align:middle;margin-right:6px}
-.wleg i.soft{border-top:1px dashed var(--accent)}
+.wleg i.soft{border-top:1px dashed var(--moon)}
 .pwheel{margin-bottom:6px}
 
 /* ─── reduced motion: still beautiful, just still ─── */
@@ -157,11 +150,64 @@ body.sheet-open{overflow:hidden}
 
 /* `.v` is also the view class (display:none until .on) — values inside tiles must opt out */
 #ti-root .st .v,#ti-root .b3 .v,#ti-root .b3c .v{display:block;animation:none}
-.wheel .wa{text-transform:uppercase}
-.wheel text{text-transform:none}
 /* the welcome ground matches the splash ground so the hand-off has no seam */
 [data-grad="on"] .wl-wrap{background:linear-gradient(180deg,#f2ebdd 0%,#f4e7e6 38%,#efe7ef 72%,#f2ebdd 100%)}
-[data-mode="dark"][data-grad="on"] .wl-wrap{background:linear-gradient(180deg,#1a1917 0%,#1e1a20 38%,#1a1c20 72%,#1a1917 100%)}
+[data-mode="dark"] .wl-wrap{background:#1a1917}
 .b3 .b3c div{border:none!important;background:none!important;padding:0!important}
-.wheel .asp.soft{stroke:color-mix(in srgb,var(--accent) 70%,var(--moon));stroke-width:1}
-.wleg i.soft{border-top-color:color-mix(in srgb,var(--accent) 70%,var(--moon))}
+
+/* brand book: dark mode is flat ink (#232220 cards), never a gradient */
+[data-mode="dark"] #ti-root,[data-mode="dark"] #splash,[data-mode="dark"] #ob{background:#1a1917!important}
+/* brand book: pops are flat fills with ink text — never pop-colored text, lines or outlines */
+#ti-root input:focus,#ti-root textarea:focus,.cc-note:focus,.up:active{border-color:var(--moon)!important}
+.tc.sel{outline-color:var(--moon)!important}
+.cell.tod{border-color:var(--moon)!important}
+.wl-btn:focus-visible,.wl-swap:focus-visible,.wl-field input:focus-visible{outline-color:#1a1917!important}
+[data-mode="dark"] .wl-btn:focus-visible,[data-mode="dark"] .wl-swap:focus-visible,[data-mode="dark"] .wl-field input:focus-visible{outline-color:#eeece8!important}
+
+/* ═══ the calendar = the Cosmic Calendar sheet (astrocake-design-system/calendar) ═══ */
+#ti-root .cc-mast{border-top:2px solid var(--moon);border-bottom:1px solid var(--moon);padding:12px 0 10px;margin-top:14px}
+#ti-root .cc-wm{font-family:var(--pf);font-size:30px;line-height:1;letter-spacing:-.015em;text-transform:lowercase;font-weight:400;font-style:normal;display:flex;align-items:baseline;padding:0}
+#ti-root .cc-wm::before{content:"\2726";font-family:var(--sans);font-size:.46em;margin-right:.14em;position:relative;top:-.12em;color:#FF90E8;-webkit-text-stroke:1px #1a1917}
+#ti-root .cc-tag{font-size:7.5px;letter-spacing:.3em;font-style:italic;margin-top:4px}
+#ti-root .cc-meta{font-size:8.5px;letter-spacing:.18em;line-height:1.6}
+#ti-root .cc-natal{border-bottom:1px solid var(--rs,#cfcac1);padding:8px 0;margin-bottom:4px;text-align:left;font-family:var(--sans)}
+#ti-root .cc-natal b{color:var(--moon)}
+#ti-root .cc-mrow{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:12px}
+#ti-root .cc-mname{font-size:40px;letter-spacing:-.04em;line-height:.92;flex:1}
+#ti-root .cc-mrow .cc-stats{text-align:right;font-size:8.5px;letter-spacing:.2em;line-height:1.5;flex:0 1 auto;max-width:48%}
+.cc-nav{display:flex;align-items:center;gap:6px;margin-top:12px}
+.cc-nav .cc-seg{flex:1;margin:0 0 0 6px}
+#ti-root .cc-nav .cc-ar{flex:0 0 var(--tap);height:var(--tap)}
+#ti-root .cc-tod{border:1px solid var(--moon);padding:0 10px;height:var(--tap);color:var(--moon)}
+/* legend: square pop keys with an ink hairline (pops are fills) */
+#ti-root .cc-leg{margin-top:12px;gap:2px 14px}
+#ti-root .cc-li .cc-dot{width:9px;height:9px}
+#ti-root .cc-dot{box-shadow:inset 0 0 0 .75px #1a1917}
+#ti-root .cc-legh button{color:var(--moon)}
+#ti-root .cc-stand{margin-top:10px;margin-bottom:10px;background:#1a1917;color:#eeece8;padding:8px 14px}
+/* the grid */
+#ti-root .cc-grid{border-top:1px solid var(--moon);border-left:1px solid var(--moon);margin-top:0}
+#ti-root .cc-dl{border-right:1px solid var(--moon);border-bottom:1.5px solid var(--moon);letter-spacing:.25em;padding:5px}
+#ti-root .cc-grid.words .cc-day{min-height:76px}
+#ti-root .cc-day.flag .cc-num::after{background:#FF5A36;box-shadow:inset 0 0 0 .75px #1a1917}
+#ti-root .cc-day.tod .cc-num{box-shadow:none;background:var(--accent);color:#1a1917;padding:2px 3px;margin:-2px -3px 0}
+#ti-root .cc-day.sel .cc-dot{box-shadow:0 0 0 1px var(--void)}
+#ti-root .cc-ev{font-size:7.5px;line-height:1.25}
+#ti-root .cc-h span{color:var(--moon)}
+/* what to watch: the double frame */
+#ti-root .cc-watch{border:1px solid var(--moon);padding:8px;margin-top:14px}
+#ti-root .cc-win{border:1px solid var(--moon);padding:12px 14px}
+#ti-root .cc-foot{border-top:1px solid var(--moon);padding-top:10px;margin-top:22px;font-size:8px;letter-spacing:3px;text-transform:uppercase;font-weight:500;color:var(--dust);display:flex;justify-content:space-between;gap:10px}
+#ti-root .cc-foot .lk{text-decoration:none}
+/* buttons in the sheet keep the sheet's small caps (the #ti-root button reset would inflate them) */
+#ti-root .cc-natal{font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;font-weight:500;color:var(--dust);line-height:1.8}
+#ti-root .cc-li{font-size:8px;letter-spacing:.15em;text-transform:uppercase;font-weight:600;padding:6px 0;min-height:28px}
+#ti-root .cc-seg button,#ti-root .cc-tod{font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;text-align:center}
+#ti-root .cc-seg button{padding:0 4px;min-height:38px}
+#ti-root .cc-ar{font-size:16px;text-align:center}
+#ti-root .cc-legh button{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:600}
+#ti-root .cc-meta .lk,#ti-root .cc-mast .lk{text-transform:uppercase}
+#ti-root .cc-ev{font-size:7.5px}
+[data-mode="dark"] #ti-root .cc-stand{background:#eeece8;color:#1a1917}
+/* pops always carry ink text, in both modes */
+#ti-root .tab.on,#ti-root .seg button.on,#ti-root .chip.on,#ti-root .hs.on,#ti-root .cc-day.tod .cc-num{color:#1a1917!important}
