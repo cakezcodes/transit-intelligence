@@ -6,6 +6,8 @@
     "doc": "docs"
   },
   "scripts": {
+    "prebuild": "node scripts/build-prototype-body.mjs",
+    "predev": "node scripts/build-prototype-body.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -18,7 +20,10 @@
     "extract:reading": "node scripts/external-readings/extract-reading.mjs",
     "scrape:creator": "node scripts/external-readings/scrape-creator-reading.mjs",
     "queue:creator": "node scripts/external-readings/queue-creator-videos.mjs",
-    "test": "npm run validate:syd-chart"
+    "test": "npm run validate:syd-chart && npm run check:prototype && npm run check:handlers && npm run check:markup",
+    "check:prototype": "node scripts/check-prototype.mjs",
+    "check:handlers": "node scripts/check-handlers.mjs",
+    "check:markup": "node scripts/check-markup.mjs"
   },
   "keywords": [],
   "author": "CakezCodes",

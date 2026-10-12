@@ -32,3 +32,14 @@
 [data-mode="dark"] .wl-swap b{color:#eeece8}
 [data-mode="dark"] .wl-note{border-color:#3a3835}
 [data-mode="dark"] .wl-glow{background:radial-gradient(closest-side,rgba(199,176,245,.12),transparent 72%)}
+
+/* splash hand-off — the shared .ti-splash sits on top until the card rises in */
+.wl-splash .ti-splash{transition:opacity .6s ease,visibility 0s linear .6s}
+.wl-splash.off .ti-splash{opacity:0;visibility:hidden;pointer-events:none}
+.wl-splash:not(.off) .ti-splash{transition:opacity .4s ease}
+.wl-card{opacity:0;transform:translateY(14px);transition:opacity .7s ease .15s,transform .8s cubic-bezier(.16,1,.3,1) .15s}
+.wl-card.in{opacity:1;transform:none}
+.wl-card::before{content:'';position:absolute;inset:-26px -18px;border:1px solid #1a1917;outline:1px solid #1a1917;outline-offset:-9px;opacity:.85;pointer-events:none}
+[data-mode="dark"] .wl-card::before{border-color:#eeece8;outline-color:#eeece8}
+.wl-btn:focus-visible,.wl-swap:focus-visible,.wl-field input:focus-visible{outline:2px solid #c7b0f5;outline-offset:2px}
+@media (prefers-reduced-motion: reduce){.wl-card{transition:none}}

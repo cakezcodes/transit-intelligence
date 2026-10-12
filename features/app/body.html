@@ -1,0 +1,282 @@
+<div id="grad"></div><canvas id="stars"></canvas>
+<div class="sparkle-float" style="top:12%;left:8%" aria-hidden="true">✦</div>
+<div class="sparkle-float" style="top:28%;right:12%" aria-hidden="true">✦</div>
+<div class="sparkle-float" style="top:55%;left:5%" aria-hidden="true">✦</div>
+<div class="sparkle-float" style="top:72%;right:8%" aria-hidden="true">✦</div>
+
+<!-- ═══ SPLASH ═══ (shared markup: features/splash/splashMarkup.mjs) -->
+<!--SPLASH-->
+
+<!-- ═══ ONBOARDING ═══ -->
+<div id="ob">
+  <button class="ob-back" id="obBack" onclick="obPrev()" aria-label="previous step">‹ back</button><button class="ob-skip" onclick="obDone()">skip ›</button>
+  <div class="ob-b">
+    <!-- 0: SIGN IN -->
+    <div class="ob-s on" data-s="0">
+      <div class="ob-art" style="font-size:32px;margin-bottom:4px">✦</div>
+      <div class="ob-eb">welcome</div>
+      <div class="ob-h"><em>transit</em> intelligence</div>
+      <p class="ob-p">the sky, translated. real transits against your chart — not a horoscope you share with 600 million people.</p>
+      <div class="ob-f" style="margin-top:24px">
+        <label class="ob-label"><span class="ob-lt">what should the sky call you</span><input id="obName" placeholder="your name" autocomplete="given-name"></label>
+      </div>
+      <div class="ob-note" style="margin-top:12px">✦ you're signed in — four quick steps and the chart is yours</div>
+    </div>
+    <!-- 1: RIBBON -->
+    <div class="ob-s" data-s="1">
+      <div class="ob-art">✧</div>
+      <div class="ob-eb">make it yours</div>
+      <div class="ob-h"><em>pick</em> your ribbon</div>
+      <p class="ob-p">one accent re-tints the whole app. switch it whenever the mood shifts.</p>
+      <div class="card" style="margin-top:16px"><div class="sws" id="obSw"></div>
+        <div class="seg" id="obMode" style="margin-top:14px"><button data-m="light" class="on">○ light</button><button data-m="dark">☾︎ dark</button></div>
+      </div>
+    </div>
+    <!-- 2: LANES -->
+    <div class="ob-s" data-s="2">
+      <div class="ob-eb">your practice</div>
+      <div class="ob-h"><em>what</em> are you into</div>
+      <p class="ob-p">pick your lanes. the app leads with what you actually use — change it whenever.</p>
+      <div class="chips" id="obLanes" style="justify-content:center;margin-top:18px"></div>
+    </div>
+    <!-- 3: BIRTH DATA (last) -->
+    <div class="ob-s" data-s="3">
+      <div class="ob-art">☉︎</div>
+      <div class="ob-eb">the chart</div>
+      <div class="ob-h"><em>read</em> my stars</div>
+      <p class="ob-p">exact time matters — it sets your rising, and your rising sets every house after it.</p>
+      <div class="ob-f">
+        <div class="ob-row">
+          <label class="ob-label" style="flex:1"><span class="ob-lt">date of birth</span><input id="obDate" type="date"></label>
+          <label class="ob-label" style="flex:1"><span class="ob-lt">time of birth</span><input id="obTime" type="time"></label>
+        </div>
+        <div style="position:relative"><input id="obPlace" placeholder="birth city — start typing" autocomplete="off" oninput="placeSearch(this.value)" aria-label="birth city"><div id="obPlaceList" class="ob-places"></div></div>
+      </div>
+      <div class="ob-note">✧ cast by the celestine engine · porphyry houses · no birth time? leave it blank — we'll skip the rising instead of faking it</div>
+    </div>
+  </div>
+  <div class="ob-ft"><div class="dots" id="obDots"></div><button class="btn" id="obNext">let's begin</button></div>
+</div>
+
+<!-- ═══ CHART LOADING ═══ -->
+<div id="chartLoad" class="chart-load">
+  <div class="cl-inner">
+    <svg class="cl-wheel" viewBox="0 0 120 120" width="120" height="120">
+      <circle cx="60" cy="60" r="54" fill="none" stroke="var(--line)" stroke-width="1"/>
+      <circle cx="60" cy="60" r="40" fill="none" stroke="var(--line)" stroke-width=".5"/>
+      <circle cx="60" cy="60" r="18" fill="none" stroke="var(--line)" stroke-width=".5"/>
+      <line x1="6" y1="60" x2="114" y2="60" stroke="var(--line)" stroke-width="1"/>
+      <line x1="60" y1="6" x2="60" y2="114" stroke="var(--line)" stroke-width=".5"/>
+    </svg>
+    <div class="cl-txt" id="clTxt">casting your chart</div>
+    <div class="cl-sub" id="clSub">✧</div>
+  </div>
+</div>
+
+<a class="skip" href="#ti-main" onclick="event.preventDefault();document.querySelector('.v.on').focus()">skip to content</a>
+<main class="app" id="ti-main">
+
+<!-- ═══════ SKY (home) ═══════ -->
+<section class="v on" id="v-sky">
+  <div class="eb"><span class="cer">☉︎ · </span><span class="cer"> · ☽︎</span></div>
+  <div class="h1"><em>today's</em> sky</div>
+  <div class="h1s" id="skyDate"></div>
+  <div id="skyBody"></div>
+  <div class="lab">the calendar <button class="lk" onclick="nav('cal')">open ›</button></div>
+  <div id="skyUp"></div>
+  <div class="lab">your day</div>
+  <div class="card" id="skyDay"></div>
+</section>
+
+<!-- ═══════ CALENDAR ═══════ -->
+<section class="v" id="v-cal" data-screen-label="Calendar">
+  <div class="cc-mast">
+    <div><div class="cc-brand"><span class="sp">✦</span><em>the</em> calendar</div><div class="cc-tag">cosmic moon · cosmic sky · cosmic natal · convergence · divination · ritual</div></div>
+    <div class="cc-meta" id="ccMeta"></div>
+  </div>
+  <button class="cc-natal" id="ccNatal" onclick="nav('natal')"></button>
+  <div class="cc-mrow"><div class="cc-mname" id="mTitle"></div><button class="cc-ar" onclick="mShift(-1)" aria-label="previous month">‹</button><button class="cc-ar" onclick="mShift(1)" aria-label="next month">›</button></div>
+  <div class="cc-sub"><div class="cc-stats" id="ccStats"></div><button class="cc-tod" onclick="ccToday()">today</button></div>
+  <div class="cc-stand" id="ccStand"></div>
+  <div class="seg cc-seg" id="ccView"><button data-v="dots" class="on">grid</button><button data-v="words">words</button><button data-v="ledger">ledger</button></div>
+  <div class="cc-grid" id="mGrid"></div>
+  <div class="cc-leg" id="quickLay"></div>
+  <div class="cc-legh"><span>tap a layer to hide it</span><button onclick="nav('layers')">all layers ›</button></div>
+  <div class="cc-h" id="dSelLab">selected day</div>
+  <div id="dSel"></div>
+  <div class="cc-h">notes <span id="ccNoteDay"></span></div>
+  <textarea class="cc-note" id="ccNote" rows="2" oninput="S.notes[S.sel]=this.value" onchange="renderCal()"></textarea>
+  <div class="cc-watch"><div class="cc-win"><div class="cc-h">what to watch</div><div id="ccWatch"></div></div></div>
+  <div class="brow" style="margin-top:12px;display:flex;gap:8px">
+    <button class="btn" onclick="openEntry()" style="flex:1">✧ log entry</button>
+    <button class="btn g" onclick="openPull(1)" style="flex:1">✦ log a pull</button>
+  </div>
+  <button class="btn g" onclick="openAdd()" style="margin-top:8px">+ add to the calendar</button>
+  <button class="row" onclick="nav('journal')" style="margin-top:14px"><span class="ic">❦</span><span><span class="t">the record</span><div class="s">every pull, working, and note — the list view of this calendar</div></span><span class="c">›</span></button>
+  <div class="cc-foot"><span id="ccFootL"></span><span id="ccFootR"></span></div>
+</section>
+
+<!-- ═══════ LAYERS ═══════ -->
+<section class="v" id="v-layers">
+  <button class="back" onclick="goBack('cal')">‹ calendar</button>
+  <div class="eb"><span class="cer">✧ · </span>layers<span class="cer"> · ✧</span></div>
+  <div class="h1"><em>what</em> the sky shows you</div>
+  <div class="h1s">toggle any lens — the calendar redraws live</div>
+  <div id="layerGroups"></div>
+</section>
+
+<!-- ═══════ EVENT ═══════ -->
+<section class="v" id="v-event"><button class="back" onclick="goBack('cal')">‹ calendar</button><div id="evBody"></div></section>
+
+<!-- ═══════ ORBIT ═══════ -->
+<section class="v" id="v-orbit">
+  <div class="eb"><span class="cer">☍ · </span>orbit<span class="cer"> · ☍</span></div>
+  <div class="h1"><em>your</em> people</div>
+  <div class="h1s">every chart you add becomes a calendar layer</div>
+  <div class="pnl" id="orbitMe"></div>
+  <div class="lab">in orbit</div>
+  <div id="orbitList"></div>
+  <button class="btn" onclick="openPerson()">+ add someone</button>
+  <div class="lab">compare</div>
+  <button class="row" onclick="openCompare('syn')"><span class="ic">☍</span><span><span class="t">run a synastry</span><div class="s">two charts, one verdict</div></span><span class="c">›</span></button>
+  <button class="row" onclick="openCompare('comp')"><span class="ic">◍</span><span><span class="t">build a composite</span><div class="s">the relationship's own chart</div></span><span class="c">›</span></button>
+</section>
+
+<!-- ═══════ PERSON ═══════ -->
+<section class="v" id="v-person"><button class="back" onclick="goBack('orbit')">‹ orbit</button><div id="pBody"></div></section>
+
+<!-- ═══════ GRIMOIRE ═══════ -->
+<section class="v" id="v-grim">
+  <div class="eb"><span class="cer">☽︎ · </span>the grimoire<span class="cer"> · ☾</span></div>
+  <div class="h1"><em>book</em> of shadows</div>
+  <div class="h1s"><b id="gCount">0 entries</b> ✧ the record remembers</div>
+
+  <div class="lab">for this sky</div>
+  <div class="sky"><div class="hl"></div><div id="gSky"></div>
+    <div class="mrow" id="gMatch"></div>
+  </div>
+
+  <button class="hero" onclick="openPull()"><span class="hg">✦</span><span><div class="h">read my cards</div><div class="s">pull now, or log one you already did</div></span><span class="c">›</span></button>
+
+  <div class="lab">my patterns <button class="lk" onclick="nav('pat')">all ›</button></div>
+  <div class="stats" id="gStats"></div>
+  <div class="lab">cards that keep showing up</div>
+  <div class="rec" id="gRec"></div>
+
+  <div class="lab">my practice <button class="lk" onclick="nav('journal')">the record ›</button></div>
+  <div class="chips" id="gPractice"></div>
+
+  <button class="row" onclick="nav('lib')"><span class="ic">✧</span><span><span class="t">the library</span><div class="s">tarot ✦ workings ✦ ingredients</div></span><span class="c">›</span></button>
+  <button class="row" onclick="openPull(1)"><span class="ic">☽︎</span><span><span class="t">restore the record</span><div class="s">log a past pull — photo or pick the cards</div></span><span class="c">›</span></button>
+
+  <div class="lab">pinned · courts → signs</div>
+  <div class="card pin">
+    <button class="pinr" onclick="explainSuit('wands')"><span class="e">△</span><span class="s">wands · fire</span><span class="z">♈︎ ♌︎ ♐︎</span><span class="c">›</span></button>
+    <button class="pinr" onclick="explainSuit('cups')"><span class="e">▽</span><span class="s">cups · water</span><span class="z">♋︎ ♏︎ ♓︎</span><span class="c">›</span></button>
+    <button class="pinr" onclick="explainSuit('swords')"><span class="e">△</span><span class="s">swords · air</span><span class="z">♊︎ ♎︎ ♒︎</span><span class="c">›</span></button>
+    <button class="pinr" onclick="explainSuit('pents')"><span class="e">▽</span><span class="s">pents · earth</span><span class="z">♉︎ ♍︎ ♑︎</span><span class="c">›</span></button>
+  </div>
+</section>
+
+<!-- ═══════ PATTERNS ═══════ -->
+<section class="v" id="v-pat">
+  <button class="back" onclick="goBack('grim')">‹ the grimoire</button>
+  <div class="eb"><span class="cer">✧ · </span>my patterns<span class="cer"> · ✧</span></div>
+  <div class="h1"><em>the</em> receipts</div>
+  <div class="h1s">what the record keeps noticing</div>
+  <div id="patBody"></div>
+</section>
+
+<!-- ═══════ LIBRARY ═══════ -->
+<section class="v" id="v-lib">
+  <button class="back" onclick="goBack('grim')">‹ the grimoire</button>
+  <div class="eb"><span class="cer">☽︎ · </span>the library<span class="cer"> · ☾</span></div>
+  <div class="h1"><em>the</em> knowing</div>
+  <div class="h1s">reference, not diary — the book stays sacred</div>
+  <div class="seg" id="shelf">
+    <button data-s="tarot" class="on">✦ tarot</button>
+    <button data-s="work">✧ workings</button>
+    <button data-s="ing">❧ ingredients</button>
+  </div>
+  <div id="shelfBody"></div>
+</section>
+
+<!-- ═══════ JOURNAL ═══════ -->
+<section class="v" id="v-journal">
+  <button class="back" onclick="goBack('cal')">‹ calendar</button>
+  <div class="eb"><span class="cer">✧ · </span>the record<span class="cer"> · ✧</span></div>
+  <div class="h1"><em>my</em> book</div>
+  <div class="h1s">every entry stamped with that night's sky ☽︎</div>
+  <button class="row" onclick="nav('cal')"><span class="ic">✧</span><span><span class="t">see it on the calendar</span><div class="s">every entry is already a calendar layer — one calendar, everything on it</div></span><span class="c">›</span></button>
+  <div class="brow" style="margin-top:12px">
+    <button class="btn" onclick="openEntry()">+ new entry</button>
+    <button class="btn g" onclick="openPull(1)">✦ log a pull</button>
+  </div>
+  <div class="chips" id="jFilter"></div>
+  <div class="lab" id="jLab">entries</div>
+  <div id="jList"></div>
+</section>
+
+<!-- ═══════ NATAL ═══════ -->
+<section class="v" id="v-natal">
+  <button class="back" onclick="goBack('me')">‹ me</button>
+  <div class="eb"><span class="cer">☉︎ · </span>the natal chart<span class="cer"> · ☽︎</span></div>
+  <div class="h1"><em>your</em> blueprint</div>
+  <div class="h1s" id="natalSub"></div>
+  <div class="pnl"><div id="wheelWrap"></div></div>
+  <div class="lab">placements <button class="lk" onclick="explain('placements')">what's this ›</button></div>
+  <div class="card" id="natalRows"></div>
+  <div class="lab">aspects <button class="lk" onclick="explain('aspects')">what's this ›</button></div>
+  <div class="card" id="natalAsp"></div>
+  <button class="btn g" onclick="castMine()" style="margin-top:10px">✎ edit birth data · recast</button>
+  <div class="lab">the promise</div>
+  <div class="card"><div class="read" style="border:none;box-shadow:none;padding:0;margin:0;background:none">
+    <div class="rl">✦ natal promise</div>
+    <p id="natalPromise"></p></div></div>
+</section>
+
+<!-- ═══════ ME ═══════ -->
+<section class="v" id="v-me">
+  <div class="eb"><span class="cer">☉︎ · </span>me<span class="cer"> · ☽︎</span></div>
+  <div class="h1" id="meName"><em>you</em></div>
+  <div class="h1s" id="meSub"></div>
+  <button class="row" onclick="nav('natal')"><span class="ic">☉︎</span><span><span class="t">my natal chart</span><div class="s" id="meBig3">the wheel, the houses, the promise</div></span><span class="c">›</span></button>
+
+  <div class="lab">theme · the ribbon</div>
+  <div class="card">
+    <div class="sws" id="meSw"></div>
+    <div class="seg" id="meMode" style="margin-top:14px"><button data-m="light" class="on">○ light</button><button data-m="dark">☾ dark</button></div>
+    <div class="seg" id="meType" style="margin-top:8px"><button data-t="clean">clean</button><button data-t="balanced">balanced</button><button data-t="ceremony" class="on">ceremony</button></div>
+    <button class="lay" onclick="toggleGrad()" style="margin-top:6px"><span class="lg">◐</span><span class="ln">background gradient<div class="ld">the soft cosmic wash behind everything</div></span><span class="tog on" id="gradTog"></span></button>
+  </div>
+
+  <div class="lab">settings</div>
+  <div class="card">
+    <button class="setr" onclick="castMine()"><span class="g">☉︎</span>birth data<span class="v" id="meBirthV">edit</span></button>
+    <button class="setr" onclick="pickHouseSystem()"><span class="g">◈</span>house system<span class="v" id="meHouseV">porphyry</span></button>
+    <button class="setr" onclick="explain('notifications')"><span class="g">◉</span>notifications<span class="v">soon</span></button>
+    <button class="setr" onclick="exportBook()"><span class="g">↓</span>export the book<span class="v">json</span></button>
+    <button class="setr" onclick="explain('deck')"><span class="g">✦</span>deck art<span class="v">rws 1909</span></button>
+    <button class="setr" onclick="replayIntro()"><span class="g">✧</span>replay the intro<span class="v">splash · onboarding</span></button>
+    <button class="setr" onclick="nav('layers')"><span class="g">◐</span>calendar layers<span class="v" id="meLayV">all</span></button>
+  </div>
+</section>
+
+<div class="app-footer" style="text-align:center;padding:40px 0 16px;opacity:.35">
+  <span style="font-family:var(--sans);font-size:11px;font-style:normal;margin-right:4px">✦</span><span style="font-family:var(--pf);font-size:16px;letter-spacing:.02em;text-transform:lowercase">astrocake</span>
+</div>
+
+</main>
+
+<div class="scr" id="scr" onclick="closeSheet()"></div>
+<div class="sht" id="sht" role="dialog" aria-modal="true" aria-label="details" tabindex="-1"></div>
+
+<nav class="tabs" aria-label="primary">
+  <button class="tab on" data-v="sky" onclick="tabTo('sky')" aria-current="page"><span class="g">☽︎</span>sky</button>
+  <button class="tab" data-v="cal" onclick="tabTo('cal')"><span class="g">✧</span>calendar</button>
+  <button class="tab" data-v="grim" onclick="tabTo('grim')"><span class="g">✦</span>grimoire</button>
+  <button class="tab" data-v="orbit" onclick="tabTo('orbit')"><span class="g">☍</span>orbit</button>
+  <button class="tab" data-v="me" onclick="tabTo('me')"><span class="g">☉︎</span>me</button>
+</nav>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="fx" aria-hidden="true"></div>

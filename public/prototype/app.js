@@ -1,10 +1,5 @@
-/* debug: surface JS errors on screen during boot (remove once stable) */
-window.addEventListener('error',function(e){
-  var d=document.createElement('div');d.style.cssText='position:fixed;bottom:60px;left:8px;right:8px;z-index:9999;background:#FF5A36;color:#fff;padding:10px;font:11px/1.4 monospace;border-radius:4px;max-height:30vh;overflow:auto';
-  d.textContent='JS error: '+e.message+' @ '+(e.filename||'').split('/').pop()+':'+e.lineno;
-  document.body.appendChild(d);setTimeout(function(){d.remove();},12000);
-});
-const IMG = /*CARDIMGS*/{};
+/* IMG (all 78 rws 1909 scans) is declared by /prototype/img.js, loaded first.
+   never redeclare it here — a duplicate const kills this whole script at parse time. */
 
 /* ══════════ REAL SKY MATH ══════════ */
 const SYN=29.53058867, J2000=Date.UTC(2000,0,1,12);
@@ -63,10 +58,10 @@ function dailyRead(d){
   const p=phase(d), pn=phaseName(p), ms=SIGNS[signOf(moonLon(d))], ss=SIGNS[signOf(sunLon(d))];
   const [vibe,read]=SIGN_READ[ms];
   const vd=voidWindow(d);
-  const l1=`the moon's in <b>${ms} ${GLY[SIGNS.indexOf(ms)]}</b> and she's ${vibe}. ${MOOD[pn]}`;
+  const l1=`the moon's in <button class="lk il" onclick="explainSign(${SIGNS.indexOf(ms)})"><b>${ms} ${GLY[SIGNS.indexOf(ms)]}</b></button> and she's ${vibe}. ${MOOD[pn]}`;
   const l2=read;
-  const l3=vd.active?`heads up — she goes void in about ${vd.hrs}h. anything you launch, send, or swear to in that window tends to just… evaporate. wait it out. ◇`:
-    `sun's still cooking in <b>${ss}</b>, so that's the background hum under all of it.`;
+  const l3=vd.active?`heads up — she goes void in about ${vd.hrs}h. anything you launch, send, or swear to in that window tends to just… evaporate. <button class="lk il" onclick="explain('void')">wait it out ◇</button>`:
+    `sun's still cooking in <button class="lk il" onclick="explainSign(${SIGNS.indexOf(ss)})"><b>${ss}</b></button>, so that's the background hum under all of it.`;
   return {l1,l2,l3,move:PH_MOVE[pn],pn,ms};
 }
 
@@ -109,24 +104,67 @@ const S={
   people:[],
   entries:[],   /* {id,date,type,title,body,photos[],cards[{k,rev}],ritual} */
   cal:[],       /* {id,date,type,title,note} user-added */
-  accent:0, cursor:new Date(2026,6,14), sel:'2026-07-14', jcursor:new Date(2026,6,14), jfilter:'all'
+  accent:0, cursor:new Date(), sel:'', jcursor:new Date(), jfilter:'all',
+  notes:{}, set:{house:'porphyry'}
 };
+S.lon=LON;   /* layer toggles persist with the rest of the record */
+S.cursor=new Date(S.cursor.getFullYear(),S.cursor.getMonth(),1);
 const key=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const parse=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c);};
 const fmt=d=>d.toLocaleDateString('en-us',{month:'short',day:'numeric'}).toLowerCase();
 const fmtL=d=>d.toLocaleDateString('en-us',{weekday:'long',month:'long',day:'numeric'}).toLowerCase();
+if(!S.sel)S.sel=key(new Date());
 
 /* ══════════ NAV ══════════ */
-const TAB={sky:'sky',cal:'cal',layers:'cal',event:'cal',grim:'grim',lib:'grim',pat:'grim',journal:'cal',orbit:'orbit',person:'orbit',me:'me',natal:'me'};
-function nav(id){
+const TAB={sky:'sky',cal:'cal',layers:'cal',event:'cal',journal:'cal',grim:'grim',lib:'grim',pat:'grim',orbit:'orbit',person:'orbit',me:'me',natal:'me'};
+const VNAME={sky:'sky',cal:'calendar',layers:'layers',event:'the event',journal:'the record',grim:'the grimoire',lib:'the library',pat:'my patterns',orbit:'orbit',person:'their chart',me:'me',natal:'my chart'};
+const ROOTS=['sky','cal','grim','orbit','me'];
+/* the back stack. every view change is a history entry carrying the whole stack, so
+   in-app back buttons, the browser back button, and the phone's back swipe all agree. */
+let VSTACK=['sky'];
+const RENDER={sky:()=>renderSky(),cal:()=>renderCal(),grim:()=>renderGrim(),journal:()=>renderJournal(),pat:()=>renderPat(),
+  orbit:()=>renderOrbit(),layers:()=>renderLayers(),me:()=>renderMe(),natal:()=>renderNatal()};
+function showView(id,focus){
+  const el=document.getElementById('v-'+id);if(!el)return;
   document.querySelectorAll('.v').forEach(v=>v.classList.remove('on'));
-  document.getElementById('v-'+id).classList.add('on');
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===TAB[id]));
+  el.classList.add('on');
+  document.querySelectorAll('.tab').forEach(t=>{const on=t.dataset.v===TAB[id];t.classList.toggle('on',on);
+    if(on)t.setAttribute('aria-current','page');else t.removeAttribute('aria-current');});
+  const prev=VSTACK.length>1?VSTACK[VSTACK.length-2]:null;
+  const bk=el.querySelector(':scope > .back');
+  if(bk&&prev)bk.textContent='‹ '+VNAME[prev];
   window.scrollTo(0,0);
-  if(id==='sky')renderSky(); if(id==='cal')renderCal(); if(id==='grim')renderGrim();
-  if(id==='journal')renderJournal(); if(id==='pat')renderPat(); if(id==='orbit')renderOrbit();
-  if(id==='layers')renderLayers(); if(id==='me')renderMe(); if(id==='natal')renderNatal();
+  if(RENDER[id])try{RENDER[id]();}catch(e){console.error('render '+id,e);}
+  if(focus){el.setAttribute('tabindex','-1');el.focus({preventScroll:true});}
 }
+function nav(id,opt){
+  opt=opt||{};
+  if(!document.getElementById('v-'+id))return;
+  const cur=VSTACK[VSTACK.length-1];
+  if(id===cur){showView(id);return;}
+  if(opt.tab)VSTACK=[id];
+  else if(VSTACK.includes(id))VSTACK=VSTACK.slice(0,VSTACK.indexOf(id)+1);   /* no loops: going "forward" to an ancestor rewinds */
+  else VSTACK.push(id);
+  history.pushState({ti:1,stack:VSTACK.slice()},'');
+  showView(id,true);
+}
+function tabTo(id){
+  if(VSTACK.length===1&&VSTACK[0]===id){window.scrollTo({top:0,behavior:'smooth'});return;}
+  nav(id,{tab:true});
+}
+function goBack(fallback){
+  if(VSTACK.length>1)history.back();
+  else nav(fallback,{tab:ROOTS.includes(fallback)});
+}
+addEventListener('popstate',e=>{
+  if(document.getElementById('sht').classList.contains('on')){
+    /* back closes the open sheet first, and keeps you on the page underneath */
+    closeSheet(true);history.pushState({ti:1,stack:VSTACK.slice()},'');return;
+  }
+  VSTACK=(e.state&&e.state.stack)||['sky'];
+  showView(VSTACK[VSTACK.length-1],true);
+});
+history.replaceState({ti:1,stack:VSTACK.slice()},'');
 let tt;function toast(m){const t=document.getElementById('toast');t.innerHTML=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2500);}
 
 /* ══════════ THEME ══════════ */
@@ -145,13 +183,15 @@ function setAcc(i){
   r.setProperty('--accent',A.a);
   r.setProperty('--soft',A.a);r.setProperty('--glow','transparent');
   document.querySelectorAll('.sw').forEach(s=>s.classList.toggle('on',+s.dataset.i===i));
-  stars();
+  saveUi();stars();
 }
+/* mirror of the theme for app/layout.tsx's pre-paint script (no flash on reload) */
+function saveUi(){try{const d=document.documentElement;localStorage.setItem('ti-ui',JSON.stringify({mode:d.dataset.mode,type:d.dataset.type,grad:d.dataset.grad,accent:(ACC[S.accent]||ACC[0]).a}));}catch(e){}}
 const swHTML=()=>ACC.map((A,i)=>`<button class="sw${i===S.accent?' on':''}" data-i="${i}" style="--c1:${A.c1};--c2:${A.c2}" onclick="setAcc(${i})"><span class="d"></span><span class="n">${A.n}</span></button>`).join('');
-function setMode(m){document.documentElement.dataset.mode=m;document.querySelectorAll('#meMode button,#obMode button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));stars();}
-function toggleGrad(){const on=document.documentElement.dataset.grad==='on';document.documentElement.dataset.grad=on?'off':'on';document.getElementById('gradTog').classList.toggle('on',!on);}
+function setMode(m){document.documentElement.dataset.mode=m;saveUi();document.querySelectorAll('#meMode button,#obMode button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));stars();}
+function toggleGrad(){const on=document.documentElement.dataset.grad==='on';document.documentElement.dataset.grad=on?'off':'on';saveUi();document.getElementById('gradTog').classList.toggle('on',!on);}
 const TSUB={clean:'all sans, zero ceremony',balanced:'serif titles + quotes only',ceremony:'full book of shadows — stars, glyphs, ✦'};
-document.querySelectorAll('#meType button').forEach(b=>b.onclick=()=>{document.documentElement.dataset.type=b.dataset.t;document.querySelectorAll('#meType button').forEach(x=>x.classList.toggle('on',x===b));toast(TSUB[b.dataset.t]);stars();});
+document.querySelectorAll('#meType button').forEach(b=>b.onclick=()=>{document.documentElement.dataset.type=b.dataset.t;saveUi();document.querySelectorAll('#meType button').forEach(x=>x.classList.toggle('on',x===b));toast(TSUB[b.dataset.t]);stars();});
 document.querySelectorAll('#meMode button,#obMode button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
 
 function stars(){const c=document.getElementById('stars'),x=c.getContext('2d');
@@ -286,25 +326,25 @@ function renderSky(){
   const r=dailyRead(d), vd=voidWindow(d);
   document.getElementById('skyDate').innerHTML=fmtL(d);
   document.getElementById('skyBody').innerHTML=
-   `<div class="today"><div class="hl"></div>
+   `<button class="today" onclick="moonSheet()" aria-label="${pn} in ${SIGNS[si]} — open the moon"><div class="hl"></div>
       <div class="mn">${moonSVG(p,58)}</div>
       <div><div class="t1">${pn} in ${SIGNS[si]} ${GLY[si]}</div>
         <div class="t2">${Math.round((1-Math.cos(2*Math.PI*p))/2*100)}% illuminated · ${degIn(ml).toFixed(0)}° ${SIGNS[si]}</div>
-        <div class="t3">${vd.active?'⊘ void in '+vd.hrs+'h — hold the send':'☉︎ sun in '+SIGNS[signOf(sunLon(d))]}</div></div>
-    </div>
+        <div class="t3">${vd.active?'⊘ void in '+vd.hrs+'h — hold the send':'☉︎ sun in '+SIGNS[signOf(sunLon(d))]}</div></div><span class="c">›</span>
+    </button>
     <div class="read">
       <div class="rl">✦ today's read</div>
       <p>${r.l1}</p><p>${r.l2}</p><p>${r.l3}</p>
-      <div class="mv"><b>today's move</b>${r.move}</div>
+      <button class="mv" onclick="openEntry('${key(d)}',null,PH_MOVE['${pn}'])"><b>today's move</b>${r.move}<span class="mv-go">log it ›</span></button>
     </div>`;
   const ups=upcoming(d,4);
   document.getElementById('skyUp').innerHTML=ups.map(e=>evRow(e)).join('')||'<div class="card" style="color:var(--dust);font-size:13px">quiet stretch — nothing loud incoming ✧</div>';
   const today=S.entries.filter(e=>e.date===key(d));
   const rit=RIT.find(x=>x.ph.includes(pn));
   document.getElementById('skyDay').innerHTML=
-   `<div class="tr"><span class="g">✧</span><div><div class="a">journal prompt</div><div class="b">${prompt(pn,SIGNS[si])}</div></div></div>
-    <div class="tr"><span class="g">✧</span><div><div class="a">matched working · ${rit.n}</div><div class="b">${rit.v}</div></div><span class="n">${pn.split(' ')[0]}</span></div>
-    <div class="tr" style="cursor:pointer" onclick="openEntry()"><span class="g">+</span><div><div class="a" style="color:var(--deep)">add to today</div><div class="b">${today.length} ${today.length===1?'entry':'entries'} logged</div></div></div>`;
+   `<button class="tr" onclick="openEntry('${key(d)}',null,PROMPTS['${pn}'])"><span class="g">✧</span><div><div class="a">journal prompt</div><div class="b">${prompt(pn,SIGNS[si])}</div></div><span class="c">›</span></button>
+    <button class="tr" onclick="nav('lib');setShelf('work');setTimeout(()=>jumpRit('${rit.n}'),80)"><span class="g">✧</span><div><div class="a">matched working · ${rit.n}</div><div class="b">${rit.v}</div></div><span class="n">${pn.split(' ')[0]}</span></button>
+    <button class="tr" onclick="openEntry()"><span class="g">+</span><div><div class="a" style="color:var(--deep)">add to today</div><div class="b">${today.length} ${today.length===1?'entry':'entries'} logged</div></div></button>`;
 }
 const PROMPTS={'new moon':'what are you actually planting — not what sounds good out loud?','waxing crescent':'what would you protect if someone tried to talk you out of it?',
  'first quarter':'where\'s the resistance, and is it a wall or a door?','waxing gibbous':'what needs editing, not abandoning?','full moon':'what can you see now that you couldn\'t two weeks ago?',
@@ -323,8 +363,8 @@ function evForDate(d){
   if(LON.lunar&&signOf(moonLon(new Date(d.getTime()-86400000)))!==si)
     out.push({id:'ms-'+k,lay:'lunar',gl:'☽︎',t:`moon enters ${SIGNS[si]}`,s:`${MOOD[pn].split('.')[0]} · ${SIGN_READ[SIGNS[si]][0]}`,date:k});
   if(LON.void){const v=voidWindow(d);if(v.active)out.push({id:'v-'+k,lay:'void',gl:'⊘',t:'moon goes void',s:`~${v.hrs}h before she changes signs — don't launch`,date:k});}
-  if(LON.natal&&S.me.date){ /* transit to natal: moon conjunct natal sun/moon by sign */
-    const nb=parse(S.me.date), nsun=signOf(sunLon(nb)), nmoon=signOf(moonLon(nb));
+  if(LON.natal&&S.me.natal){ /* transit to natal: moon through natal sun/moon sign (engine placements) */
+    const b3=big3Of(S.me), nsun=b3.sun, nmoon=b3.moon;
     if(si===nsun)out.push({id:'tn-'+k,lay:'natal',gl:'✦',t:'moon conjunct your natal sun',s:'the month\'s emotional reset lands on your identity',date:k});
     else if(si===nmoon)out.push({id:'lr-'+k,lay:'lunret',gl:'☾',t:'lunar return',s:'the moon came home — your monthly reboot',date:k});
   }
@@ -333,7 +373,7 @@ function evForDate(d){
   if(LON.ritual){const r=RIT.find(x=>x.ph.includes(pn));if(r&&(pn==='new moon'||pn==='full moon'))out.push({id:'r-'+k,lay:'ritual',gl:'✧',t:`matched working · ${r.n}`,s:r.v,date:k});}
   if(LON.prof&&d.getDate()===1)out.push({id:'pf-'+k,lay:'prof',gl:'◈',t:'profection check-in',s:'which house is running your year — and who rules it',date:k});
   if(LON.sixmo&&pn==='new moon')out.push({id:'6-'+k,lay:'sixmo',gl:'◐',t:'six-month checkpoint',s:'new moon = plan review. what shipped, what stalled?',date:k});
-  S.cal.filter(c=>c.date===k).forEach(c=>{if(LON[c.lay!==undefined?c.lay:'entry'])out.push({...c,gl:c.gl||'✧',lay:c.lay||'ritual'});});
+  S.cal.filter(c=>c.date===k).forEach(c=>{if(LON[c.lay||'ritual']!==false)out.push({...c,gl:c.gl||'✧',lay:c.lay||'ritual',mine:1});});
   S.entries.filter(e=>e.date===k).forEach(e=>{
     const lay=e.type==='pull'?'pull':e.type==='ritual'?'ritual':e.type==='cycle'?'cycle':e.type==='sex'?'sex':'entry';
     if(LON[lay])out.push({id:'e-'+e.id,lay,gl:e.type==='pull'?'✦':e.type==='ritual'?'✧':e.type==='cycle'?'◉':e.type==='sex'?'◇':'✧',
@@ -354,7 +394,7 @@ function evRow(e){const m=layMeta(e.lay)||{c:'#FF9A3C'};
   return `<button class="evrow" onclick="openEv('${e.date}','${e.id}')"><span class="g" style="background:${m.c}22;color:${m.c}">${e.gl}</span>
     <div><div class="e1">${e.t}</div><div class="e2">${e.s}</div></div><span class="w">${e.when||fmt(parse(e.date))}</span></button>`;}
 
-let CV='dots';S.notes={};
+let CV='dots';
 const ccDot=c=>`<i class="cc-dot" style="background:${c}"></i>`;
 const lc=e=>(layMeta(e.lay)||{c:'var(--c-sky)'}).c;
 const layGroup=id=>{for(const g of LAYERS)if(g.items.some(i=>i.id===id))return g.g.replace(/^(the|your) /,'');return'sky';};
@@ -376,16 +416,19 @@ function renderCal(){
   const all=D.flatMap(x=>x.ev),nf=D.filter(x=>x.flag).length,grp={};
   all.forEach(e=>{const g=layGroup(e.lay);grp[g]=(grp[g]||0)+1;});
   const lonN=Object.values(LON).filter(Boolean).length,layN=Object.keys(LON).length;
-  document.getElementById('ccMeta').innerHTML=`porphyry · ${S.me.place||'location pending'}<br>${lonN} of ${layN} layers on`;
+  document.getElementById('ccMeta').innerHTML=`<button class="lk" onclick="pickHouseSystem()">${HSYS[S.set.house]||'porphyry'}</button> · ${esc(S.me.place||'location pending')}<br><button class="lk" onclick="nav('layers')">${lonN} of ${layN} layers on ›</button>`;
   const me=S.me;let nat;
-  if(me.date){const nb=parse(me.date),su=signOf(sunLon(nb)),mo=signOf(moonLon(nb));
-    nat=`☉︎ ${SIGNS[su]} ${GLY[su]} · ☽︎ ${SIGNS[mo]} ${GLY[mo]}${me.time?' · born '+me.time:''}${me.place?' · '+me.place:''}`;}
+  if(me.natal){const b=big3Of(me);
+    nat=`☉︎ ${SIGNS[b.sun]} ${GLY[b.sun]} · ☽︎ ${SIGNS[b.moon]} ${GLY[b.moon]}${b.rise!=null?` · ↑ ${SIGNS[b.rise]} ${GLY[b.rise]}`:''} · <b>my chart ›</b>`;}
+  else if(me.date)nat='casting your chart with the engine… <b>open ›</b>';
   else nat='natal chart not cast · <b>add birth data ›</b> to see transits to natal';
   document.getElementById('ccNatal').innerHTML=nat;
   document.getElementById('mTitle').innerHTML=`<em>${c.toLocaleDateString('en-us',{month:'long'})}</em> ${y}`;
+  document.getElementById('ccStats').onclick=()=>explain('stats');
   document.getElementById('ccStats').innerHTML=`${all.length} ${all.length===1?'entry':'entries'} · ${nf} flagged<br>${Object.entries(grp).map(([g,n])=>g+' '+n).join(' · ')||'a quiet month'}`;
   const s0=signOf(sunLon(D[0].d)),ing=D.find(x=>signOf(sunLon(x.d))!==s0);
   const luns=D.filter(x=>x.lun).map(x=>`${x.lun} ${x.lun==='●'?'nm':'fm'} ${x.dd}`);
+  document.getElementById('ccStand').onclick=()=>explain('stand');
   document.getElementById('ccStand').innerHTML=`☉︎ sun in ${SIGNS[s0]} ${GLY[s0]}${ing?` → ${SIGNS[(s0+1)%12]} ${GLY[(s0+1)%12]} ${fmt(ing.d)}`:' all month'}${luns.length?' · '+luns.join(' · '):''}`;
   const g=document.getElementById('mGrid');
   if(CV==='ledger'){
@@ -415,9 +458,9 @@ function renderCal(){
     const allOn=g.ids.every(id=>LON[id]);const someOn=g.ids.some(id=>LON[id]);
     return `<button class="cc-li${someOn?'':' off'}" onclick="CC_LEG_GROUPS.find(x=>x.n==='${g.n}').ids.forEach(id=>LON[id]=${allOn?'false':'true'});renderCal()">${ccDot(g.c)}${g.n}</button>`;}).join('');
   const sd=parse(S.sel),ev=evForDate(sd),p=phase(sd),si=signOf(moonLon(sd));
-  document.getElementById('dSelLab').innerHTML=`${fmtL(sd)}<span>${phaseName(p)} · ${GLY[si]} ${SIGNS[si]}</span>`;
+  document.getElementById('dSelLab').innerHTML=`${fmtL(sd)}<button class="lk" onclick="moonSheet('${S.sel}')">${phaseName(p)} · ${GLY[si]} ${SIGNS[si]} ›</button>`;
   document.getElementById('dSel').innerHTML=ev.length?ev.map(e=>evRow(e)).join('')
-    :`<div class="card" style="font-size:13px;color:var(--dust)">nothing on the books. the sky's quiet — ${MOOD[phaseName(p)].toLowerCase()}</div>`;
+    :`<button class="card qd" onclick="openAdd('${S.sel}')">nothing on the books. the sky's quiet — ${MOOD[phaseName(p)].toLowerCase()}<span class="qd-go">+ add something to ${fmt(sd)} ›</span></button>`;
   const nt=document.getElementById('ccNote');if(document.activeElement!==nt)nt.value=S.notes[S.sel]||'';
   nt.placeholder=`what happened on ${fmt(sd)}? the record keeps it.`;
   document.getElementById('ccNoteDay').textContent=fmt(sd);
@@ -429,8 +472,8 @@ function renderCal(){
   document.getElementById('ccWatch').innerHTML=W.length?W.slice(0,6).map(w=>`<button class="cc-wi" onclick="${w.id?`openEv('${w.k}','${w.id}')`:`pickDay('${w.k}')`}">
     <span class="cc-wd">${fmt(w.d)}</span><span><span class="cc-wt">${ccDot(w.c)}${w.t}</span><span class="cc-ws">${w.s}</span></span></button>`).join('')
     :'<div class="cc-ws" style="padding:8px 0">nothing loud this month with the layers you have on.</div>';
-  document.getElementById('ccFootL').textContent=`${me.name||'you'} · master event list`;
-  document.getElementById('ccFootR').textContent=`sheet ${m+1} of 12`;
+  document.getElementById('ccFootL').innerHTML=`<button class="lk" onclick="nav('journal')">${esc(me.name||'you')} · the record ›</button>`;
+  document.getElementById('ccFootR').innerHTML=`<button class="lk" onclick="document.querySelector('#ccView [data-v=ledger]').click()">sheet ${m+1} of 12 · ledger ›</button>`;
 }
 function mShift(n){S.cursor=new Date(S.cursor.getFullYear(),S.cursor.getMonth()+n,1);const t=new Date();
   S.sel=(t.getFullYear()===S.cursor.getFullYear()&&t.getMonth()===S.cursor.getMonth())?key(t):key(S.cursor);renderCal();}
@@ -450,9 +493,10 @@ function openEv(dk,id){
   const rit=RIT.find(x=>x.ph.includes(pn))||RIT[0];
   const r=dailyRead(d);
   document.getElementById('evBody').innerHTML=
-   `<div class="eb"><span class="cer">✧ · </span>${(layMeta(ev.lay)||{n:'the sky'}).n}<span class="cer"> · ✧</span></div>
+   `<div class="eb"><span class="cer">✧ · </span><button class="lk" onclick="nav('layers')">${(layMeta(ev.lay)||{n:'the sky'}).n}</button><span class="cer"> · ✧</span></div>
     <div class="h1"><em>${ev.t.split(' ')[0]}</em> ${ev.t.split(' ').slice(1).join(' ')}</div>
-    <div class="h1s">${fmtL(d)} · ${pn} in <b>${SIGNS[si]} ${GLY[si]}</b></div>
+    <div class="h1s"><button class="lk" onclick="pickDay('${dk}');nav('cal')">${fmtL(d)}</button> · <button class="lk" onclick="moonSheet('${dk}')">${pn} in <b>${SIGNS[si]} ${GLY[si]}</b></button></div>
+    ${ev.mine?`<div class="card"><b class="cap" style="font-size:9px;color:var(--deep)">✧ your note</b><div style="margin-top:6px">${esc(ev.s||'')}</div><button class="btn g sm" onclick="delEvent('${ev.id}');goBack('cal')">remove from calendar</button></div>`:''}
     <div class="pnl"><div class="rl cap" style="font-size:9.5px;color:var(--deep);font-weight:600">✦ the astrology first</div>
       <p style="font-size:14px;margin-top:9px">${r.l1}</p>
       <p style="font-size:14px;margin-top:8px;color:var(--dust)">${r.l2}</p></div>
@@ -462,7 +506,8 @@ function openEv(dk,id){
       <div style="font-size:12.5px;color:var(--dust)">${rit.v}</div>
       <button class="btn g" onclick="nav('lib');setShelf('work');setTimeout(()=>jumpRit('${rit.n}'),80)">open the working ›</button></div>
     <div class="card"><b class="cap" style="font-size:9px;color:var(--deep)">✦ spread</b>
-      <div style="font-size:16px;font-weight:700;margin-top:4px">${rit.pair}</div></div>
+      <div style="font-size:16px;font-weight:700;margin-top:4px">${rit.pair}</div>
+      <button class="btn g" onclick="openPull(0,'${rit.pair}')">✦ pull this spread ›</button></div>
     <div class="card"><b class="cap" style="font-size:9px;color:var(--deep)">❧ ingredients</b>
       <div class="ich" style="margin-top:8px">${rit.need.map(n=>`<button class="ic2" onclick="nav('lib');setShelf('ing');setTimeout(()=>jumpIng('${n}'),80)">${n}</button>`).join('')}</div></div>
     <div class="card"><b class="cap" style="font-size:9px;color:var(--deep)">✧ journal prompt</b>
@@ -478,30 +523,35 @@ function renderOrbit(){
   const m=S.me;
   document.getElementById('orbitMe').innerHTML= m.date?
    `<div style="display:flex;gap:14px;align-items:center"><div class="disc">${(m.name||'y')[0]}</div>
-      <div><div style="font-size:18px;font-weight:700">${m.name||'you'}</div><div style="font-size:12px;color:var(--dust)">${m.place||'—'} · ${m.date}</div></div></div>
-    ${big3(m)}<button class="btn g" onclick="nav('natal')">open my chart ›</button>`
+      <div><div style="font-size:18px;font-weight:700">${esc(m.name||'you')}</div><div style="font-size:12px;color:var(--dust)">${esc(m.place||'—')} · ${m.date}</div></div></div>
+    ${big3(m,'me')}<button class="btn g" onclick="nav('natal')">open my chart ›</button>`
    :`<div class="empty"><div class="eg">☉︎</div><div class="et">no chart yet</div>
       <div class="ed">add your birth data and every transit in this app starts talking to <i>you</i> specifically.</div>
-      <button class="btn" onclick="obReplay()">cast my chart</button></div>`;
+      <button class="btn" onclick="castMine()">cast my chart</button></div>`;
   document.getElementById('orbitList').innerHTML= S.people.length? S.people.map((p,i)=>
    `<button class="row" onclick="openPerson(${i})"><span class="disc" style="flex:0 0 40px;height:40px;font-size:16px">${(p.name||'?')[0]}</span>
-     <span><span class="t">${p.name}</span><div class="s">${p.date?`☉︎ ${SIGNS[signOf(sunLon(parse(p.date)))]} · ☽︎ ${SIGNS[signOf(moonLon(parse(p.date)))]}`:'birth data pending'}</div></span><span class="c">›</span></button>`).join('')
+     <span><span class="t">${esc(p.name)}</span><div class="s">${p.natal?(()=>{const b=big3Of(p);return `☉︎ ${SIGNS[b.sun]} · ☽︎ ${SIGNS[b.moon]}${b.rise!=null?' · ↑ '+SIGNS[b.rise]:''}`;})():p.date?'casting…':'birth data pending'}</div></span><span class="c">›</span></button>`).join('')
    :`<div class="card"><div class="empty" style="padding:20px 8px"><div class="eg">☍</div><div class="et">orbit's empty</div>
       <div class="ed">add the people whose charts you actually care about. their transits become a calendar layer you can toggle on.</div></div></div>`;
 }
-function big3(p){
+function big3(p,who){
   if(!p.date)return'';
-  const d=parse(p.date),ss=signOf(sunLon(d)),ms=signOf(moonLon(d));
-  return `<div class="b3"><div><div class="g">☉︎</div><div class="k">sun</div><div class="v">${SIGNS[ss]}</div></div>
-    <div><div class="g">☽︎</div><div class="k">moon</div><div class="v">${SIGNS[ms]}</div></div>
-    <div><div class="g">↑</div><div class="k">rising</div><div class="v">${p.time?SIGNS[(ss+Math.floor((parseInt(p.time)||12)/2))%12]:'add time'}</div></div></div>`;
+  const b=big3Of(p), ref=who===undefined?'me':who;
+  const cell=(g,k,i,why)=>`<button class="b3c" onclick="${i!=null?`explainPlacement(${JSON.stringify(ref).replace(/"/g,'&quot;')},'${k==='rising'?'asc':k}')`:why}">
+      <div class="g">${g}</div><div class="k">${k}</div><div class="v">${i!=null?SIGNS[i]+' '+GLY[i]:(b.pending?'casting…':'—')}</div></button>`;
+  const riseWhy=b.noTime?`explain('rising')`:`explain('rising')`;
+  return `<div class="b3">${cell('☉︎','sun',b.sun,"explain('sun')")}${cell('☽︎','moon',b.moon,"explain('moon')")}${
+    b.rise!=null?cell('↑','rising',b.rise):`<button class="b3c" onclick="${ref==='me'?'castMine()':riseWhy}"><div class="g">↑</div><div class="k">rising</div><div class="v">${b.noTime?'add birth time':(b.pending?'casting…':'—')}</div></button>`}</div>`;
 }
 function openPerson(i){
   if(i===undefined){
     sheet(`<div class="gb"></div><div class="cap" style="font-size:9.5px;color:var(--deep);text-align:center">☍ · add to orbit · ☍</div>
      <div class="sf" style="font-size:24px;text-align:center;margin-top:4px">someone new</div>
      <div class="ob-f" style="margin-top:14px">
-       <input id="pN" placeholder="name"><input id="pD" type="date"><input id="pT" type="time"><input id="pP" placeholder="birth place">
+       <input id="pN" placeholder="name" aria-label="name">
+       <label class="ob-label"><span class="ob-lt">date of birth</span><input id="pD" type="date"></label>
+       <label class="ob-label"><span class="ob-lt">time of birth · optional</span><input id="pT" type="time"></label>
+       <div style="position:relative"><input id="pP" placeholder="birth city — start typing" autocomplete="off" aria-label="birth city" oninput="placeSearch(this.value,'pPlaceList',c=>pCity=c)"><div id="pPlaceList" class="ob-places"></div></div>
        <select id="pR" style="appearance:none"><option>partner</option><option>ex</option><option>situationship</option><option>friend</option><option>family</option><option>enemy</option><option>client</option></select>
      </div>
      <button class="btn" onclick="savePerson()">cast their chart</button>`);
@@ -512,12 +562,12 @@ function openPerson(i){
    `<div class="eb"><span class="cer">☍ · </span>${p.rel||'orbit'}<span class="cer"> · ☍</span></div>
     <div class="h1 sf">${p.name}<span class="k">✦</span></div>
     <div class="h1s">${p.place||'—'} · ${p.date||'no birth data'}</div>
-    <div class="pnl">${big3(p)}</div>
+    <div class="pnl">${p.natal?`<div class="pwheel">${wheelSVG(p.natal,i)}</div>`:''}${big3(p,i)}</div>
     <div class="lab">their sky today</div>
     <div class="card">${p.date?theirSky(p):'<div style="font-size:13px;color:var(--dust)">add their birth date to read their transits</div>'}</div>
     <div class="lab">entanglement</div>
-    <button class="row" onclick="toast('synastry — needs your chart + theirs ◇')"><span class="ic">◇</span><span><span class="t">synastry</span><div class="s">how your charts touch</div></span><span class="c">›</span></button>
-    <button class="row" onclick="toast('composite — the relationship\\'s own chart ◍')"><span class="ic">◍</span><span><span class="t">composite</span><div class="s">the relationship as its own being</div></span><span class="c">›</span></button>
+    <button class="row" onclick="${p.natal?`showCompare('syn',${i})`:`openCompare('syn')`}"><span class="ic">◇</span><span><span class="t">synastry</span><div class="s">how your charts touch</div></span><span class="c">›</span></button>
+    <button class="row" onclick="${p.natal?`showCompare('comp',${i})`:`openCompare('comp')`}"><span class="ic">◍</span><span><span class="t">composite</span><div class="s">the relationship as its own being</div></span><span class="c">›</span></button>
     <button class="row" onclick="LON.theirs=true;nav('cal');toast('their transits are now a calendar layer ☍')"><span class="ic">✧</span><span><span class="t">show their transits on my calendar</span><div class="s">toggle them on as a layer</div></span><span class="c">›</span></button>
     <div class="lab">the record · ${p.name}</div>
     <button class="btn g" onclick="openEntry(null,'${p.name}')">+ journal about ${p.name}</button>
@@ -528,17 +578,26 @@ function openPerson(i){
   nav('person');
 }
 function theirSky(p){
-  const d=new Date(),nb=parse(p.date),si=signOf(moonLon(d));
-  const nsun=signOf(sunLon(nb)),nmoon=signOf(moonLon(nb));
+  const d=new Date(),si=signOf(moonLon(d));
+  const b3=big3Of(p);if(b3.sun==null)return '<div style="font-size:13px;color:var(--dust)">their chart is still casting — check back in a sec</div>';
+  const nsun=b3.sun,nmoon=b3.moon;
   const hit=si===nsun?'the moon is sitting on their sun today — they\'re feeling extremely themselves. handle accordingly.'
     :si===nmoon?'lunar return for them. they\'re raw, resetting, and probably won\'t admit it.'
     :`moon in ${SIGNS[si]} for them too — ${SIGN_READ[SIGNS[si]][1]}`;
   return `<div class="tr"><span class="g">☽︎</span><div><div class="a">moon in ${SIGNS[si]} ${GLY[si]}</div><div class="b">${hit}</div></div></div>`;
 }
+let pCity=null;
 function savePerson(){
   const n=document.getElementById('pN').value.trim();if(!n)return toast('name them first ☍');
-  S.people.push({name:n,date:document.getElementById('pD').value,time:document.getElementById('pT').value,place:document.getElementById('pP').value,rel:document.getElementById('pR').value});
-  closeSheet();renderOrbit();toast('✦ chart cast — they\'re in orbit now');
+  const p={name:n,date:document.getElementById('pD').value,time:document.getElementById('pT').value,place:document.getElementById('pP').value,rel:document.getElementById('pR').value};
+  if(pCity){p.lat=pCity.lat;p.lng=pCity.lng;p.tzName=pCity.tz;}
+  S.people.push(p);pCity=null;
+  closeSheet();renderOrbit();tiSave();
+  if(!p.date)return toast('☍ in orbit — add a birth date to cast their chart');
+  toast('☍ casting their chart…');
+  castChart(p,false).then(ch=>{p.natal=ch;renderOrbit();tiSave();const b=big3Of(p);
+    toast(`✦ ${esc(p.name)} is in orbit — ${SIGNS[b.sun]} sun${b.rise!=null?', '+SIGNS[b.rise]+' rising':''}`);})
+   .catch(e=>toast('✦ '+String(e.message||e).toLowerCase()));
 }
 
 /* ══════════ GRIMOIRE ══════════ */
@@ -547,9 +606,9 @@ function renderGrim(){
   const rit=RIT.find(x=>x.ph.includes(pn))||RIT[0];
   document.getElementById('gCount').textContent=`${S.entries.length} ${S.entries.length===1?'entry':'entries'}`;
   document.getElementById('gSky').innerHTML=
-   `<div style="display:flex;gap:13px;align-items:center;position:relative">
+   `<button class="gsky" onclick="moonSheet()" style="display:flex;gap:13px;align-items:center;position:relative;width:100%">
       <div class="mn">${moonSVG(p,46)}</div>
-      <div><div class="t1">${pn} in ${SIGNS[si]} ${GLY[si]}</div><div class="t2">${MOOD[pn]}</div></div></div>`;
+      <div><div class="t1">${pn} in ${SIGNS[si]} ${GLY[si]}</div><div class="t2">${MOOD[pn]}</div></div><span class="c">›</span></button>`;
   document.getElementById('gMatch').innerHTML=
    `<button class="mch" onclick="nav('lib');setShelf('work');setTimeout(()=>jumpRit('${rit.n}'),80)"><div class="k">✧ working</div><div class="v">${rit.n}</div></button>
     <button class="mch" onclick="nav('lib');setShelf('tarot')"><div class="k">✦ spread</div><div class="v">${rit.pair}</div></button>
@@ -563,19 +622,19 @@ function renderGrim(){
   const tops=Object.entries(suits).sort((a,b)=>b[1]-a[1])[0];
   const revs=allc.filter(c=>c.rev).length;
   document.getElementById('gStats').innerHTML=
-   `<div class="st"><div class="v">${streak()}</div><div class="k">day streak</div></div>
-    <div class="st"><div class="v">${pulls.length}</div><div class="k">pulls</div></div>
-    <div class="st"><div class="v">${allc.length?SUIT[tops[0]][1]:'—'}</div><div class="k">your suit</div></div>
-    <div class="st"><div class="v">${allc.length?Math.round(revs/allc.length*100)+'%':'—'}</div><div class="k">reversed</div></div>`;
+   `<button class="st" onclick="nav('pat')"><div class="v">${streak()}</div><div class="k">day streak</div></button>
+    <button class="st" onclick="S.jfilter='pull';nav('journal')"><div class="v">${pulls.length}</div><div class="k">pulls</div></button>
+    <button class="st" onclick="${allc.length?`explainSuit('${({w:'wands',c:'cups',s:'swords',p:'pents'})[tops[0]]}')`:"nav('pat')"}"><div class="v">${allc.length?SUIT[tops[0]][1]:'—'}</div><div class="k">your suit</div></button>
+    <button class="st" onclick="nav('pat')"><div class="v">${allc.length?Math.round(revs/allc.length*100)+'%':'—'}</div><div class="k">reversed</div></button>`;
   document.getElementById('gRec').innerHTML= top.length? top.slice(0,8).map(([k,n])=>{
     const c=byKey(k);return `<button class="recc" onclick="openCard('${k}')"><img src="${IMG[k]||''}" alt="${c.n}"><div class="n">${c.n}</div><div class="x">×${n}</div></button>`;}).join('')
-    :'<div class="card" style="flex:1;font-size:12.5px;color:var(--dust)">log a few pulls and the repeats show up here — with the actual card art ✦</div>';
+    :'<button class="card qd" style="flex:1" onclick="openPull()">log a few pulls and the repeats show up here — with the actual card art ✦<span class="qd-go">log a pull ›</span></button>';
   const planned=S.cal.length, done=S.entries.filter(e=>e.type==='ritual').length;
   document.getElementById('gPractice').innerHTML=
    `<button class="chip" onclick="nav('cal')">planned · ${planned}</button>
-    <button class="chip" onclick="nav('journal')">performed · ${done}</button>
-    <button class="chip" onclick="nav('journal')">pulls · ${pulls.length}</button>
-    <button class="chip" onclick="nav('journal')">notes · ${S.entries.filter(e=>e.type==='note').length}</button>`;
+    <button class="chip" onclick="S.jfilter='ritual';nav('journal')">performed · ${done}</button>
+    <button class="chip" onclick="S.jfilter='pull';nav('journal')">pulls · ${pulls.length}</button>
+    <button class="chip" onclick="S.jfilter='note';nav('journal')">notes · ${S.entries.filter(e=>e.type==='note').length}</button>`;
 }
 function streak(){
   if(!S.entries.length)return 0;
@@ -743,7 +802,7 @@ function savePull(spread){
 
 /* ══════════ ENTRIES ══════════ */
 let entPhotos=[];
-function openEntry(dk,who){
+function openEntry(dk,who,pre){
   entPhotos=[];
   sheet(`<div class="gb"></div>
     <div class="cap" style="font-size:9.5px;color:var(--deep);text-align:center">✧ · the record · ✧</div>
@@ -754,7 +813,7 @@ function openEntry(dk,who){
     <div class="ob-f" style="margin-top:12px">
       <input id="enD" type="date" value="${dk||key(new Date())}">
       <input id="enT" placeholder="title" value="${who?'about '+who:''}">
-      <textarea id="enB" rows="4" placeholder="${who?'what happened with '+who+'?':'what happened, what you noticed, what the sky was doing…'}"></textarea>
+      <textarea id="enB" rows="4" placeholder="${who?'what happened with '+esc(who)+'?':'what happened, what you noticed, what the sky was doing…'}">${pre?esc(pre)+'\n\n':''}</textarea>
     </div>
     <label class="up"><input type="file" id="enF" accept="image/*" multiple hidden>
       <div class="g">◉</div><div class="t">add photos</div><div class="s">screenshots, spreads, altars, signs</div></label>
@@ -780,108 +839,137 @@ function saveEntry(){
 const EG={note:'✧',pull:'✦',ritual:'✧',cycle:'◉',sex:'◇'};
 function entHTML(e){
   return `<div class="ent"><div class="eh"><span class="g">${EG[e.type]||'✧'}</span>
-      <div><div class="d">${fmt(parse(e.date))} · ${e.type}</div></div>
-      <span class="sky">${e.sky||''}</span></div>
-    ${e.title?`<div class="tt">${e.title}</div>`:''}
-    ${e.body?`<div class="bd">${e.body}</div>`:''}
-    ${e.cards&&e.cards.length?`<div class="cds">${e.cards.map(c=>`<img src="${IMG[c.k]}" class="${c.rev?'rv':''}" title="${byKey(c.k).n}">`).join('')}</div>`:''}
+      <div><button class="d lk" onclick="closeSheet();pickDay('${e.date}');nav('cal')">${fmt(parse(e.date))} · ${e.type} ›</button></div>
+      <button class="sky lk" onclick="moonSheet('${e.date}')">${e.sky||''}</button></div>
+    ${e.title?`<div class="tt">${esc(e.title)}</div>`:''}
+    ${e.body?`<div class="bd">${esc(e.body)}</div>`:''}
+    ${e.cards&&e.cards.length?`<div class="cds">${e.cards.map(c=>`<button class="cdb" onclick="openCard('${c.k}',${!!c.rev})"><img src="${IMG[c.k]}" class="${c.rev?'rv':''}" alt="${byKey(c.k).n}"></button>`).join('')}</div>`:''}
     ${e.photos&&e.photos.length?`<div class="ph">${e.photos.map(p=>`<img src="${p}">`).join('')}</div>`:''}</div>`;
 }
 function renderJournal(){
-  const c=S.jcursor;
-  document.getElementById('jTitle').textContent=c.toLocaleDateString('en-us',{month:'long',year:'numeric'}).toLowerCase();
-  const first=new Date(c.getFullYear(),c.getMonth(),1),pad=first.getDay(),dim=new Date(c.getFullYear(),c.getMonth()+1,0).getDate();
-  let h='';for(let i=0;i<pad;i++)h+='<div class="cell pad"></div>';
-  const tk=key(new Date());
-  for(let dd=1;dd<=dim;dd++){
-    const d=new Date(c.getFullYear(),c.getMonth(),dd),k=key(d);
-    const es=S.entries.filter(e=>e.date===k);
-    const pulls=es.filter(e=>e.type==='pull'&&e.cards&&e.cards.length);
-    h+=`<button class="cell${k===tk?' tod':''}" onclick="jPick('${k}')">
-      ${pulls.length?`<img src="${IMG[pulls[0].cards[0].k]}" style="position:absolute;inset:2px;width:calc(100% - 4px);height:calc(100% - 4px);object-fit:cover;border-radius:9px;opacity:.42">`:''}
-      <span class="dn" style="position:relative">${dd}</span>
-      <span class="pips" style="position:relative">${[...new Set(es.map(e=>e.type))].slice(0,4).map(t=>`<span class="pip" style="background:var(--moon);opacity:.4"></span>`).join('')}</span></button>`;
-  }
-  document.getElementById('jGrid').innerHTML=h;
   const F=['all','note','pull','ritual','cycle','sex'];
-  document.getElementById('jFilter').innerHTML=F.map(f=>`<button class="chip${S.jfilter===f?' on':''}" onclick="S.jfilter='${f}';renderJournal()">${f==='all'?'all':(EG[f]+' '+f)}</button>`).join('');
-  const list=S.entries.filter(e=>S.jfilter==='all'||e.type===S.jfilter);
+  document.getElementById('jFilter').innerHTML=F.map(f=>`<button class="chip${S.jfilter===f?' on':''}" onclick="S.jfilter='${f}';renderJournal()" aria-pressed="${S.jfilter===f}">${f==='all'?'all':(EG[f]+' '+f)}</button>`).join('');
+  const list=S.entries.filter(e=>S.jfilter==='all'||e.type===S.jfilter).slice().sort((a,b)=>a.date<b.date?1:-1);
   document.getElementById('jLab').textContent=`${list.length} ${list.length===1?'entry':'entries'}`;
-  document.getElementById('jList').innerHTML=list.length?list.map(entHTML).join('')
+  let lastM='';
+  document.getElementById('jList').innerHTML=list.length?list.map(e=>{const m=parse(e.date).toLocaleDateString('en-us',{month:'long',year:'numeric'}).toLowerCase();
+      const head=m!==lastM?`<div class="jmh">${m}</div>`:'';lastM=m;return head+entHTML(e);}).join('')
     :`<div class="card"><div class="empty"><div class="eg">✧</div><div class="et">the book is empty</div>
        <div class="ed">every pull, working, note, and photo you log lands here — stamped with the sky it happened under. that's what makes it usable data later.</div>
        <button class="btn" onclick="openEntry()">write the first one</button></div></div>`;
 }
 function jShift(n){S.jcursor=new Date(S.jcursor.getFullYear(),S.jcursor.getMonth()+n,1);renderJournal();}
-function jPick(k){const es=S.entries.filter(e=>e.date===k);if(!es.length)return openEntry(k);
+function jPick(k){ /* kept for old links: a day opens on the calendar now */
+  pickDay(k);nav('cal');return;const es=S.entries.filter(e=>e.date===k);if(!es.length)return openEntry(k);
   sheet(`<div class="gb"></div><div class="cap" style="font-size:9.5px;color:var(--deep);text-align:center">✧ · ${fmt(parse(k))} · ✧</div>
     <div class="sf" style="font-size:22px;text-align:center;margin-top:3px">${es.length} ${es.length===1?'entry':'entries'}</div>
     ${es.map(entHTML).join('')}<button class="btn g" onclick="closeSheet();openEntry('${k}')">+ add another</button>`);}
 
 /* ══════════ NATAL ══════════ */
 const PLAN=[['☉︎','sun',0],['☽︎','moon',1],['☿︎','mercury',2],['♀︎','venus',3],['♂︎','mars',4],['♃︎','jupiter',5],['♄︎','saturn',6]];
+const BG={sun:'☉︎',moon:'☽︎',mercury:'☿︎',venus:'♀︎',mars:'♂︎',jupiter:'♃︎',saturn:'♄︎',uranus:'♅︎',neptune:'♆︎',pluto:'♇︎',chiron:'⚷',north_node:'☊',south_node:'☋',lilith:'⚸',asc:'↑',mc:'⊼'};
+const BN={north_node:'north node',south_node:'south node',lilith:'lilith',asc:'rising',mc:'midheaven'};
+const bname=k=>BN[k]||k;
+const ASP=[{n:'conjunction',a:0,o:8,g:'☌'},{n:'sextile',a:60,o:5,g:'⚹',soft:1},{n:'square',a:90,o:7,g:'□'},{n:'trine',a:120,o:7,g:'△',soft:1},{n:'opposition',a:180,o:8,g:'☍'}];
+const ASP_BODIES=['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'];
+/* aspects are geometry on the engine's longitudes — no positions are computed here */
+function aspectsOf(ch){
+  if(!ch)return[];const B=ch.bodies.filter(b=>ASP_BODIES.includes(b.key)),out=[];
+  for(let i=0;i<B.length;i++)for(let j=i+1;j<B.length;j++){
+    let d=Math.abs(B[i].lon-B[j].lon);if(d>180)d=360-d;
+    for(const A of ASP){const orb=Math.abs(d-A.a);if(orb<=A.o){out.push({a:B[i].key,b:B[j].key,t:A,orb});break;}}
+  }
+  return out.sort((x,y)=>x.orb-y.orb);
+}
+const dm=deg=>{const d=Math.floor(deg),m=Math.floor((deg-d)*60);return `${d}°${String(m).padStart(2,'0')}′`;};
+/* the wheel — the astrocake chart print, line-only: double-rule rim, zodiac band with
+   degree ticks, cusps as hairlines, angles in heavier ink, aspects woven in the core. */
+function wheelSVG(ch,who){
+  const W=360,C=W/2,R0=172,R1=164,R2=136,R3=126,RP=106,RD=88,RC=62;
+  const asc=ch.timeKnown&&ch.asc!=null?ch.asc:0;
+  const th=lon=>(180+(lon-asc))*Math.PI/180;
+  const X=(lon,r)=>(C+Math.cos(th(lon))*r).toFixed(2), Y=(lon,r)=>(C-Math.sin(th(lon))*r).toFixed(2);
+  const ln=(l1,r1,l2,r2,w,o,extra)=>`<line x1="${X(l1,r1)}" y1="${Y(l1,r1)}" x2="${X(l2,r2)}" y2="${Y(l2,r2)}" stroke="currentColor" stroke-width="${w}" opacity="${o}" ${extra||''}/>`;
+  const wq=JSON.stringify(who).replace(/"/g,'&quot;');
+  let g=`<svg class="wheel" viewBox="-22 -22 ${W+44} ${W+44}" role="img" aria-label="natal chart wheel">`;
+  g+=`<circle cx="${C}" cy="${C}" r="${R0}" fill="none" stroke="currentColor" stroke-width="1"/>`;
+  g+=`<circle cx="${C}" cy="${C}" r="${R1}" fill="none" stroke="currentColor" stroke-width="1"/>`;
+  g+=`<circle cx="${C}" cy="${C}" r="${R2}" fill="none" stroke="currentColor" stroke-width="1"/>`;
+  g+=`<circle cx="${C}" cy="${C}" r="${RC}" fill="none" stroke="currentColor" stroke-width=".75"/>`;
+  for(let d=0;d<360;d++){const big=d%30===0,mid=d%10===0,five=d%5===0;
+    if(big)g+=ln(d,R2,d,R1,1,1);else g+=ln(d,R2,d,R2+(mid?7:five?5:2.5),.6,mid?.8:.5);}
+  for(let i=0;i<12;i++){const m=i*30+15;
+    g+=`<text class="wz" x="${X(m,(R1+R2)/2+2)}" y="${Y(m,(R1+R2)/2+2)}" onclick="explainSign(${i})">${GLY[i]}</text>`;}
+  const cusps=cuspsOf(ch);
+  if(cusps){
+    cusps.forEach((c,i)=>{const ang=i%3===0;
+      g+=ln(c,RC,c,R3,ang?1.4:.6,ang?1:.55);
+      const nx=cusps[(i+1)%12],mid=(c+((nx-c+360)%360)/2)%360;
+      g+=`<text class="wh" x="${X(mid,RC+9)}" y="${Y(mid,RC+9)}" onclick="explainHouse(${i+1})">${i+1}</text>`;});
+    [[ch.asc,'ASC'],[(ch.asc+180)%360,'DSC'],[ch.mc,'MC'],[(ch.mc+180)%360,'IC']].forEach(([l,t])=>{
+      g+=ln(l,R0,l,R0+8,1.4,1);
+      g+=`<text class="wa" x="${X(l,R0+16)}" y="${Y(l,R0+16)}" onclick="explainPlacement(${wq},'${t==='ASC'?'asc':t==='MC'?'mc':t.toLowerCase()}')">${t}</text>`;});
+  }
+  /* aspect web */
+  aspectsOf(ch).forEach(A=>{if(A.t.a===0)return;const a=bodyOf(ch,A.a),b=bodyOf(ch,A.b);
+    g+=`<line x1="${X(a.lon,RC)}" y1="${Y(a.lon,RC)}" x2="${X(b.lon,RC)}" y2="${Y(b.lon,RC)}" class="asp${A.t.soft?' soft':''}" opacity="${Math.max(.25,1-A.orb/A.t.o*.75).toFixed(2)}"/>`;});
+  /* planets — fanned so glyphs never collide, ticked at their true degree */
+  const P=ch.bodies.filter(b=>b.key!=='south_node').map(b=>({...b,pl:b.lon})).sort((a,b)=>a.lon-b.lon);
+  for(let pass=0;pass<40;pass++){let moved=false;
+    for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];let gap=(b.pl-a.pl+360)%360;
+      if(P.length>1&&gap<9){a.pl=(a.pl-(9-gap)/2+360)%360;b.pl=(b.pl+(9-gap)/2)%360;moved=true;}}
+    if(!moved)break;}
+  P.forEach(b=>{
+    g+=ln(b.lon,R3,b.lon,R2,1.2,1);
+    g+=ln(b.lon,R3-1,b.pl,RP+9,.5,.45);
+    g+=`<g class="wp" onclick="explainPlacement(${wq},'${b.key}')"><circle cx="${X(b.pl,RP)}" cy="${Y(b.pl,RP)}" r="9" fill="transparent"/><text class="wg" x="${X(b.pl,RP)}" y="${Y(b.pl,RP)}">${BG[b.key]||'•'}</text></g>`;
+    g+=`<text class="wd" x="${X(b.pl,RD)}" y="${Y(b.pl,RD)}">${Math.floor(b.deg)}${b.retro?'℞':''}</text>`;});
+  g+=`<path d="M${C} ${C-9} L${C+2} ${C-2} L${C+9} ${C} L${C+2} ${C+2} L${C} ${C+9} L${C-2} ${C+2} L${C-9} ${C} L${C-2} ${C-2} Z" fill="currentColor" class="wstar"/>`;
+  return g+'</svg>';
+}
+function natalRowsHTML(ch,who){
+  const wq=JSON.stringify(who).replace(/"/g,'&quot;');
+  const cusps=cuspsOf(ch);
+  const row=(k,sign,deg,house,retro)=>{const si=SIGNS.indexOf(sign);
+    return `<button class="nr" onclick="explainPlacement(${wq},'${k}')"><span class="g">${BG[k]||'•'}</span><span class="n">${bname(k)}</span>
+      <span class="w2">${GLY[si]} ${sign} ${dm(deg)}${retro?' ℞':''}</span><span class="h">${house?'h'+house:''}</span><span class="c">›</span></button>`;};
+  let h='';
+  if(ch.timeKnown&&ch.asc!=null){h+=row('asc',SIGNS[signOf(ch.asc)],degIn(ch.asc),1);h+=row('mc',SIGNS[signOf(ch.mc)],degIn(ch.mc),cusps?houseOf(ch.mc,cusps):null);}
+  ch.bodies.forEach(b=>{h+=row(b.key,b.sign,b.deg,cusps?houseOf(b.lon,cusps):null,b.retro);});
+  return h;
+}
 function renderNatal(){
-  if(!S.me.date){document.getElementById('natalSub').textContent='no chart yet';
-    document.getElementById('wheelWrap').innerHTML='<div class="empty"><div class="eg">☉︎</div><div class="et">cast your chart first</div><div class="ed">the wheel needs a date, a time, and a place.</div><button class="btn" onclick="obReplay()">cast it</button></div>';
-    document.getElementById('natalRows').innerHTML='';document.getElementById('natalPromise').textContent='';return;}
-  const d=parse(S.me.date), ss=signOf(sunLon(d)), ms=signOf(moonLon(d));
-  document.getElementById('natalSub').innerHTML=`${S.me.date} · ${S.me.time||'—'} · ${S.me.place||'—'}`;
-  /* wheel */
-  /* wheel - styled after astrocake chart prints */
-  const R=140,C=160,IR=R-28,HR=R-74;
-  const ascLon=S.me.asc||0;
-  const rot=a=>(a-ascLon-180)*Math.PI/180;
-  const px=(a,r)=>C+Math.cos(rot(a))*r, py=(a,r)=>C+Math.sin(rot(a))*r;
-  let w=`<svg class="wheel" width="320" height="320" viewBox="0 0 320 320" style="max-width:100%">`;
-  w+=`<circle cx="${C}" cy="${C}" r="${R+8}" fill="none" stroke="var(--line)" stroke-width=".3" stroke-dasharray="2,3"/>`;
-  w+=`<circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="var(--line)" stroke-width="1.5"/>`;
-  w+=`<circle cx="${C}" cy="${C}" r="${IR}" fill="none" stroke="var(--line)" stroke-width="1"/>`;
-  w+=`<circle cx="${C}" cy="${C}" r="${HR}" fill="none" stroke="var(--line)" stroke-width=".5"/>`;
-  w+=`<circle cx="${C}" cy="${C}" r="22" fill="none" stroke="var(--line)" stroke-width=".5"/>`;
-  for(let i=0;i<12;i++){
-    const a1=i*30,am=i*30+15;
-    w+=`<line x1="${px(a1,IR)}" y1="${py(a1,IR)}" x2="${px(a1,R)}" y2="${py(a1,R)}" stroke="var(--line)" stroke-width=".8"/>`;
-    w+=`<text x="${px(am,(IR+R)/2)}" y="${py(am,(IR+R)/2)+4}" text-anchor="middle" font-size="13" fill="var(--dust)">${GLY[i]}</text>`;
-  }
-  const houses=(S.me.houses||[0,30,60,90,120,150,180,210,240,270,300,330].map(h=>(ascLon+180+h)%360));
-  for(let i=0;i<12;i++){
-    const h=houses[i],isAng=(i%3===0);
-    w+=`<line x1="${px(h,HR)}" y1="${py(h,IR)}" x2="${px(h,IR)}" y2="${py(h,IR)}" stroke="var(--line)" stroke-width="${isAng?'1.5':'.5'}"/>`;
-    const hm=((houses[i]+((houses[(i+1)%12]-houses[i]+360)%360)/2))%360;
-    w+=`<text x="${px(hm,(HR+IR)/2)}" y="${py(hm,(HR+IR)/2)+4}" text-anchor="middle" font-size="9" fill="var(--faint)">${i+1}</text>`;
-  }
-  w+=`<line x1="${px(houses[0],R+12)}" y1="${py(houses[0],R+12)}" x2="${px(houses[6],R+12)}" y2="${py(houses[6],R+12)}" stroke="var(--line)" stroke-width="1.5"/>`;
-  const labels=[{i:0,t:'ASC',a:'end'},{i:6,t:'DSC',a:'start'}];
-  labels.forEach(l=>{w+=`<text x="${px(houses[l.i],R+18)}" y="${py(houses[l.i],R+18)+3}" text-anchor="${l.a}" font-size="7" font-weight="700" fill="var(--moon)" letter-spacing=".08em">${l.t}</text>`;});
-  w+=`<text x="${C}" y="${Math.min(py(houses[9],R+16),C-R-4)}" text-anchor="middle" font-size="7" font-weight="700" fill="var(--moon)">MC</text>`;
-  w+=`<text x="${C}" y="${Math.max(py(houses[3],R+16),C+R+10)}" text-anchor="middle" font-size="7" font-weight="700" fill="var(--moon)">IC</text>`;
-  const sLon=sunLon(d),mLon=moonLon(d);
-  const planets=[{gl:'\u2609',lon:sLon},{gl:'\u263D',lon:mLon}];
-  if(S.me.planets)planets.push(...S.me.planets);
-  planets.forEach(p=>{
-    w+=`<text x="${px(p.lon,IR-18)}" y="${py(p.lon,IR-18)+5}" text-anchor="middle" font-size="12" fill="var(--moon)">${p.gl}</text>`;
-    w+=`<line x1="${px(p.lon,IR-1)}" y1="${py(p.lon,IR-1)}" x2="${px(p.lon,IR-5)}" y2="${py(p.lon,IR-5)}" stroke="var(--moon)" stroke-width="1"/>`;
-    w+=`<text x="${px(p.lon,IR-32)}" y="${py(p.lon,IR-32)+3}" text-anchor="middle" font-size="7" fill="var(--faint)">${Math.floor(p.lon%30)}\u00B0</text>`;
-  });
-  w+=`</svg>`;
-  document.getElementById('wheelWrap').innerHTML=w;
-
-  document.getElementById('natalRows').innerHTML=
-   `<div class="nr"><span class="g">☉︎</span><span class="n">sun</span><span class="w2">${SIGNS[ss]} ${GLY[ss]} · ${degIn(sunLon(d)).toFixed(0)}°</span></div>
-    <div class="nr"><span class="g">☽︎</span><span class="n">moon</span><span class="w2">${SIGNS[ms]} ${GLY[ms]} · ${degIn(moonLon(d)).toFixed(0)}°</span></div>
-    <div class="nr"><span class="g">↑</span><span class="n">rising</span><span class="w2">${S.me.time?'calculating from '+S.me.time:'add exact birth time'}</span></div>
-    <div class="nr"><span class="g">◈</span><span class="n">house system</span><span class="w2">porphyry</span></div>`;
+  const ch=S.me.natal;
+  if(!S.me.date||!ch){
+    document.getElementById('natalSub').textContent=S.me.date?'casting with the engine…':'no chart yet';
+    document.getElementById('wheelWrap').innerHTML=`<div class="empty"><div class="eg">☉︎</div><div class="et">${S.me.date?'casting your chart':'cast your chart first'}</div><div class="ed">${S.me.date?'the engine is placing your planets — this takes a second. offline? it finishes next launch.':'the wheel needs a date, a time, and a place.'}</div><button class="btn" onclick="castMine()">${S.me.date?'recast it':'cast it'}</button></div>`;
+    document.getElementById('natalRows').innerHTML='';document.getElementById('natalPromise').textContent='';
+    const a=document.getElementById('natalAsp');if(a)a.innerHTML='';
+    return;}
+  const hs=HSYS[(S.set&&S.set.house)||'porphyry'];
+  document.getElementById('natalSub').innerHTML=`${S.me.date} · ${S.me.time||'time unknown'} · ${esc(S.me.place||'—')}<br><button class="lk" onclick="pickHouseSystem()">${ch.timeKnown?hs+' houses':'no birth time — houses hidden'} ›</button>`;
+  document.getElementById('wheelWrap').innerHTML=wheelSVG(ch,'me')+
+    `<div class="wleg"><span><i class="hard"></i>square · opposition</span><span><i class="soft"></i>trine · sextile</span><button class="lk" onclick="explain('wheel')">how to read it ›</button></div>`;
+  document.getElementById('natalRows').innerHTML=natalRowsHTML(ch,'me');
+  const A=aspectsOf(ch).slice(0,8);
+  const ae=document.getElementById('natalAsp');
+  if(ae)ae.innerHTML=A.length?A.map(x=>`<button class="nr" onclick="explainAspect('${x.a}','${x.b}','${x.t.n}',${x.orb.toFixed(1)})"><span class="g">${x.t.g}</span><span class="n">${bname(x.a)} ${x.t.n} ${bname(x.b)}</span><span class="w2">${x.orb.toFixed(1)}° orb</span><span class="c">›</span></button>`).join(''):'<div class="nr">no major aspects inside orb</div>';
+  const b=big3Of(S.me);
   document.getElementById('natalPromise').innerHTML=
-   `your sun's in <b>${SIGNS[ss]}</b> and your moon's in <b>${SIGNS[ms]}</b> — so the thing you're built to become and the thing you actually need are ${ss===ms?'the same department, which is rare and means when you\'re on, you\'re fully on, and when you\'re off, there\'s nowhere to hide':'running on different frequencies. that\'s not a flaw, that\'s the whole tension the chart is asking you to metabolize'}. ${SIGN_READ[SIGNS[ms]][1]}`;
+   `your sun's in <b>${SIGNS[b.sun]}</b> and your moon's in <b>${SIGNS[b.moon]}</b> — so the thing you're built to become and the thing you actually need are ${b.sun===b.moon?'the same department, which is rare and means when you\'re on, you\'re fully on, and when you\'re off, there\'s nowhere to hide':'running on different frequencies. that\'s not a flaw, that\'s the whole tension the chart is asking you to metabolize'}. ${SIGN_READ[SIGNS[b.moon]][1]}${b.rise!=null?` and with <b>${SIGNS[b.rise]}</b> rising, that's the door everyone walks through first — ${SIGN_READ[SIGNS[b.rise]][0]}.`:''}`;
 }
 
 /* ══════════ ME ══════════ */
 function renderMe(){
   document.getElementById('meSw').innerHTML=swHTML();
-  document.getElementById('meName').innerHTML='<em>'+(S.me.name||'you')+'</em>';
+  document.getElementById('meName').innerHTML='<em>'+esc(S.me.name||'you')+'</em>';
   document.getElementById('meSub').textContent=S.me.date?`${S.me.date} · ${S.me.time||'—'} · ${S.me.place||'—'}`:'no chart cast yet';
-  if(S.me.date){const d=parse(S.me.date);
-    document.getElementById('meBig3').textContent=`☉︎ ${SIGNS[signOf(sunLon(d))]} · ☽︎ ${SIGNS[signOf(moonLon(d))]}`;}
+  if(S.me.natal){const b=big3Of(S.me);
+    document.getElementById('meBig3').textContent=`☉︎ ${SIGNS[b.sun]} · ☽︎ ${SIGNS[b.moon]} · ↑ ${b.rise!=null?SIGNS[b.rise]:'add birth time'}`;}
+  else document.getElementById('meBig3').textContent=S.me.date?'casting with the engine…':'the wheel, the houses, the promise';
+  const hv=document.getElementById('meHouseV');if(hv)hv.textContent=HSYS[S.set.house]||'porphyry';
+  const bv=document.getElementById('meBirthV');if(bv)bv.textContent=S.me.date?'edit':'add';
+  const lv=document.getElementById('meLayV');if(lv)lv.textContent=`${Object.values(LON).filter(Boolean).length} on`;
 }
 function exportBook(){
   const blob=new Blob([JSON.stringify({me:S.me,people:S.people,entries:S.entries,cal:S.cal},null,2)],{type:'application/json'});
@@ -890,119 +978,424 @@ function exportBook(){
 }
 
 /* ══════════ SHEET ══════════ */
-function sheet(h){document.getElementById('sht').innerHTML=h;document.getElementById('scr').classList.add('on');document.getElementById('sht').classList.add('on');}
-function closeSheet(){document.getElementById('scr').classList.remove('on');document.getElementById('sht').classList.remove('on');}
+let sheetReturn=null;
+function sheet(h){
+  const sh=document.getElementById('sht');
+  if(!sh.classList.contains('on'))sheetReturn=document.activeElement;
+  sh.innerHTML=`<button class="sht-x" onclick="closeSheet()" aria-label="close">×</button>`+h;
+  sh.scrollTop=0;
+  document.getElementById('scr').classList.add('on');sh.classList.add('on');
+  document.body.classList.add('sheet-open');
+  sh.focus({preventScroll:true});
+}
+function closeSheet(){
+  const sh=document.getElementById('sht');if(!sh.classList.contains('on'))return;
+  document.getElementById('scr').classList.remove('on');sh.classList.remove('on');
+  document.body.classList.remove('sheet-open');
+  if(sheetReturn&&document.contains(sheetReturn))try{sheetReturn.focus({preventScroll:true});}catch(e){}
+  sheetReturn=null;
+}
+addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(document.getElementById('sht').classList.contains('on'))closeSheet();
+    else if(VSTACK.length>1)goBack(TAB[VSTACK[VSTACK.length-1]]);
+  }
+});
+
+
+/* ══════════ EXPLAIN · every element leads somewhere ══════════
+   tap anything with meaning and it opens: what it is, what it means for you,
+   and where to go next. reference copy stays plain; the read stays bestie. */
+const SIGN_META=[
+ ['fire','cardinal','mars','♂︎'],['earth','fixed','venus','♀︎'],['air','mutable','mercury','☿︎'],['water','cardinal','moon','☽︎'],
+ ['fire','fixed','sun','☉︎'],['earth','mutable','mercury','☿︎'],['air','cardinal','venus','♀︎'],['water','fixed','mars · pluto','♂︎ ♇︎'],
+ ['fire','mutable','jupiter','♃︎'],['earth','cardinal','saturn','♄︎'],['air','fixed','saturn · uranus','♄︎ ♅︎'],['water','mutable','jupiter · neptune','♃︎ ♆︎']];
+const HOUSE_MEAN=['self, body, the first impression — the door everyone walks through','money, resources, what you value and what values you','siblings, neighbors, texts, the daily commute of your mind','home, family, roots, the private floor plan','romance, creativity, play, kids, the fun you make','work, health, routines, the daily grind and the daily care',
+ 'partners, contracts, the people across the table','shared money, sex, debt, inheritance, the deep end','travel, belief, higher learning, the long road','career, reputation, the public chapter of you','friends, networks, the future you\'re building with others','the hidden, the subconscious, endings, rest, retreat'];
+const PLANET_MEAN={sun:'your core identity — what you\'re here to become',moon:'your emotional body — what you need to feel safe',mercury:'how you think, talk, and process',venus:'how you love, attract, and value',mars:'how you want, chase, and fight',jupiter:'where luck and growth come easy (and where you overdo it)',
+ saturn:'where life makes you earn it — discipline, fear, mastery',uranus:'where you rebel and break the pattern',neptune:'where you dream, dissolve, and get foggy',pluto:'where power, obsession, and rebirth live',chiron:'the wound that becomes the medicine',
+ north_node:'the direction you\'re growing toward',south_node:'the comfort zone you\'re growing out of',lilith:'the part of you that refused to be tamed',asc:'your rising — the lens, the body, the vibe people clock first',mc:'the midheaven — your public direction and reputation',dsc:'the descendant — what you seek in partners',ic:'the IC — your roots and private foundation'};
+const GLOSS={
+ rising:['↑ the rising','your ascendant — the zodiac sign that was rising on the eastern horizon the minute you were born. it sets every house in your chart, so it needs your exact birth time and place. the app casts it with the celestine engine — no time, no rising (we won\'t fake it).'],
+ sun:['☉︎ the sun','where the sun was when you were born. your core identity, your engine, the thing you\'re built to become.'],
+ moon:['☽︎ the moon','your emotional body. what you need to feel safe, how you self-soothe, what you do when nobody\'s watching.'],
+ wheel:['◎ reading the wheel','the outer band is the zodiac, every tick a degree. the numbers inside are your houses — life departments — starting at the ASC on the left and running counter-clockwise. planets sit at their exact degree. lines across the middle are aspects: solid ink for squares and oppositions (friction), lilac dashes for trines and sextiles (flow). tap any glyph to open it.'],
+ aspects:['☌ aspects','the angles between your planets. conjunction 0° (fused), sextile 60° (easy opening), square 90° (friction that builds muscle), trine 120° (natural talent), opposition 180° (a seesaw). the orb is how close to exact — tighter means louder.'],
+ placements:['✦ placements','every body in your chart: which sign it\'s in (the style), which degree, and which house (the life department). ℞ means it was retrograde at your birth — the energy turns inward first.'],
+ notifications:['◉ notifications','push reminders for voids, exact windows, lunations, and your returns are being built. for now the calendar is the source of truth — everything that would ping you is already on it.'],
+ deck:['✦ deck art','rider–waite–smith, 1909 original scans by pamela colman smith. public domain — yours to keep forever.'],
+ layers:['◐ calendar layers','every lens the calendar can show: the moon, the sky, your chart, your people, your practice. turn on what you use and the calendar redraws live.'],
+ porphyry:['◈ porphyry houses','the default here. your real angles (ASC, IC, DSC, MC) anchor the four quadrants and each quadrant splits into three equal houses. stable at every latitude, honest to your actual horizon.'],
+ void:['⊘ void of course','the stretch after the moon makes her last major aspect in a sign and before she enters the next one. launches, sends, and promises made in a void tend to fizzle. rest, edit, wait.'],
+ lunation:['● lunations','new moons (plant) and full moons (harvest, reveal). eclipses are lunations with the volume turned all the way up.'],
+ flag:['✦ flagged days','days where three or more things stack up, or something big lands (an eclipse, a station). worth planning around.'],
+ stand:['☉︎ the sun\'s season','the sun spends about a month in each sign — that\'s the season everyone is living in. the arrow shows when it moves on.'],
+ stats:['◇ the month at a glance','how many things are on the books this month with your current layers, how many days are flagged, and which part of the sky is loudest.'],
+ compare:['☍ synastry & composite','synastry lays two charts on top of each other — where your planets hit theirs. a composite blends both charts into one: the relationship as its own creature. both need a cast chart for each person.']};
+function explain(k,more){
+  const g=GLOSS[k];if(!g)return;
+  sheet(`<div class="gb"></div><div class="xp-eb">✦ · explained · ✦</div><div class="xp-h">${g[0]}</div><p class="xp-p">${g[1]}</p>${more||''}
+    ${k==='layers'?'<button class="btn" onclick="closeSheet();nav(\'layers\')">open the layers ›</button>':''}
+    ${k==='rising'&&!(S.me.natal&&S.me.natal.timeKnown)?'<button class="btn" onclick="closeSheet();castMine()">add my birth time ›</button>':''}
+    ${k==='porphyry'?'<button class="btn" onclick="pickHouseSystem()">choose a house system ›</button>':''}`);
+}
+/* where is the moon next in sign i? scan forward day by day */
+function nextMoonIn(i){const d=new Date();for(let n=0;n<40;n++){if(signOf(moonLon(d))===i)return new Date(d);d.setDate(d.getDate()+1);}return null;}
+function explainSign(i){
+  const [el,mod,rul,rg]=SIGN_META[i],nm=SIGNS[i],[vibe,read]=SIGN_READ[nm];
+  const ch=S.me.natal,cusps=cuspsOf(ch);
+  const mine=ch?ch.bodies.filter(b=>b.sign===nm).map(b=>`<button class="ic2" onclick="explainPlacement('me','${b.key}')">${BG[b.key]||''} ${bname(b.key)}</button>`):[];
+  if(ch&&ch.timeKnown&&signOf(ch.asc)===i)mine.unshift(`<button class="ic2" onclick="explainPlacement('me','asc')">↑ rising</button>`);
+  const nh=cusps?cusps.findIndex(c=>signOf(c)===i):-1;
+  const nx=nextMoonIn(i);
+  sheet(`<div class="gb"></div><div class="xp-eb">${el} · ${mod} · ruled by ${rul} ${rg}</div>
+    <div class="xp-sign">${GLY[i]}</div><div class="xp-bl">${nm}</div>
+    <p class="xp-p"><b>${vibe}.</b> ${read}</p>
+    ${mine.length?`<div class="xp-lab">in your chart</div><div class="ich">${mine.join('')}</div>`:''}
+    ${nh>=0?`<div class="xp-lab">your houses</div><p class="xp-p">${nm} opens your <b>${nh+1}${['st','nd','rd'][nh]||'th'} house</b> — ${HOUSE_MEAN[nh]}.</p>`:''}
+    ${nx?`<button class="btn" onclick="closeSheet();pickDay('${key(nx)}');nav('cal')">moon in ${nm} next · ${fmt(nx)} ›</button>`:''}`);
+}
+function explainHouse(n){
+  const ch=S.me.natal,cusps=cuspsOf(ch);
+  const inside=ch&&cusps?ch.bodies.filter(b=>houseOf(b.lon,cusps)===n):[];
+  const cs=cusps?signOf(cusps[n-1]):null;
+  sheet(`<div class="gb"></div><div class="xp-eb">house ${n} · ${HSYS[S.set.house]||'porphyry'}</div>
+    <div class="xp-h">the ${n}${['st','nd','rd'][n-1]||'th'} house</div>
+    <p class="xp-p">${HOUSE_MEAN[n-1]}.</p>
+    ${cs!=null?`<p class="xp-p">your cusp is in <button class="lk" onclick="explainSign(${cs})"><b>${SIGNS[cs]} ${GLY[cs]}</b></button> — that's the style this department runs on.</p>`:''}
+    ${inside.length?`<div class="xp-lab">who lives here</div><div class="ich">${inside.map(b=>`<button class="ic2" onclick="explainPlacement('me','${b.key}')">${BG[b.key]||''} ${bname(b.key)}</button>`).join('')}</div>`:'<p class="xp-p" style="opacity:.7">empty house — not empty life. look to the sign on the cusp and its ruler.</p>'}
+    <button class="btn g" onclick="pickHouseSystem()">house system · ${HSYS[S.set.house]||'porphyry'} ›</button>`);
+}
+const whoChart=who=>who==='me'?S.me:S.people[who];
+function explainPlacement(who,k){
+  const p=whoChart(who);if(!p)return;
+  const ch=p.natal;
+  if(!ch){return explain(k==='asc'?'rising':(k==='moon'?'moon':'sun'));}
+  const cusps=cuspsOf(ch);
+  let lon,retro=false;
+  if(k==='asc'||k==='mc'||k==='dsc'||k==='ic'){
+    if(!ch.timeKnown)return explain('rising');
+    lon=k==='asc'?ch.asc:k==='mc'?ch.mc:k==='dsc'?(ch.asc+180)%360:(ch.mc+180)%360;
+  } else {const b=bodyOf(ch,k);if(!b)return;lon=b.lon;retro=b.retro;}
+  const si=signOf(lon),nm=SIGNS[si],h=cusps?houseOf(lon,cusps):null;
+  const asp=aspectsOf(ch).filter(a=>a.a===k||a.b===k).slice(0,4);
+  const nameW=who==='me'?'your':esc(p.name)+'\'s';
+  sheet(`<div class="gb"></div><div class="xp-eb">${nameW} chart · celestine</div>
+    <div class="xp-sign">${BG[k]||'✦'}</div><div class="xp-h">${bname(k)} in ${nm}</div>
+    <div class="xp-meta">${GLY[si]} ${dm(degIn(lon))} ${nm}${h?` · house ${h}`:''}${retro?' · retrograde ℞':''}</div>
+    <p class="xp-p"><b>${bname(k)}</b> is ${PLANET_MEAN[k]||'a point in the chart'}. in <button class="lk" onclick="explainSign(${si})"><b>${nm}</b></button> it runs ${SIGN_READ[nm][0]}.</p>
+    ${h?`<p class="xp-p">it lives in <button class="lk" onclick="explainHouse(${h})"><b>house ${h}</b></button> — ${HOUSE_MEAN[h-1]}.</p>`:''}
+    ${retro?'<p class="xp-p">retrograde at birth: this energy processes inward first, then comes out sharper.</p>':''}
+    ${asp.length?`<div class="xp-lab">tightest aspects</div>${asp.map(a=>`<button class="nr" onclick="explainAspect('${a.a}','${a.b}','${a.t.n}',${a.orb.toFixed(1)})"><span class="g">${a.t.g}</span><span class="n">${bname(a.a)} ${a.t.n} ${bname(a.b)}</span><span class="w2">${a.orb.toFixed(1)}°</span><span class="c">›</span></button>`).join('')}`:''}
+    ${who==='me'?`<button class="btn" onclick="closeSheet();nav('natal')">open my chart ›</button>`:''}`);
+}
+const ASP_READ={conjunction:'fused. these two act as one unit — you can\'t get one without the other.',sextile:'an open door. easy cooperation that pays off when you actually use it.',
+ square:'friction on purpose. this is where you build muscle — annoying, productive, permanent.',trine:'natural talent. flows so easily you might not notice it\'s a gift.',opposition:'a seesaw. you swing between the two until you learn to hold both.'};
+function explainAspect(a,b,t,orb){
+  const A=ASP.find(x=>x.n===t);
+  sheet(`<div class="gb"></div><div class="xp-eb">aspect · ${orb}° orb</div>
+    <div class="xp-sign">${BG[a]} ${A.g} ${BG[b]}</div><div class="xp-h">${bname(a)} ${t} ${bname(b)}</div>
+    <p class="xp-p">${ASP_READ[t]}</p>
+    <p class="xp-p"><b>${bname(a)}</b>: ${PLANET_MEAN[a]}.<br><b>${bname(b)}</b>: ${PLANET_MEAN[b]}.</p>
+    <div class="ich"><button class="ic2" onclick="explainPlacement('me','${a}')">${BG[a]} ${bname(a)} ›</button><button class="ic2" onclick="explainPlacement('me','${b}')">${BG[b]} ${bname(b)} ›</button></div>
+    <button class="btn g" onclick="explain('aspects')">how aspects work ›</button>`);
+}
+function explainSuit(sk){
+  const k={wands:'w',cups:'c',swords:'s',pents:'p'}[sk],[nm,gl,el,th]=SUIT[k];
+  const signs={w:[0,4,8],c:[3,7,11],s:[2,6,10],p:[1,5,9]}[k];
+  sheet(`<div class="gb"></div><div class="xp-eb">${gl} ${el} · the courts → the signs</div>
+    <div class="xp-h">${nm}</div><p class="xp-p">${th}. the ${el} signs are where this suit lives in the sky.</p>
+    <div class="ich">${signs.map(i=>`<button class="ic2" onclick="explainSign(${i})">${GLY[i]} ${SIGNS[i]}</button>`).join('')}</div>
+    <div class="xp-lab">the court</div>
+    <div class="ich">${[11,12,13,14].map(n=>{const c=byKey(k+String(n).padStart(2,'0'));return `<button class="ic2" onclick="openCard('${c.k}')">${c.n}</button>`;}).join('')}</div>
+    <button class="btn g" onclick="closeSheet();nav('lib');setShelf('tarot')">the whole deck ›</button>`);
+}
+/* the moon on any day: phase, sign, void, and the next big ones */
+function moonSheet(k){
+  const d=k?parse(k):new Date(),p=phase(d),pn=phaseName(p),ml=moonLon(d),si=signOf(ml),vd=voidWindow(d);
+  const nx=(want)=>{const x=new Date(d);for(let n=1;n<32;n++){x.setDate(x.getDate()+1);const q=phase(x),qv=phase(new Date(x.getTime()-864e5));
+    if(want==='new'?(qv>.9&&q<.1):(qv<.5&&q>=.5))return new Date(x);}return null;};
+  const nm=nx('new'),fm=nx('full'),rit=RIT.find(x=>x.ph.includes(pn))||RIT[0];
+  sheet(`<div class="gb"></div><div class="xp-eb">☽︎ · ${fmtL(d)} · ☽︎</div>
+    <div class="xp-moon">${moonSVG(p,96)}</div>
+    <div class="xp-h">${pn} in ${SIGNS[si]} ${GLY[si]}</div>
+    <div class="xp-meta">${Math.round((1-Math.cos(2*Math.PI*p))/2*100)}% lit · ${dm(degIn(ml))} ${SIGNS[si]}${vd.active?' · void now':''}</div>
+    <p class="xp-p">${MOOD[pn]}</p>
+    ${vd.active?`<button class="nr" onclick="explain('void')"><span class="g">⊘</span><span class="n">void for ~${vd.hrs}h</span><span class="w2">hold the send</span><span class="c">›</span></button>`:''}
+    <div class="xp-lab">coming up</div>
+    ${nm?`<button class="nr" onclick="closeSheet();pickDay('${key(nm)}');nav('cal')"><span class="g">●</span><span class="n">new moon</span><span class="w2">${fmt(nm)}</span><span class="c">›</span></button>`:''}
+    ${fm?`<button class="nr" onclick="closeSheet();pickDay('${key(fm)}');nav('cal')"><span class="g">○</span><span class="n">full moon</span><span class="w2">${fmt(fm)}</span><span class="c">›</span></button>`:''}
+    <button class="nr" onclick="explainSign(${si})"><span class="g">${GLY[si]}</span><span class="n">moon in ${SIGNS[si]}</span><span class="w2">the sign</span><span class="c">›</span></button>
+    <button class="nr" onclick="closeSheet();nav('lib');setShelf('work');setTimeout(()=>jumpRit('${rit.n}'),80)"><span class="g">✧</span><span class="n">${rit.n}</span><span class="w2">matched working</span><span class="c">›</span></button>
+    <button class="btn" onclick="closeSheet();pickDay('${key(d)}');nav('cal')">open ${fmt(d)} on the calendar ›</button>`);
+}
+function pickHouseSystem(){
+  const cur=S.set.house||'porphyry';
+  const D={porphyry:'the default. your real angles anchor four quadrants, each split in three. honest at every latitude.',
+    whole_sign:'the oldest system. your rising sign is the whole 1st house, the next sign the 2nd, and so on. clean and bold.',
+    placidus:'the most common in apps. time-based cusps — sizes vary, and it breaks down far north or south.'};
+  sheet(`<div class="gb"></div><div class="xp-eb">◈ · the houses · ◈</div><div class="xp-h">house system</div>
+    <p class="xp-p">same planets, same signs — only the house lines move. every option is cast by the engine.</p>
+    ${Object.keys(HSYS).map(h=>`<button class="hs${h===cur?' on':''}" onclick="setHouseSystem('${h}')" aria-pressed="${h===cur}"><span class="hs-n">${HSYS[h]}${h==='porphyry'?' · default':''}</span><span class="hs-d">${D[h]}</span></button>`).join('')}
+    ${S.me.natal&&!S.me.natal.timeKnown?'<p class="xp-p" style="opacity:.7">your chart has no birth time, so houses stay hidden in every system.</p>':''}`);
+}
+function setHouseSystem(h){
+  S.set.house=h;tiSave();renderNatal();renderMe();
+  closeSheet();toast(`◈ ${HSYS[h]} houses`);
+}
+/* compare: synastry + composite on engine longitudes */
+function openCompare(kind){
+  const cast=S.people.map((p,i)=>({p,i})).filter(x=>x.p.natal);
+  if(!S.me.natal||!cast.length){
+    return explain('compare',`<p class="xp-p">${!S.me.natal?'cast your chart first. ':''}${!cast.length?'then add someone with a birth date — their chart casts the moment you save.':''}</p>
+      ${!S.me.natal?'<button class="btn" onclick="closeSheet();castMine()">cast my chart ›</button>':''}
+      <button class="btn g" onclick="closeSheet();openPerson()">+ add someone ›</button>`);
+  }
+  if(cast.length===1)return showCompare(kind,cast[0].i);
+  sheet(`<div class="gb"></div><div class="xp-eb">☍ · ${kind==='syn'?'synastry':'composite'} · ☍</div><div class="xp-h">with who?</div>
+    ${cast.map(x=>`<button class="nr" onclick="showCompare('${kind}',${x.i})"><span class="g">${esc((x.p.name||'?')[0])}</span><span class="n">${esc(x.p.name)}</span><span class="w2">${esc(x.p.rel||'')}</span><span class="c">›</span></button>`).join('')}`);
+}
+function showCompare(kind,i){
+  const p=S.people[i],A=S.me.natal,B=p.natal;
+  if(kind==='syn'){
+    const out=[];
+    A.bodies.filter(b=>ASP_BODIES.includes(b.key)).forEach(a=>B.bodies.filter(b=>ASP_BODIES.includes(b.key)).forEach(b=>{
+      let d=Math.abs(a.lon-b.lon);if(d>180)d=360-d;
+      for(const T of ASP){const orb=Math.abs(d-T.a);if(orb<=Math.min(T.o,6)){out.push({a:a.key,b:b.key,t:T,orb});break;}}}));
+    out.sort((x,y)=>x.orb-y.orb);
+    const bc=cuspsOf(B);
+    const over=bc?['sun','moon','venus','mars'].map(k=>{const b=bodyOf(A,k);return b?`<div class="nr"><span class="g">${BG[k]}</span><span class="n">your ${k}</span><span class="w2">their house ${houseOf(b.lon,bc)}</span></div>`:'';}).join(''):'';
+    sheet(`<div class="gb"></div><div class="xp-eb">◇ · synastry · you × ${esc(p.name)}</div><div class="xp-h">how your charts touch</div>
+      <div class="xp-lab">tightest contacts</div>
+      ${out.slice(0,8).map(x=>`<div class="nr"><span class="g">${x.t.g}</span><span class="n">your ${bname(x.a)} ${x.t.n} their ${bname(x.b)}</span><span class="w2">${x.orb.toFixed(1)}°</span></div>`).join('')||'<p class="xp-p">no tight contacts — a quiet, low-drama pairing.</p>'}
+      ${over?`<div class="xp-lab">you in their houses</div>${over}`:''}
+      <button class="btn g" onclick="explain('aspects')">how to read contacts ›</button>`);
+  } else {
+    const mid=(x,y)=>{let d=((y-x+540)%360)-180;return (x+d/2+360)%360;};
+    const rows=ASP_BODIES.slice(0,7).map(k=>{const a=bodyOf(A,k),b=bodyOf(B,k);if(!a||!b)return'';const l=mid(a.lon,b.lon),si=signOf(l);
+      return `<div class="nr"><span class="g">${BG[k]}</span><span class="n">${k}</span><span class="w2">${GLY[si]} ${SIGNS[si]} ${dm(degIn(l))}</span></div>`;}).join('');
+    const rise=A.timeKnown&&B.timeKnown?signOf(mid(A.asc,B.asc)):null;
+    sheet(`<div class="gb"></div><div class="xp-eb">◍ · composite · you × ${esc(p.name)}</div><div class="xp-h">the relationship's own chart</div>
+      <p class="xp-p">midpoints of both charts — the "us" as its own creature.${rise!=null?` it rises in <b>${SIGNS[rise]}</b>: ${SIGN_READ[SIGNS[rise]][0]}.`:''}</p>${rows}`);
+  }
+}
+/* user calendar events — the "+ add to the calendar" sheet */
+const ADD_TYPES=[['ritual','✧','working'],['entry','✧','reminder'],['pull','✦','reading'],['cycle','◉','cycle'],['global','☉︎','sky watch']];
+function openAdd(dk){
+  sheet(`<div class="gb"></div><div class="xp-eb">✧ · add to the calendar · ✧</div><div class="xp-h">something to remember</div>
+    <div class="ob-f" style="margin-top:12px">
+      <input id="adT" placeholder="what is it?" aria-label="title">
+      <input id="adD" type="date" value="${dk||S.sel||key(new Date())}" aria-label="date">
+      <textarea id="adN" rows="2" placeholder="a note for future you" aria-label="note"></textarea>
+    </div>
+    <div class="seg" id="adL" style="margin-top:10px">${ADD_TYPES.map((t,i)=>`<button type="button" data-l="${t[0]}" class="${i===0?'on':''}" onclick="document.querySelectorAll('#adL button').forEach(x=>x.classList.toggle('on',x===this))">${t[1]} ${t[2]}</button>`).join('')}</div>
+    <button class="btn" onclick="saveEvent()">✧ put it on the calendar</button>`);
+  setTimeout(()=>{const t=document.getElementById('adT');if(t)t.focus();},60);
+}
+function saveEvent(){
+  const t=document.getElementById('adT').value.trim();if(!t)return toast('name it first ✧');
+  const d=document.getElementById('adD').value||key(new Date());
+  const l=(document.querySelector('#adL button.on')||{dataset:{l:'ritual'}}).dataset.l;
+  const T=ADD_TYPES.find(x=>x[0]===l);
+  S.cal.push({id:'c'+Date.now(),date:d,lay:l,gl:T[1],t,s:document.getElementById('adN').value.trim()||T[2],mine:1});
+  if(!LON[l])LON[l]=true;
+  closeSheet();pickDay(d);toast('✧ on the calendar');sparkleBurst(innerWidth/2,innerHeight/2,12);
+}
+function delEvent(id){S.cal=S.cal.filter(c=>c.id!==id);closeSheet();renderCal();toast('removed from the calendar');}
+function obPrev(){if(obS>0){obS--;obR();}}
+function replayIntro(){
+  playSplash();
+  setTimeout(()=>{obReplay(0);},1900);
+  setTimeout(()=>{const sp=document.getElementById('splash');if(sp)sp.classList.add('off');},2300);
+}
+
+/* ══════════ SPARKLES ══════════ */
+const RM=matchMedia('(prefers-reduced-motion: reduce)');
+const SPK='<svg viewBox="0 0 24 24"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg>';
+function sparkleBurst(x,y,n){
+  if(RM.matches)return;
+  const fx=document.getElementById('fx');if(!fx)return;
+  for(let i=0;i<(n||6);i++){
+    const s=document.createElement('span');s.className='spk';s.innerHTML=SPK;
+    const a=Math.random()*Math.PI*2,dist=24+Math.random()*46,sz=6+Math.random()*9;
+    s.style.cssText=`left:${x}px;top:${y}px;width:${sz}px;height:${sz}px;--dx:${Math.cos(a)*dist}px;--dy:${Math.sin(a)*dist}px;--rot:${Math.random()*180}deg;animation-delay:${Math.random()*60}ms`;
+    fx.appendChild(s);setTimeout(()=>s.remove(),900);
+  }
+}
+/* a little dopamine on the things you tap most */
+document.addEventListener('pointerdown',e=>{
+  const t=e.target.closest('.btn,.tab,.cc-day,.sw,.chip,.hero,.cc-li,.hs,.mch');
+  if(t)sparkleBurst(e.clientX,e.clientY,t.classList.contains('btn')||t.classList.contains('hero')?7:4);
+},{passive:true});
 
 /* ══════════ ONBOARDING ══════════ */
 const LANES=['transits','tarot','rituals','synastry','journaling','moon tracking','cycle','shadow work'];
-let obS=0;const OBL=["let's begin","next ✧","next ✧","read my stars ✦"];
+let obS=0;const OBL=["let's begin","next","next","read my stars"];
 /* ══════ CITY AUTOCOMPLETE ══════ */
 const CITIES=[
- {n:'New York, NY',lat:40.71,lng:-74.01,tz:-5},{n:'Los Angeles, CA',lat:34.05,lng:-118.24,tz:-8},
- {n:'Chicago, IL',lat:41.88,lng:-87.63,tz:-6},{n:'Houston, TX',lat:29.76,lng:-95.37,tz:-6},
- {n:'Phoenix, AZ',lat:33.45,lng:-112.07,tz:-7},{n:'Philadelphia, PA',lat:39.95,lng:-75.17,tz:-5},
- {n:'San Antonio, TX',lat:29.42,lng:-98.49,tz:-6},{n:'San Diego, CA',lat:32.72,lng:-117.16,tz:-8},
- {n:'Dallas, TX',lat:32.78,lng:-96.80,tz:-6},{n:'Austin, TX',lat:30.27,lng:-97.74,tz:-6},
- {n:'Jacksonville, FL',lat:30.33,lng:-81.66,tz:-5},{n:'San Francisco, CA',lat:37.77,lng:-122.42,tz:-8},
- {n:'Indianapolis, IN',lat:39.77,lng:-86.16,tz:-5},{n:'Columbus, OH',lat:39.96,lng:-82.99,tz:-5},
- {n:'Charlotte, NC',lat:35.23,lng:-80.84,tz:-5},{n:'Seattle, WA',lat:47.61,lng:-122.33,tz:-8},
- {n:'Denver, CO',lat:39.74,lng:-104.99,tz:-7},{n:'Nashville, TN',lat:36.16,lng:-86.78,tz:-6},
- {n:'Louisville, KY',lat:38.25,lng:-85.76,tz:-5},{n:'Portland, OR',lat:45.51,lng:-122.68,tz:-8},
- {n:'Las Vegas, NV',lat:36.17,lng:-115.14,tz:-8},{n:'Memphis, TN',lat:35.15,lng:-90.05,tz:-6},
- {n:'Baltimore, MD',lat:39.29,lng:-76.61,tz:-5},{n:'Milwaukee, WI',lat:43.04,lng:-87.91,tz:-6},
- {n:'Albuquerque, NM',lat:35.08,lng:-106.65,tz:-7},{n:'Tucson, AZ',lat:32.22,lng:-110.97,tz:-7},
- {n:'Fresno, CA',lat:36.74,lng:-119.77,tz:-8},{n:'Sacramento, CA',lat:38.58,lng:-121.49,tz:-8},
- {n:'Atlanta, GA',lat:33.75,lng:-84.39,tz:-5},{n:'Miami, FL',lat:25.76,lng:-80.19,tz:-5},
- {n:'New Orleans, LA',lat:29.95,lng:-90.07,tz:-6},{n:'Detroit, MI',lat:42.33,lng:-83.05,tz:-5},
- {n:'Minneapolis, MN',lat:44.98,lng:-93.27,tz:-6},{n:'Boston, MA',lat:42.36,lng:-71.06,tz:-5},
- {n:'Jeffersonville, IN',lat:38.28,lng:-85.74,tz:-5},{n:'New Albany, IN',lat:38.29,lng:-85.82,tz:-5},
- {n:'Lexington, KY',lat:38.04,lng:-84.50,tz:-5},{n:'Cincinnati, OH',lat:39.10,lng:-84.51,tz:-5},
- {n:'St. Louis, MO',lat:38.63,lng:-90.20,tz:-6},{n:'Kansas City, MO',lat:39.10,lng:-94.58,tz:-6},
- {n:'Pittsburgh, PA',lat:40.44,lng:-80.00,tz:-5},{n:'Tampa, FL',lat:27.95,lng:-82.46,tz:-5},
- {n:'Raleigh, NC',lat:35.78,lng:-78.64,tz:-5},{n:'Omaha, NE',lat:41.26,lng:-95.94,tz:-6},
- {n:'Cleveland, OH',lat:41.50,lng:-81.69,tz:-5},{n:'Virginia Beach, VA',lat:36.85,lng:-75.98,tz:-5},
- {n:'Oakland, CA',lat:37.80,lng:-122.27,tz:-8},{n:'Tulsa, OK',lat:36.15,lng:-95.99,tz:-6},
- {n:'Honolulu, HI',lat:21.31,lng:-157.86,tz:-10},{n:'London, UK',lat:51.51,lng:-0.13,tz:0},
- {n:'Toronto, ON',lat:43.65,lng:-79.38,tz:-5},{n:'Berlin, Germany',lat:52.52,lng:13.41,tz:1},
- {n:'Paris, France',lat:48.86,lng:2.35,tz:1},{n:'Tokyo, Japan',lat:35.68,lng:139.69,tz:9},
- {n:'Sydney, Australia',lat:-33.87,lng:151.21,tz:10},{n:'Mexico City, Mexico',lat:19.43,lng:-99.13,tz:-6}
+ {n:'New York, NY',lat:40.71,lng:-74.01,tz:'America/New_York'},{n:'Los Angeles, CA',lat:34.05,lng:-118.24,tz:'America/Los_Angeles'},
+ {n:'Chicago, IL',lat:41.88,lng:-87.63,tz:'America/Chicago'},{n:'Houston, TX',lat:29.76,lng:-95.37,tz:'America/Chicago'},
+ {n:'Phoenix, AZ',lat:33.45,lng:-112.07,tz:'America/Phoenix'},{n:'Philadelphia, PA',lat:39.95,lng:-75.17,tz:'America/New_York'},
+ {n:'San Antonio, TX',lat:29.42,lng:-98.49,tz:'America/Chicago'},{n:'San Diego, CA',lat:32.72,lng:-117.16,tz:'America/Los_Angeles'},
+ {n:'Dallas, TX',lat:32.78,lng:-96.80,tz:'America/Chicago'},{n:'Austin, TX',lat:30.27,lng:-97.74,tz:'America/Chicago'},
+ {n:'Jacksonville, FL',lat:30.33,lng:-81.66,tz:'America/New_York'},{n:'San Francisco, CA',lat:37.77,lng:-122.42,tz:'America/Los_Angeles'},
+ {n:'Indianapolis, IN',lat:39.77,lng:-86.16,tz:'America/Indiana/Indianapolis'},{n:'Columbus, OH',lat:39.96,lng:-82.99,tz:'America/New_York'},
+ {n:'Charlotte, NC',lat:35.23,lng:-80.84,tz:'America/New_York'},{n:'Seattle, WA',lat:47.61,lng:-122.33,tz:'America/Los_Angeles'},
+ {n:'Denver, CO',lat:39.74,lng:-104.99,tz:'America/Denver'},{n:'Nashville, TN',lat:36.16,lng:-86.78,tz:'America/Chicago'},
+ {n:'Louisville, KY',lat:38.25,lng:-85.76,tz:'America/Kentucky/Louisville'},{n:'Portland, OR',lat:45.51,lng:-122.68,tz:'America/Los_Angeles'},
+ {n:'Las Vegas, NV',lat:36.17,lng:-115.14,tz:'America/Los_Angeles'},{n:'Memphis, TN',lat:35.15,lng:-90.05,tz:'America/Chicago'},
+ {n:'Baltimore, MD',lat:39.29,lng:-76.61,tz:'America/New_York'},{n:'Milwaukee, WI',lat:43.04,lng:-87.91,tz:'America/Chicago'},
+ {n:'Albuquerque, NM',lat:35.08,lng:-106.65,tz:'America/Denver'},{n:'Tucson, AZ',lat:32.22,lng:-110.97,tz:'America/Phoenix'},
+ {n:'Fresno, CA',lat:36.74,lng:-119.77,tz:'America/Los_Angeles'},{n:'Sacramento, CA',lat:38.58,lng:-121.49,tz:'America/Los_Angeles'},
+ {n:'Atlanta, GA',lat:33.75,lng:-84.39,tz:'America/New_York'},{n:'Miami, FL',lat:25.76,lng:-80.19,tz:'America/New_York'},
+ {n:'New Orleans, LA',lat:29.95,lng:-90.07,tz:'America/Chicago'},{n:'Detroit, MI',lat:42.33,lng:-83.05,tz:'America/Detroit'},
+ {n:'Minneapolis, MN',lat:44.98,lng:-93.27,tz:'America/Chicago'},{n:'Boston, MA',lat:42.36,lng:-71.06,tz:'America/New_York'},
+ {n:'Jeffersonville, IN',lat:38.28,lng:-85.74,tz:'America/Kentucky/Louisville'},{n:'New Albany, IN',lat:38.29,lng:-85.82,tz:'America/Kentucky/Louisville'},
+ {n:'Lexington, KY',lat:38.04,lng:-84.50,tz:'America/New_York'},{n:'Cincinnati, OH',lat:39.10,lng:-84.51,tz:'America/New_York'},
+ {n:'St. Louis, MO',lat:38.63,lng:-90.20,tz:'America/Chicago'},{n:'Kansas City, MO',lat:39.10,lng:-94.58,tz:'America/Chicago'},
+ {n:'Pittsburgh, PA',lat:40.44,lng:-80.00,tz:'America/New_York'},{n:'Tampa, FL',lat:27.95,lng:-82.46,tz:'America/New_York'},
+ {n:'Raleigh, NC',lat:35.78,lng:-78.64,tz:'America/New_York'},{n:'Omaha, NE',lat:41.26,lng:-95.94,tz:'America/Chicago'},
+ {n:'Cleveland, OH',lat:41.50,lng:-81.69,tz:'America/New_York'},{n:'Virginia Beach, VA',lat:36.85,lng:-75.98,tz:'America/New_York'},
+ {n:'Oakland, CA',lat:37.80,lng:-122.27,tz:'America/Los_Angeles'},{n:'Tulsa, OK',lat:36.15,lng:-95.99,tz:'America/Chicago'},
+ {n:'Honolulu, HI',lat:21.31,lng:-157.86,tz:'Pacific/Honolulu'},{n:'London, UK',lat:51.51,lng:-0.13,tz:'Europe/London'},
+ {n:'Toronto, ON',lat:43.65,lng:-79.38,tz:'America/Toronto'},{n:'Berlin, Germany',lat:52.52,lng:13.41,tz:'Europe/Berlin'},
+ {n:'Paris, France',lat:48.86,lng:2.35,tz:'Europe/Paris'},{n:'Tokyo, Japan',lat:35.68,lng:139.69,tz:'Asia/Tokyo'},
+ {n:'Sydney, Australia',lat:-33.87,lng:151.21,tz:'Australia/Sydney'},{n:'Mexico City, Mexico',lat:19.43,lng:-99.13,tz:'America/Mexico_City'}
 ];
 let obCity=null;
-function placeSearch(q){
-  const el=document.getElementById('obPlaceList');
+/* city search: the seed list answers instantly, open-meteo answers for everywhere else.
+   every hit carries an IANA zone so the engine gets DST-correct birth time. */
+let placeT=null,placeHits=[];
+function placeSearch(q,listId,cb){
+  const el=document.getElementById(listId||'obPlaceList');
+  obCity=null;
   if(q.length<2){el.classList.remove('on');return;}
   const ql=q.toLowerCase();
-  const hits=CITIES.filter(c=>c.n.toLowerCase().includes(ql)).slice(0,6);
-  if(!hits.length){el.classList.remove('on');return;}
-  el.innerHTML=hits.map(c=>`<button onclick="pickCity('${c.n}',${c.lat},${c.lng},${c.tz})">${c.n}</button>`).join('');
-  el.classList.add('on');
+  const show=hits=>{
+    placeHits=hits.slice(0,6);
+    if(!placeHits.length){el.classList.remove('on');return;}
+    el.innerHTML=placeHits.map((c,i)=>`<button type="button" onclick="pickCity(${i},'${listId||'obPlaceList'}')">${esc(c.n)}</button>`).join('');
+    el.classList.add('on');
+    el._cb=cb;
+  };
+  const seed=CITIES.filter(c=>c.n.toLowerCase().includes(ql));
+  show(seed);
+  clearTimeout(placeT);
+  placeT=setTimeout(async()=>{
+    try{
+      const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q.split(',')[0].trim())}&count=6&language=en&format=json`);
+      const j=await r.json();
+      const far=(j.results||[]).filter(x=>x.timezone).map(x=>({n:[x.name,x.admin1,x.country_code].filter(Boolean).join(', '),lat:x.latitude,lng:x.longitude,tz:x.timezone}));
+      const seen=new Set(seed.map(c=>c.n.toLowerCase()));
+      show([...seed,...far.filter(c=>!seen.has(c.n.toLowerCase()))]);
+    }catch(e){/* offline — the seed list carries it */}
+  },280);
 }
-function pickCity(n,lat,lng,tz){
-  document.getElementById('obPlace').value=n;
-  document.getElementById('obPlaceList').classList.remove('on');
-  obCity={n,lat,lng,tz};
+function pickCity(i,listId){
+  const c=placeHits[i];if(!c)return;
+  const el=document.getElementById(listId);
+  const input=el.parentElement.querySelector('input');
+  input.value=c.n;el.classList.remove('on');
+  if(el._cb)el._cb(c);else obCity=c;
 }
+const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch]);
 
+/* ══════════ THE CHART · celestine via /api/natal ══════════
+   the server casts (celestine, porphyry default); the client only draws and looks up
+   houses against the cusps it was handed. no client-side ascendant math, ever. */
+async function castChart(who,self){
+  if(!who||!who.date)return null;
+  const r=await fetch('/api/natal',{method:'POST',headers:{'content-type':'application/json'},
+    body:JSON.stringify({name:who.name,date:who.date,time:who.time||'',place:who.place||'',lat:who.lat??null,lng:who.lng??null,tzName:who.tzName||null,self:!!self})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error||'the chart didn\'t cast');
+  return j.chart;
+}
+const HSYS={porphyry:'porphyry',whole_sign:'whole sign',placidus:'placidus'};
+function cuspsOf(ch){
+  if(!ch||!ch.timeKnown||!ch.cusps)return null;
+  const want=(S.set&&S.set.house)||'porphyry';
+  return ch.cusps[want]||ch.cusps.porphyry;
+}
+function houseOf(lon,cusps){
+  if(!cusps)return null;
+  for(let i=0;i<12;i++){const a=cusps[i],b=cusps[(i+1)%12];
+    if(a<b?(lon>=a&&lon<b):(lon>=a||lon<b))return i+1;}
+  return 1;
+}
+const bodyOf=(ch,k)=>ch&&ch.bodies?ch.bodies.find(b=>b.key===k):null;
+/* the big three, straight off the engine. rising stays honest: no time, no rising. */
+function big3Of(p){
+  const ch=p.natal;
+  const sun=bodyOf(ch,'sun'),moon=bodyOf(ch,'moon');
+  return {
+    sun:sun?SIGNS.indexOf(sun.sign):null,
+    moon:moon?SIGNS.indexOf(moon.sign):null,
+    rise:ch&&ch.timeKnown&&ch.asc!=null?signOf(ch.asc):null,
+    pending:!ch&&!!p.date,
+    noTime:ch&&!ch.timeKnown
+  };
+}
 function obR(){
   document.querySelectorAll('.ob-s').forEach(s=>s.classList.toggle('on',+s.dataset.s===obS));
   document.getElementById('obDots').innerHTML=[0,1,2,3].map(i=>`<span class="dt${i===obS?' on':''}"></span>`).join('');
   document.getElementById('obNext').textContent=OBL[obS];
+  const ob=document.getElementById('obBack');if(ob)ob.style.visibility=obS>0?'visible':'hidden';
 }
 try{
 document.getElementById('obLanes').innerHTML=LANES.map(l=>`<button class="chip${S.me.lanes.includes(l)?' on':''}" onclick="this.classList.toggle('on')">${l}</button>`).join('');
 document.getElementById('obSw').innerHTML=swHTML();
 document.getElementById('obNext').onclick=()=>{
   if(obS===0){S.me.name=document.getElementById('obName').value.trim()||'you';}
-  if(obS===3){
-    S.me.date=document.getElementById('obDate').value;
-    S.me.time=document.getElementById('obTime').value;
-    S.me.place=document.getElementById('obPlace').value.trim();
-  }
-  if(obS<3){obS++;obR();}else obDone();
+  if(obS<3){obS++;obR();sparkleBurst(innerWidth/2,innerHeight-60,6);}else obDone();
 };
 }catch(e){console.error('ob init:',e);}
-function obDone(){
-  /* save birth data from onboarding */
-  const n=document.getElementById('obName').value;
-  const d=document.getElementById('obDate').value;
-  const t=document.getElementById('obTime').value;
-  const p=document.getElementById('obPlace').value;
-  const e=document.getElementById('obEmail');
+function renderAll(){
+  [renderSky,renderCal,renderGrim,renderJournal,renderOrbit,renderNatal,renderMe].forEach(fn=>{try{fn();}catch(e){console.error(fn.name,e);}});
+}
+async function obDone(){
+  const v=id=>{const el=document.getElementById(id);return el?el.value.trim():'';};
+  const n=v('obName'),d=v('obDate'),t=v('obTime'),p=v('obPlace');
   if(n)S.me.name=n;
-  if(e&&e.value)S.me.email=e.value;
+  const birthChanged=d&&(d!==S.me.date||t!==(S.me.time||'')||p!==(S.me.place||''));
   if(d)S.me.date=d;
-  if(t)S.me.time=t;
+  S.me.time=t;
   if(p)S.me.place=p;
-  if(obCity){S.me.lat=obCity.lat;S.me.lng=obCity.lng;S.me.tz=obCity.tz;}
+  if(obCity){S.me.lat=obCity.lat;S.me.lng=obCity.lng;S.me.tzName=obCity.tz;}
   S.onboarded=true;
-  if(window.tiCloud){window.tiCloud.saveProfile(S.me).catch(()=>{});tiFlush();}
-  /* calculate approximate ASC from time + place */
-  if(d&&t&&obCity){
-    const dt=new Date(d+'T'+t);
-    const lst=(dt.getHours()+(dt.getMinutes()/60)+obCity.lng/15+obCity.tz)%24;
-    S.me.asc=((lst/24)*360+obCity.lat*0.5)%360;
-  }
+  if(window.tiCloud){window.tiCloud.saveProfile(S.me).catch(()=>{});}
   const ob=document.getElementById('ob');ob.classList.add('off');
-  setTimeout(()=>ob.classList.remove('on'),520);
-  /* show chart loading if birth data was entered */
-  if(d){
-    const cl=document.getElementById('chartLoad');cl.classList.add('on');
+  setTimeout(()=>ob.classList.remove('on','off'),520);
+  if(d&&(birthChanged||!S.me.natal)){
+    /* the loading ritual covers the real cast — never shorter than the ritual, never faked */
+    const cl=document.getElementById('chartLoad');cl.classList.remove('off');cl.classList.add('on');
     const msgs=['reading the ephemeris','finding your rising','drawing the houses','placing the planets','checking the aspects','almost there'];
-    let mi=0;
-    const iv=setInterval(()=>{mi++;if(mi<msgs.length)document.getElementById('clTxt').textContent=msgs[mi];},500);
-    setTimeout(()=>{
-      clearInterval(iv);
-      cl.classList.add('off');
-      setTimeout(()=>{cl.classList.remove('on','off');},400);
-      renderSky();renderCal();renderGrim();renderJournal();renderOrbit();renderNatal();renderMe();
-      toast('welcome in ✦ the sky\'s been waiting');
-    },3200);
+    let mi=0;document.getElementById('clTxt').textContent=msgs[0];
+    const iv=setInterval(()=>{mi=Math.min(mi+1,msgs.length-1);document.getElementById('clTxt').textContent=msgs[mi];},520);
+    const minWait=new Promise(r=>setTimeout(r,2600));
+    let msg='welcome in ✦ the sky\'s been waiting';
+    try{
+      S.me.natal=await castChart(S.me,true);
+      const b=big3Of(S.me);
+      msg=b.rise!=null?`✦ ${SIGNS[b.rise]} rising — the houses are yours now`:'✦ chart cast — add a birth time to unlock your rising';
+    }catch(e){msg='✦ '+String(e.message||e).toLowerCase();}
+    await minWait;clearInterval(iv);
+    cl.classList.add('off');setTimeout(()=>cl.classList.remove('on','off'),400);
+    renderAll();tiSave();toast(msg);sparkleBurst(innerWidth/2,innerHeight/2,18);
   } else {
-    renderSky();renderCal();renderGrim();renderJournal();renderOrbit();renderMe();
+    renderAll();tiSave();
     toast('welcome in ✦ the sky\'s been waiting');
   }
 }
-function obReplay(){obS=0;obR();const ob=document.getElementById('ob');ob.classList.remove('off');ob.classList.add('on');}
+function obReplay(step){
+  obS=step||0;obR();
+  const set=(id,v)=>{const el=document.getElementById(id);if(el&&v)el.value=v;};
+  set('obName',S.me.name!=='you'?S.me.name:'');set('obDate',S.me.date);set('obTime',S.me.time);set('obPlace',S.me.place);
+  if(S.me.lat!=null)obCity={n:S.me.place,lat:S.me.lat,lng:S.me.lng,tz:S.me.tzName};
+  const ob=document.getElementById('ob');ob.classList.remove('off');ob.classList.add('on');
+}
+/* jump straight to the birth-data step */
+function castMine(){obReplay(3);}
 
 /* ══════════ BOOT ══════════ */
 /* ── backend connectors · supabase ── */
@@ -1018,24 +1411,10 @@ async function sb(path){
   if(!r.ok)throw new Error('sb '+r.status);
   return r.json();
 }
-/* natal truth from natal_positions (RLS-locked: flows once a session token exists).
-   celestine-computed, porphyry, validated — always wins over client math. */
-function cloudAngles(){
-  if(!S.cloudNatal)return null;
-  const g=k=>S.cloudNatal.find(r=>r.kind==='angle'&&r.body_key===k);
-  const asc=g('asc'),mc=g('mc'); if(!asc||!mc)return null;
-  const H=[];
-  for(let i=1;i<=12;i++){const c=S.cloudNatal.find(r=>r.kind==='house_cusp'&&r.body_key==='cusp_'+i);if(!c)return null;H.push(+c.absolute_longitude);}
-  return {asc:+asc.absolute_longitude,mc:+mc.absolute_longitude,H};
-}
 async function syncBackend(){
   try{
     await sb('/rest/v1/tarot_cards?select=card_key&limit=1');  /* anon-readable — proves the pipe */
     S.backendLive=true;
-    try{
-      const rows=await sb('/rest/v1/natal_positions?select=kind,body_key,house,sign,degree_in_sign,absolute_longitude');
-      if(rows.length){S.cloudNatal=rows;renderNatal();}
-    }catch(e){/* not signed in — zone-corrected client math carries it */}
     try{
       /* the real 2026 calendar: 251 rows from global_events, keyed by date */
       const ge=await sb('/rest/v1/global_events?select=event_category,event_type_key,title,description,exact_at,starts_at,ends_at,body_key,sign&order=exact_at&limit=400');
@@ -1047,31 +1426,24 @@ async function syncBackend(){
     }catch(e){/* reference read failed — inline arrays carry it */}
   }catch(e){S.backendLive=false;}
 }
-/* self-heal charts saved before zones existed: re-resolve the birth place once */
-async function healTz(){
-  if(!S.onboarded||S.me.tzName||!S.me.place)return;
-  try{
-    const q=S.me.place.split(',')[0].trim();
-    const seed=CITY_SEED.find(c=>c[0]===q.toLowerCase());
-    let zone=seed?seed[4]:null;
-    if(!zone){
-      const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=en&format=json`);
-      const j=await r.json(); zone=j.results&&j.results[0]&&j.results[0].timezone;
-    }
-    if(!zone)return;
-    S.me.tzName=zone;
-    const o=tzOffsetAt(zone,S.me.date,S.me.time);
-    if(o!=null&&o!==S.me.tz){
-      S.me.tz=o;
-      renderNatal();renderSky();renderOrbit();
-      toast('✦ chart recast — birth timezone corrected');
-    }
-  }catch(e){/* offline — next launch */}
+/* self-heal: anyone onboarded before the engine route existed (or whose cast failed
+   offline) gets a real celestine chart on the next launch — quietly. */
+async function healChart(){
+  const todo=[];
+  if(S.onboarded&&S.me.date&&!S.me.natal)todo.push([S.me,true]);
+  S.people.forEach(p=>{if(p.date&&!p.natal)todo.push([p,false]);});
+  if(!todo.length)return;
+  let me=false;
+  for(const [who,self] of todo){
+    try{who.natal=await castChart(who,self);if(self)me=true;}catch(e){/* offline or no place — next launch */}
+  }
+  renderAll();tiSave();
+  if(me){const b=big3Of(S.me);if(b.rise!=null)toast(`✦ chart recast by the engine — ${SIGNS[b.rise]} rising`);}
 }
 /* ── cloud state · supabase app_state ──
    the S object is still the single source of truth at runtime; the cloud is its shadow.
    loads before first render so a returning bestie lands in her own app, not a blank one. */
-const TI_PERSIST_KEYS=['me','people','entries','cal','accent','cursor','sel','jcursor','jfilter','set','plus','onboarded'];
+const TI_PERSIST_KEYS=['me','people','entries','cal','notes','lon','accent','cursor','sel','jcursor','jfilter','set','plus','onboarded'];
 function tiSnapshot(){
   const out={};
   TI_PERSIST_KEYS.forEach(k=>{
@@ -1095,7 +1467,11 @@ function tiRestore(state){
     if(state.__ui.type)de.dataset.type=state.__ui.type;
     if(state.__ui.grad)de.dataset.grad=state.__ui.grad;
   }
+  if(state.lon&&typeof state.lon==='object')Object.assign(LON,state.lon);
+  S.lon=LON;
+  S.notes=S.notes||{};S.set=Object.assign({house:'porphyry'},S.set||{});
   if(typeof S.accent==='number'&&S.accent>0)setAcc(S.accent);
+  saveUi();
 }
 let tiLastSaved='',tiSaveT=null;
 async function tiFlush(){
@@ -1123,9 +1499,11 @@ async function tiBoot(){
     try{const cloud=await window.tiCloud.loadState();tiRestore(cloud);tiLastSaved=JSON.stringify(tiSnapshot());}
     catch(e){/* first launch or offline — fresh S carries it */}
   }
+  /* every launch opens on today, whatever month was last browsed */
+  {const t=new Date();S.cursor=new Date(t.getFullYear(),t.getMonth(),1);S.jcursor=new Date(t.getFullYear(),t.getMonth(),1);S.sel=key(t);}
   const _run=[['stars',stars],['obR',obR],['renderSky',renderSky],['renderCal',renderCal],['renderShelf',renderShelf],['renderJournal',renderJournal],['renderGrim',renderGrim],['renderOrbit',renderOrbit],['renderMe',renderMe]];
   for(const [n,fn] of _run){try{fn();}catch(e){console.error('tiBoot crash in '+n+':',e);}}
-  try{healTz();}catch(e){console.error('healTz:',e);}
+  healChart().catch(e=>console.error('healChart:',e));
   try{syncBackend();}catch(e){console.error('syncBackend:',e);}
   tiSplash();
 }
@@ -1154,20 +1532,29 @@ function moonWeek(){
   }
   return h;
 }
-/* next injects these scripts after the page 'load' event has already fired,
-   so the splash runs by explicit call from tiBoot, not a load listener */
+/* the splash runs by explicit call from tiBoot (next injects these scripts after the
+   page 'load' event). it already painted from the server markup, so it's on screen the
+   whole time state loads — this only decides how long it lingers and where it hands off. */
+function splashSeen(){try{const t=+sessionStorage.getItem('ti-splash-at');return !!t&&Date.now()-t<120000;}catch(e){return false;}}
+function playSplash(){
+  const sp=document.getElementById('splash');if(!sp)return;
+  delete document.documentElement.dataset.splash;
+  const c=sp.cloneNode(true);c.classList.remove('off');sp.replaceWith(c);   /* fresh node = animations replay */
+  try{sessionStorage.setItem('ti-splash-at',String(Date.now()));}catch(e){}
+}
 function tiSplash(){
-  /* sparkle swipe on INTELLIGENCE */
-  setTimeout(()=>{const sw=document.getElementById('spSwipe');if(sw)sw.classList.add('glow');},1400);
-  const returning=S.onboarded;
-  if(returning){
-    /* returning user: brand splash → sky-aware greeting toast → straight into the app */
+  const quick=splashSeen();
+  try{sessionStorage.setItem('ti-splash-at',String(Date.now()));}catch(e){}
+  const hold=quick?700:2400;
+  const off=()=>{const sp=document.getElementById('splash');if(sp)sp.classList.add('off');};
+  if(S.onboarded){
+    /* returning: splash → sky-aware greeting → straight into the app */
     const g=greetLine();
-    setTimeout(()=>{document.getElementById('splash').classList.add('off');},1800);
-    setTimeout(()=>{toast(g[0]+' '+g[1]);},2200);
+    setTimeout(off,hold);
+    setTimeout(()=>{toast(g[0]+' '+g[1]);sparkleBurst(innerWidth/2,innerHeight*.42,10);},hold+500);
   } else {
-    /* new user: brand splash → onboarding */
-    setTimeout(()=>{document.getElementById('ob').classList.add('on');},2400);
-    setTimeout(()=>{document.getElementById('splash').classList.add('off');},2900);
+    /* new: splash → onboarding (prefilled with whatever the account already knows) */
+    setTimeout(()=>{obReplay(0);},hold-350);
+    setTimeout(off,hold);
   }
 }

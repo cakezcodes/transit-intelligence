@@ -1,9 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/browser';
+import { splashMarkup } from '@/features/splash/splashMarkup.mjs';
 import './welcome.css';
+
+const SPLASH = splashMarkup();
+
+function splashSeen() {
+  try {
+    const t = Number(sessionStorage.getItem('ti-splash-at'));
+    return !!t && Date.now() - t < 120000;
+  } catch {
+    return false;
+  }
+}
 
 export default function Welcome() {
   const router = useRouter();
@@ -13,6 +25,17 @@ export default function Welcome() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [confirmSent, setConfirmSent] = useState(false);
+  // splash → card on arrival; card → splash on sign-in, so /app picks up the same frame
+  const [splash, setSplash] = useState<'on' | 'off'>('on');
+
+  useEffect(() => {
+    const seen = splashSeen();
+    try {
+      sessionStorage.setItem('ti-splash-at', String(Date.now()));
+    } catch {}
+    const t = setTimeout(() => setSplash('off'), seen ? 250 : 2300);
+    return () => clearTimeout(t);
+  }, []);
 
   async function go() {
     if (!email.trim() || !password) {
@@ -41,6 +64,13 @@ export default function Welcome() {
         });
         if (error) throw error;
       }
+      // fade the finished splash back over the card, then hand off to the app
+      document.documentElement.dataset.splash = 'seen';
+      try {
+        sessionStorage.setItem('ti-splash-at', String(Date.now()));
+      } catch {}
+      setSplash('on');
+      await new Promise((r) => setTimeout(r, 450));
       router.push('/app');
       router.refresh();
     } catch (e: unknown) {
@@ -52,11 +82,16 @@ export default function Welcome() {
 
   return (
     <div className="wl-wrap">
+      <div
+        className={splash === 'off' ? 'wl-splash off' : 'wl-splash'}
+        aria-hidden={splash === 'off'}
+        dangerouslySetInnerHTML={{ __html: SPLASH }}
+      />
       <div className="wl-glow" />
-      <div className="wl-card">
+      <div className={splash === 'off' ? 'wl-card in' : 'wl-card'}>
         <div className="wl-caps">transit intelligence</div>
         <div className="wl-title">{mode === 'create' ? 'begin the record' : 'welcome back'}</div>
-        <div className="wl-orn">✦ ☽ ✦</div>
+        <div className="wl-orn" aria-hidden="true">✦ ☽︎ ✦</div>
         <div className="wl-sub">as above · so below</div>
 
         {confirmSent ? (
