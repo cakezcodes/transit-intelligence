@@ -6,7 +6,7 @@ This file is the app-side summary. When the two disagree, the design-system repo
 ## Direction
 
 Old-world occult mood, modern editorial execution. Bone paper, black ink, one ribbon accent,
-blackletter worn like jewelry. The calendar page (v1-final baseline) is the reference screen —
+blackletter worn like jewelry. The calendar (= the Cosmic Calendar sheet) is the reference screen —
 new UI matches it, never the other way around.
 
 ## Where styles live
@@ -29,7 +29,7 @@ new UI matches it, never the other way around.
 
 - Square everything. Circles only for moon discs and the chart wheel.
 - Borders over shadows; the thin double frame (`1px / 8px / 1px`) frames the splash and the sign-in card.
-- Four-point sparkles are the only ornament: splash constellation, tap bursts on buttons/days/tabs (`sparkleBurst`), the wheel's centre.
+- Four-point sparkles are the only ornament: splash constellation, tap bursts on buttons/days/tabs (`sparkleBurst`).
 - Motion is quick (`.16s / .32s / .7s`, ease-out) and fully disabled under `prefers-reduced-motion`.
 
 ## Splash
