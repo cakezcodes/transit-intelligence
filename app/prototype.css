@@ -33,10 +33,12 @@ body{overflow-x:hidden}
 /* prototype-specific body styles — scoped to #ti-root so welcome page stays clean */
 #ti-root{font-family:var(--sans);background:var(--void);color:var(--moon);font-size:16px;line-height:1.45;letter-spacing:-.01em;text-transform:lowercase;overflow-x:hidden;transition:background .35s,color .35s;font-variant-emoji:text;-webkit-font-variant-emoji:text;min-height:100vh}
 #ti-root *{font-variant-emoji:text;-webkit-font-variant-emoji:text}
-#ti-root button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;text-transform:inherit;text-align:left}
-#ti-root input,#ti-root textarea,#ti-root select{font:inherit;font-size:14.5px;color:var(--moon);background:var(--ink2);border:1px solid transparent;border-radius:0;padding:11px 13px;outline:none;width:100%;text-transform:lowercase;resize:none}
-#ti-root input:focus,#ti-root textarea:focus{border-color:var(--accent)}
-#ti-root input::placeholder,#ti-root textarea::placeholder{color:var(--faint)}
+/* resets use :where() so they keep v1's element-level specificity — a bare #ti-root
+   selector beat every class rule and stripped borders, fills and sizes from buttons */
+:where(#ti-root) button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;text-transform:inherit;text-align:left}
+:where(#ti-root) :is(input,textarea,select){font:inherit;font-size:14.5px;color:var(--moon);background:var(--ink2);border:1px solid transparent;border-radius:0;padding:11px 13px;outline:none;width:100%;text-transform:lowercase;resize:none}
+:where(#ti-root) :is(input,textarea):focus{border-color:var(--accent)}
+:where(#ti-root) :is(input,textarea)::placeholder{color:var(--faint)}
 img{display:block;max-width:100%}
 .cap{font-family:var(--sans);text-transform:uppercase;font-weight:500;letter-spacing:3px}
 
@@ -343,7 +345,7 @@ img{display:block;max-width:100%}
 #toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(14px);background:rgba(20,20,24,.93);color:#fff;font-size:12.5px;padding:10px 16px;border-radius:0;z-index:200;opacity:0;pointer-events:none;transition:.28s var(--ease);max-width:84vw;text-align:center;text-transform:lowercase}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-#ti-root button:focus-visible,#ti-root input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+:where(#ti-root) :is(button,input):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ═══ astrocake site skin ═══ */
 
@@ -356,8 +358,8 @@ img{display:block;max-width:100%}
 :root{--accent:#C7B0F5;--soft:#C7B0F5;--glow:transparent;--deep:var(--moon)}
 [data-mode="light"]{--ink:rgba(255,252,246,.55);--ink2:rgba(255,255,255,.6);--bar:#f2ebdd;--void:#f2ebdd}
 [data-mode="dark"]{--ink:#232220;--ink2:#1a1917}
-[data-mode="light"][data-grad="on"] #ti-root,[data-mode="light"][data-grad="on"] #splash,[data-mode="light"][data-grad="on"] #ob{background:linear-gradient(180deg,#f2ebdd 0%,#f4e7e6 38%,#efe7ef 72%,#f2ebdd 100%);background-attachment:fixed}
-[data-mode="dark"][data-grad="on"] #ti-root,[data-mode="dark"][data-grad="on"] #splash,[data-mode="dark"][data-grad="on"] #ob{background:linear-gradient(180deg,#1a1917 0%,#1e1a20 38%,#1a1c20 72%,#1a1917 100%);background-attachment:fixed}
+[data-mode="light"][data-grad="on"] #ti-root::before,[data-mode="light"][data-grad="on"] #splash,[data-mode="light"][data-grad="on"] #ob{background:linear-gradient(180deg,#f2ebdd 0%,#f4e7e6 38%,#efe7ef 72%,#f2ebdd 100%);background-attachment:fixed}
+[data-mode="dark"][data-grad="on"] #ti-root::before,[data-mode="dark"][data-grad="on"] #splash,[data-mode="dark"][data-grad="on"] #ob{background:linear-gradient(180deg,#1a1917 0%,#1e1a20 38%,#1a1c20 72%,#1a1917 100%);background-attachment:fixed}
 #grad,.today .hl,.sky .hl{display:none!important}
 #ti-root *{border-radius:0!important}
 /* splash */
@@ -432,8 +434,8 @@ img{display:block;max-width:100%}
 [data-mode="dark"] .sht{background:#232220}
 #toast{background:#1a1917;color:#f2ebdd;letter-spacing:2px;text-transform:uppercase;font-size:11px}
 [data-mode="dark"] #toast{background:#f2ebdd;color:#1a1917}
-#ti-root input:focus,#ti-root textarea:focus{border-color:var(--moon)}
-#ti-root input,#ti-root textarea,#ti-root select{border:1px solid var(--line)}
+:where(#ti-root) :is(input,textarea):focus{border-color:var(--moon)}
+:where(#ti-root) :is(input,textarea,select){border:1px solid var(--line)}
 button:focus-visible,input:focus-visible{outline-color:var(--moon)}
 
 [data-mode="light"]{--rs:#cfcac1}[data-mode="dark"]{--rs:#4a4843}
@@ -552,3 +554,11 @@ button:focus-visible,input:focus-visible{outline-color:var(--moon)}
 .cl-sub{font-size:18px;margin-top:8px;animation:pulse 1.2s ease infinite}
 .ob-b{padding-top:64px}
 
+
+/* the gradient sits on a fixed layer behind the app: iOS ignores background-attachment:fixed
+   on a scrolling element and smears the gradient over the whole page height */
+[data-grad="on"] #ti-root{background:transparent}
+[data-grad="on"] #ti-root::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none}
+html[data-grad="on"] body{background:var(--void)}
+/* iOS zooms into any input under 16px and stays zoomed — keep fields at 16px on touch */
+@media (pointer:coarse){:where(#ti-root) :is(input,textarea,select){font-size:16px}}
