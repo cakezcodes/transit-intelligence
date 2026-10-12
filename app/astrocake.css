@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════
    astrocake · app layer (design system v2)
    loads after prototype.css. source of truth for tokens lives in
-   cakezcodes/astrocake-design-system → brand/app-tokens.css (mirrored here).
+   cakezcodes/design-system → src/design-system/ (.app-transit; mirrored here).
 
    laws: square everything (circles only for moons + the wheel) · borders over
    shadows · inter tight does the work · blackletter is jewelry · four-point
@@ -164,7 +164,7 @@ body.sheet-open{overflow:hidden}
 .wl-btn:focus-visible,.wl-swap:focus-visible,.wl-field input:focus-visible{outline-color:#1a1917!important}
 [data-mode="dark"] .wl-btn:focus-visible,[data-mode="dark"] .wl-swap:focus-visible,[data-mode="dark"] .wl-field input:focus-visible{outline-color:#eeece8!important}
 
-/* ═══ the calendar = the Cosmic Calendar sheet (astrocake-design-system/calendar) ═══ */
+/* ═══ the calendar = the Cosmic Calendar sheet (design-system/calendar) ═══ */
 #ti-root .cc-mast{border-top:2px solid var(--moon);border-bottom:1px solid var(--moon);padding:12px 0 10px;margin-top:14px}
 #ti-root .cc-wm{font-family:var(--pf);font-size:30px;line-height:1;letter-spacing:-.015em;text-transform:lowercase;font-weight:400;font-style:normal;display:flex;align-items:baseline;padding:0}
 #ti-root .cc-wm::before{content:"\2726";font-family:var(--sans);font-size:.46em;margin-right:.14em;position:relative;top:-.12em;color:#FF90E8;-webkit-text-stroke:1px #1a1917}

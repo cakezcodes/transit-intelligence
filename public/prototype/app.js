@@ -894,7 +894,7 @@ function aspectsOf(ch){
   return out.sort((x,y)=>x.orb-y.orb);
 }
 const dm=deg=>{const d=Math.floor(deg),m=Math.floor((deg-d)*60);return `${d}°${String(m).padStart(2,'0')}′`;};
-/* the wheel — a port of the Natal Blueprint wheel() (astrocake-design-system
+/* the wheel — a port of the Natal Blueprint wheel() (design-system
    chart-engine/template.html): ink only, three rings, 3-letter sign codes, 5° ticks,
    bold 2-letter body codes, ASC–DSC solid, MC–IC dashed, aspects under 4° in the hub
    (squares/oppositions solid, the rest dashed). The app adds: porphyry/placidus cusp

@@ -1,6 +1,6 @@
 # Design System — astrocake (app v2)
 
-Canonical brand: `cakezcodes/astrocake-design-system` — `docs/brand-book.md` (Apps section) and `docs/app-rules.md`. Tokens: `design-system/tokens.json`.
+Canonical brand: `cakezcodes/design-system` — `docs/brand-book.md` (Apps section) and `docs/app-rules.md`. Tokens: `design-system/tokens.json`.
 This file is the app-side summary. When the two disagree, the design-system repo wins.
 
 ## Direction
@@ -41,7 +41,7 @@ Arrival: splash → sign-in card rises in. Sign-in: splash fades back over → `
 
 ## The calendar
 
-The Cosmic Calendar sheet (`astrocake-design-system/calendar/cosmic-calendar-sheet.html`) at phone size:
+The Cosmic Calendar sheet (`design-system/calendar/cosmic-calendar-sheet.html`) at phone size:
 ✦astrocake masthead, the engine's natal line (ASC · MC · ☉︎ · ☽︎ with houses), month in 800 italic + year, square
 layer keys with an ink hairline (Cosmic Sky in stone, flagged days in tomato), the black standing bar, a Mon–Sun
 grid with events written in sheet shorthand, What to Watch in the double frame, notes, and the sheet footer.
@@ -49,7 +49,7 @@ grid with events written in sheet shorthand, What to Watch in the double frame, 
 
 ## The chart wheel
 
-A port of the Natal Blueprint `wheel()` (`astrocake-design-system/chart-engine/template.html`), ink only: three rings,
+A port of the Natal Blueprint `wheel()` (`astrocake-site-shop/chart-engine/template.html`), ink only: three rings,
 3-letter sign codes, 5° ticks, bold 2-letter body codes, ASC–DSC solid, MC–IC dashed, aspects under 4° in the hub
 (squares/oppositions solid, the rest dashed). The app draws Porphyry cusps by default; Whole Sign draws exactly like
 the Blueprint. Every code is tappable.
