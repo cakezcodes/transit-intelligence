@@ -3,6 +3,9 @@
 import { useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/browser';
 import { prototypeBody } from './prototypeBody.mjs';
+import { splashMarkup } from '@/features/splash/splashMarkup.mjs';
+
+const body = prototypeBody.replace('<!--SPLASH-->', splashMarkup('splash'));
 
 /* Rule #0: the prototype is the spec. This component mounts the prototype verbatim
    (markup from prototypeBody, logic from /prototype/app.js) and hands it three bridges:
@@ -83,7 +86,11 @@ export default function PrototypeApp() {
             birth_time: (me.time as string) || null,
             birth_place: (me.place as string) || null,
             latitude: me.lat != null && me.lat !== '' ? Number(me.lat) : null,
-            longitude: me.lon != null && me.lon !== '' ? Number(me.lon) : null,
+            // the app stores longitude as `lng` (older saves used `lon`)
+            longitude: (() => {
+              const v = me.lng ?? me.lon;
+              return v != null && v !== '' ? Number(v) : null;
+            })(),
             tz_name: (me.tzName as string) || null,
             onboarded: true,
             updated_at: new Date().toISOString(),
@@ -112,13 +119,13 @@ export default function PrototypeApp() {
         const b = document.createElement('button');
         b.id = 'tiSignOut';
         b.textContent = 'sign out ›';
-        b.style.cssText =
-          'display:block;margin:26px auto 40px;font-size:12.5px;color:var(--dust)';
+        b.className = 'btn g';
+        b.style.cssText = 'margin:26px 0 40px';
         b.onclick = () => window.tiCloud?.signOut();
         me.appendChild(b);
       }
     })();
   }, []);
 
-  return <div id="ti-root" dangerouslySetInnerHTML={{ __html: prototypeBody }} />;
+  return <div id="ti-root" dangerouslySetInnerHTML={{ __html: body }} />;
 }

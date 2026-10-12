@@ -6,6 +6,8 @@
     "doc": "docs"
   },
   "scripts": {
+    "prebuild": "node scripts/build-prototype-body.mjs",
+    "predev": "node scripts/build-prototype-body.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -18,7 +20,11 @@
     "extract:reading": "node scripts/external-readings/extract-reading.mjs",
     "scrape:creator": "node scripts/external-readings/scrape-creator-reading.mjs",
     "queue:creator": "node scripts/external-readings/queue-creator-videos.mjs",
-    "test": "npm run validate:syd-chart"
+    "test": "npm run validate:syd-chart && npm run check:prototype && npm run check:handlers && npm run check:markup && npm run check:calendar",
+    "check:prototype": "node scripts/check-prototype.mjs",
+    "check:handlers": "node scripts/check-handlers.mjs",
+    "check:markup": "node scripts/check-markup.mjs",
+    "check:calendar": "node scripts/calendar/compare-feeds.mjs"
   },
   "keywords": [],
   "author": "CakezCodes",
@@ -27,6 +33,7 @@
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.45.4",
+    "astronomy-engine": "^2.1.19",
     "celestine": "^0.2.1",
     "next": "^15.3.3",
     "react": "^19.1.0",

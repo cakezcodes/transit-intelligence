@@ -36,6 +36,11 @@ Calendar/state: `global_events` (251), `sky_positions` (empty — job in step 2)
 People: `people` (1 row), `profiles`. Archive (read-only, never an engine source): `prototype_archive`.
 Storage: a bucket exists for RWS card art (public domain, 1909) — images not sourced/uploaded yet; add `card_image_url` to `tarot_cards` when wiring.
 
+## App markup + charts (2026-10-12)
+- Markup source: `features/app/body.html` → generated `prototypeBody.mjs` (never hand-edit the .mjs). Logic: `public/prototype/app.js`. Styles: `app/prototype.css` (base) + `app/astrocake.css` (design system v2).
+- Charts are cast only by `POST /api/natal` (Celestine). The client never computes natal positions or angles.
+- `npm test` = chart validation + prototype parse + dead-handler + markup-balance checks.
+
 ## Prototype → screens
 `docs/prototype/Transit Intelligence.html` is the interaction reference: views = Calendar, Orbit, Me (chart), Grimoire/Library, Health, Reminders, Settings; plus journal, tarot pull logging, spell logging, custom events. Design tokens/components live in the `cakezcodes/design-system` repo.
 
