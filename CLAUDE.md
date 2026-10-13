@@ -40,6 +40,8 @@ Storage: a bucket exists for RWS card art (public domain, 1909) — images not s
 - Markup source: `features/app/body.html` → generated `prototypeBody.mjs` (never hand-edit the .mjs). Logic: `public/prototype/app.js`. Styles: `app/prototype.css` (base) + `app/astrocake.css` (design system v2).
 - Charts are cast only by `POST /api/natal` (Celestine). The client never computes natal positions or angles.
 - `npm test` = chart validation + prototype parse + dead-handler + markup-balance checks.
+- The in-app calendar is the Cosmic Calendar engine: `POST /api/calendar` → `lib/calendar/app.mjs` (sky + moon + natal/divination/ritual + convergence, one month at a time). Event detail shows each layer's full text. Public-event product copy lives only in `calendar_copy` (migration 20261013000100), loaded with `scripts/calendar/import-copy.mjs` from the published .ics files — never commit it.
+- Ground: beige paper washed with the ribbon colour (`--ground` in `app/astrocake.css`, keyed off `--accent`).
 
 ## Prototype → screens
 `docs/prototype/Transit Intelligence.html` is the interaction reference: views = Calendar, Orbit, Me (chart), Grimoire/Library, Health, Reminders, Settings; plus journal, tarot pull logging, spell logging, custom events. Design tokens/components live in the `cakezcodes/design-system` repo (UI kit: `src/design-system/`, shell class `.app-transit`). The public shop and app previews are published from `astro-cake/astrocake` via GitHub Pages.

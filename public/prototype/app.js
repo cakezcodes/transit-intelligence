@@ -75,7 +75,7 @@ const LAYERS=[
   {id:'cycle',n:'cycle & ovulation',d:'period, fertile window, luteal — logged and predicted',c:'#FF90E8',on:1,gl:'◉'}]},
  {g:'cosmic sky',items:[
   {id:'global',n:'global transits',d:'what the sky is doing for everyone',c:'#5a564f',on:1,gl:'☉︎'},
-  {id:'retro',n:'retrogrades',d:'stations, shadows, the whole mess',c:'#C7B0F5',on:0,gl:'℞'},
+  {id:'retro',n:'retrogrades',d:'stations, shadows, the whole mess',c:'#C7B0F5',on:1,gl:'℞'},
   {id:'rulers',n:'house rulers on the move',d:'where your chart ruler is walking today',c:'#7FE0B5',on:0,gl:'⌂'}]},
  {g:'cosmic natal',items:[
   {id:'natal',n:'transits to natal',d:'what\'s actually hitting your placements',c:'#F4CC2E',on:1,gl:'✦'},
@@ -84,9 +84,11 @@ const LAYERS=[
   {id:'syn',n:'synastry hits',d:'when the sky touches both charts at once',c:'#FF90E8',on:0,gl:'◇'},
   {id:'comp',n:'composite transits',d:'the relationship\'s own chart, activated',c:'#C7B0F5',on:0,gl:'◍'}]},
  {g:'cosmic convergence',items:[
-  {id:'prof',n:'annual profections',d:'which house is running your year',c:'#D6EC4F',on:0,gl:'◈'},
-  {id:'firdaria',n:'firdaria & timelords',d:'the planet holding the keys right now',c:'#D6EC4F',on:0,gl:'♄︎'},
-  {id:'zr',n:'zodiacal releasing',d:'chapters, peaks, and loosings of the bond',c:'#FF5A36',on:0,gl:'⟳'},
+  {id:'prof',n:'profections',d:'which house is running your year, and this month',c:'#D6EC4F',on:1,gl:'◈'},
+  {id:'firdaria',n:'firdaria & timelords',d:'the planet holding the keys right now',c:'#D6EC4F',on:1,gl:'♄︎'},
+  {id:'zr',n:'zodiacal releasing',d:'chapters, peaks, and loosings of the bond',c:'#FF5A36',on:1,gl:'⟳'},
+  {id:'prog',n:'progressed moon',d:'the inner clock — where your progressed moon is touching',c:'#7FE0B5',on:1,gl:'☽︎'},
+  {id:'power',n:'power days',d:'career, luck, money, deal and love days — when it all lines up',c:'#F4CC2E',on:1,gl:'✦'},
   {id:'sixmo',n:'six-month plan',d:'each new moon as a planning checkpoint',c:'#FF9A3C',on:0,gl:'◐'}]},
  {g:'cosmic divination',items:[
   {id:'pull',n:'tarot pulls',d:'every card you\'ve logged, on its date',c:'#C7B0F5',on:1,gl:'✦'},
@@ -352,8 +354,45 @@ const PROMPTS={'new moon':'what are you actually planting — not what sounds go
 const prompt=(pn,s)=>PROMPTS[pn];
 
 /* ══════════ EVENTS ENGINE ══════════ */
+/* ══════════ THE COSMIC CALENDAR (engine) ══════════
+   /api/calendar returns every sky, moon, natal, divination, ritual and convergence event
+   for a month, with the full descriptions. cached per month + chart; the inline sky math
+   below stays as the offline fallback. */
+const COS={};
+const cosKey=(y,m)=>`${y}-${m}-${(S.me.natal&&S.me.natal.computedAt)||'sky'}`;
+function cosFor(d){
+  const y=d.getFullYear(),m=d.getMonth(),k=cosKey(y,m),c=COS[k];
+  if(!c){loadCosmic(y,m);return null;}
+  return c.state==='ok'?c:null;
+}
+async function loadCosmic(y,m){
+  const k=cosKey(y,m);if(COS[k])return;COS[k]={state:'loading'};
+  const pad=n=>String(n).padStart(2,'0'),last=new Date(y,m+1,0).getDate();
+  const me=S.me,ch=me.natal;
+  try{
+    const r=await fetch('/api/calendar',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({
+      start:`${y}-${pad(m+1)}-01`,end:`${y}-${pad(m+1)}-${pad(last)}`,
+      tz:Intl.DateTimeFormat().resolvedOptions().timeZone,
+      chart:ch&&ch.timeKnown?ch:null,birth:ch?{date:me.date,time:me.time||'',tzName:ch.tzName||me.tzName||null}:null})});
+    if(!r.ok)throw new Error('calendar '+r.status);
+    const j=await r.json(),ev={};
+    j.events.forEach(e=>{(ev[e.date]=ev[e.date]||[]).push(e);});
+    COS[k]={state:'ok',ev,personal:j.personal};
+  }catch(e){COS[k]={state:'err'};setTimeout(()=>{if(COS[k]&&COS[k].state==='err')delete COS[k];},60000);return;}
+  try{renderCal();const v=document.querySelector('.v.on');if(v&&v.id==='v-sky'&&typeof renderSky==='function')renderSky();}catch(e){}
+}
 function evForDate(d){
   const out=[];const k=key(d),p=phase(d),pn=phaseName(p),ml=moonLon(d),si=signOf(ml);
+  const cm=cosFor(d);
+  if(cm){
+    /* the engine owns the sky, the moon, natal and convergence layers for this month */
+    (cm.ev[k]||[]).forEach(e=>{if(LON[e.lay]!==false&&LON[e.lay]!==undefined)out.push({id:e.id,lay:e.lay,gl:e.gl,t:e.title,s:e.sub||'',date:k,big:e.big?1:0,cos:e});});
+    if(LON.lunar&&signOf(moonLon(new Date(d.getTime()-86400000)))!==si)
+      out.push({id:'ms-'+k,lay:'lunar',gl:'☽︎',t:`moon enters ${SIGNS[si]}`,s:`${MOOD[pn].split('.')[0]} · ${SIGN_READ[SIGNS[si]][0]}`,date:k});
+    if(LON.ritual){const r=RIT.find(x=>x.ph.includes(pn));if(r&&(pn==='new moon'||pn==='full moon'))out.push({id:'r-'+k,lay:'ritual',gl:'✧',t:`matched working · ${r.n}`,s:r.v,date:k});}
+    if(LON.sixmo&&pn==='new moon')out.push({id:'6-'+k,lay:'sixmo',gl:'◐',t:'six-month checkpoint',s:'new moon = plan review. what shipped, what stalled?',date:k});
+    return out.concat(mineFor(k));
+  }
   const pv=phase(new Date(d.getTime()-86400000));
   const cross=(a,b,t)=>(a<t&&b>=t)||(a>b&&(b>=t));
   if(LON.lunation){
@@ -373,6 +412,10 @@ function evForDate(d){
   if(LON.ritual){const r=RIT.find(x=>x.ph.includes(pn));if(r&&(pn==='new moon'||pn==='full moon'))out.push({id:'r-'+k,lay:'ritual',gl:'✧',t:`matched working · ${r.n}`,s:r.v,date:k});}
   if(LON.prof&&d.getDate()===1)out.push({id:'pf-'+k,lay:'prof',gl:'◈',t:'profection check-in',s:'which house is running your year — and who rules it',date:k});
   if(LON.sixmo&&pn==='new moon')out.push({id:'6-'+k,lay:'sixmo',gl:'◐',t:'six-month checkpoint',s:'new moon = plan review. what shipped, what stalled?',date:k});
+  return out.concat(mineFor(k));
+}
+function mineFor(k){
+  const out=[];
   S.cal.filter(c=>c.date===k).forEach(c=>{if(LON[c.lay||'ritual']!==false)out.push({...c,gl:c.gl||'✧',lay:c.lay||'ritual',mine:1});});
   S.entries.filter(e=>e.date===k).forEach(e=>{
     const lay=e.type==='pull'?'pull':e.type==='ritual'?'ritual':e.type==='cycle'?'cycle':e.type==='sex'?'sex':'entry';
@@ -403,7 +446,7 @@ const CC_LEG_GROUPS=[
  {n:'moon',ids:['lunar','lunation','void','lunret','cycle'],c:'#8FD0F2'},
  {n:'sky',ids:['global','retro','rulers'],c:'#5a564f'},
  {n:'natal',ids:['natal','promise','theirs','syn','comp'],c:'#F4CC2E'},
- {n:'convergence',ids:['prof','firdaria','zr','sixmo'],c:'#D6EC4F'},
+ {n:'convergence',ids:['prof','firdaria','zr','prog','power','sixmo'],c:'#D6EC4F'},
  {n:'divination',ids:['pull','entry'],c:'#C7B0F5'},
  {n:'ritual',ids:['ritual','sex'],c:'#FF5A36'}
 ];
@@ -499,8 +542,43 @@ function renderLayers(){
         <span class="ln">${i.n}<div class="ld">${i.d}</div></span>
         <span class="tog${LON[i.id]?' on':''}"></span></button>`).join('')}</div>`).join('');
 }
+/* a calendar description, laid out: CAPS lines are section heads, the rest is text */
+function cosText(txt){
+  return String(txt||'').split('\n').map(l=>{const t=l.trim();if(!t)return'';
+    if(/^[A-Z][A-Z ·+&/0-9-]+$/.test(t)&&t.length<40)return `<div class="cos-h">${esc(t.toLowerCase())}</div>`;
+    return `<div class="cos-l">${esc(t)}</div>`;}).join('');
+}
+function cosDetail(dk,ev){
+  const c=ev.cos,d=new Date(c.t);
+  const when=c.allDay?fmtL(parse(dk)):`${fmtL(parse(dk))} · ${d.toLocaleTimeString('en-us',{hour:'numeric',minute:'2-digit',timeZoneName:'short'})}`;
+  const blk=(lab,gl,txt,cls)=>txt?`<div class="card cos${cls?' '+cls:''}"><div class="cos-lab">${gl} ${lab}</div>${cosText(txt)}</div>`:'';
+  const noTime=!c.natal&&!c.conv&&S.me.natal&&!S.me.natal.timeKnown;
+  return `<div class="eb"><span class="cer">✧ · </span><button class="lk" onclick="nav('layers')">${(layMeta(ev.lay)||{n:'the sky'}).n}</button><span class="cer"> · ✧</span></div>
+    <div class="h1 cos-title">${esc(c.title)}</div>
+    <div class="h1s"><button class="lk" onclick="pickDay('${dk}');nav('cal')">${when}</button>${c.house?` · <button class="lk" onclick="explainHouse(${c.house})">your ${c.house}H</button>`:''}</div>
+    ${blk('the sky','☉︎',c.sky,'sky')}
+    ${blk('natal','✦',c.natal)}
+    ${blk('divination','☽︎',c.divination)}
+    ${blk('ritual','✧',c.ritual)}
+    ${blk('convergence','◈',c.conv)}
+    ${noTime?`<button class="card qd" onclick="castMine()">add your birth time and this event gets your houses — natal, divination and ritual layers.<span class="qd-go">add birth time ›</span></button>`:''}`;
+}
 function openEv(dk,id){
   const d=parse(dk), ev=evForDate(d).find(e=>e.id===id)||{t:'the sky',s:'',lay:'global',gl:'☉︎'};
+  if(ev.cos){
+    const p=phase(d),pn=phaseName(p),rit=RIT.find(x=>x.ph.includes(pn))||RIT[0];
+    document.getElementById('evBody').innerHTML=cosDetail(dk,ev)+
+     `<div class="lab">work with this sky</div>
+      <div class="card"><b class="cap" style="font-size:9px;color:var(--deep)">✧ working</b>
+        <div style="font-size:16px;font-weight:700;margin-top:4px">${rit.n}</div>
+        <div style="font-size:12.5px;color:var(--dust)">${rit.v}</div>
+        <button class="btn g" onclick="nav('lib');setShelf('work');setTimeout(()=>jumpRit('${rit.n}'),80)">open the working ›</button></div>
+      <div class="card"><b class="cap" style="font-size:9px;color:var(--deep)">✦ spread</b>
+        <div style="font-size:16px;font-weight:700;margin-top:4px">${rit.pair}</div>
+        <button class="btn g" onclick="openPull(0,'${rit.pair}')">✦ pull this spread ›</button></div>
+      <button class="btn" onclick="addCal('${dk}','${rit.n}')">+ add a working to this day</button>`;
+    nav('event');return;
+  }
   const p=phase(d),pn=phaseName(p),si=signOf(moonLon(d));
   const rit=RIT.find(x=>x.ph.includes(pn))||RIT[0];
   const r=dailyRead(d);
@@ -1457,7 +1535,7 @@ async function healChart(){
 /* ── cloud state · supabase app_state ──
    the S object is still the single source of truth at runtime; the cloud is its shadow.
    loads before first render so a returning bestie lands in her own app, not a blank one. */
-const TI_PERSIST_KEYS=['me','people','entries','cal','notes','lon','accent','cursor','sel','jcursor','jfilter','set','plus','onboarded'];
+const TI_PERSIST_KEYS=['me','people','entries','cal','notes','lon','layv','accent','cursor','sel','jcursor','jfilter','set','plus','onboarded'];
 function tiSnapshot(){
   const out={};
   TI_PERSIST_KEYS.forEach(k=>{
@@ -1482,6 +1560,9 @@ function tiRestore(state){
     if(state.__ui.grad)de.dataset.grad=state.__ui.grad;
   }
   if(state.lon&&typeof state.lon==='object')Object.assign(LON,state.lon);
+  /* layers v2: the full cosmic calendar arrived — switch its layers on once for existing records */
+  if((state.layv||0)<2)['global','retro','lunar','lunation','void','natal','prof','firdaria','zr','prog','power'].forEach(i=>LON[i]=true);
+  S.layv=2;
   S.lon=LON;
   S.notes=S.notes||{};S.set=Object.assign({house:'porphyry'},S.set||{});
   if(typeof S.accent==='number'&&S.accent>0)setAcc(S.accent);

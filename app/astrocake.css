@@ -29,8 +29,6 @@
 .ti-splash{position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;
   background:var(--void,#eeece8);color:var(--moon,#1a1917);font-family:var(--sans);text-transform:none;
   transition:opacity var(--t-slow) ease,visibility 0s linear var(--t-slow);overflow:hidden}
-[data-grad="on"] .ti-splash{background:linear-gradient(180deg,var(--ac-cream) 0%,var(--ac-blush) 38%,var(--ac-mist) 72%,var(--ac-cream) 100%)}
-[data-mode="dark"] .ti-splash{background:#1a1917}
 .ti-splash.off{opacity:0;visibility:hidden;pointer-events:none}
 .tsp-frame{position:absolute;inset:calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));border:1px solid currentColor;outline:1px solid currentColor;outline-offset:-9px;opacity:0;animation:tspFrame 1s .15s var(--ease-out) forwards}
 .tsp-core{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center}
@@ -152,12 +150,9 @@ body.sheet-open{overflow:hidden}
 /* `.v` is also the view class (display:none until .on) — values inside tiles must opt out */
 #ti-root .st .v,#ti-root .b3 .v,#ti-root .b3c .v{display:block;animation:none}
 /* the welcome ground matches the splash ground so the hand-off has no seam */
-[data-grad="on"] .wl-wrap{background:linear-gradient(180deg,#f2ebdd 0%,#f4e7e6 38%,#efe7ef 72%,#f2ebdd 100%)}
-[data-mode="dark"] .wl-wrap{background:#1a1917}
 .b3 .b3c div{border:none!important;background:none!important;padding:0!important}
 
 /* brand book: dark mode is flat ink (#232220 cards), never a gradient */
-[data-mode="dark"] #ti-root,[data-mode="dark"] #splash,[data-mode="dark"] #ob{background:#1a1917!important}
 /* brand book: pops are flat fills with ink text — never pop-colored text, lines or outlines */
 #ti-root input:focus,#ti-root textarea:focus,.cc-note:focus,.up:active{border-color:var(--moon)!important}
 .tc.sel{outline-color:var(--moon)!important}
@@ -217,3 +212,32 @@ body.sheet-open{overflow:hidden}
 /* blackletter is jewelry: only the small "astrocake" mark (splash foot, app footer).
    sheet titles go back to the v1 sans headline. */
 #ti-root .sf,.sht .sf{font-family:var(--sans)!important;font-weight:800;font-style:italic;text-transform:uppercase;letter-spacing:-.03em;line-height:.95}
+
+/* ═══ the ground: beige paper, washed with the ribbon colour (like after dark's glow) ═══
+   --accent is the picked ribbon (setAcc / the pre-paint script), so the wash follows the theme. */
+:root{
+  --wash:color-mix(in srgb,var(--accent,#C7B0F5) 58%,transparent);
+  --wash2:color-mix(in srgb,var(--accent,#C7B0F5) 34%,transparent);
+  --paper:linear-gradient(180deg,#f4ede1 0%,#efe6d7 100%);
+  --ground:radial-gradient(140% 70% at 50% -14%,var(--wash) 0%,transparent 70%),radial-gradient(110% 50% at 108% 108%,var(--wash2) 0%,transparent 66%),var(--paper);
+}
+[data-mode="dark"]{
+  --wash:color-mix(in srgb,var(--accent,#C7B0F5) 36%,transparent);
+  --wash2:color-mix(in srgb,var(--accent,#C7B0F5) 20%,transparent);
+  --paper:linear-gradient(180deg,#1c1b19 0%,#161513 100%);
+}
+#ti-root{background:var(--paper)}
+[data-grad="on"] #ti-root{background:transparent!important}
+[data-grad="on"] #ti-root::before{background:var(--ground)}
+.ti-splash,#ob,.wl-wrap{background:var(--paper)!important}
+[data-grad="on"] .ti-splash,[data-grad="on"] #ob,[data-grad="on"] .wl-wrap{background:var(--ground)!important}
+html[data-grad="on"] body,html body{background:#efe6d7}
+html[data-mode="dark"] body{background:#161513}
+
+/* ═══ cosmic calendar event detail: the feed's own text, laid out ═══ */
+#ti-root .h1.cos-title{font-size:clamp(22px,7vw,30px);font-weight:800;font-style:italic;white-space:normal;line-height:1}
+.card.cos{padding:14px 16px}
+.cos-lab{font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;font-weight:700;color:var(--moon);padding-bottom:8px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.cos-h{font-size:9px;letter-spacing:.24em;text-transform:uppercase;font-weight:700;color:var(--dust);margin:12px 0 3px}
+.cos-l{font-size:14px;line-height:1.5}
+.cos-h+.cos-l{margin-top:0}
