@@ -1,8 +1,6 @@
 <div id="grad"></div><canvas id="stars"></canvas>
-<div class="sparkle-float" style="top:12%;left:8%" aria-hidden="true">✦</div>
-<div class="sparkle-float" style="top:28%;right:12%" aria-hidden="true">✦</div>
-<div class="sparkle-float" style="top:55%;left:5%" aria-hidden="true">✦</div>
-<div class="sparkle-float" style="top:72%;right:8%" aria-hidden="true">✦</div>
+<!-- ambient: little sparkles drifting down behind everything -->
+<div class="fall" aria-hidden="true"><i style="--x:32.4%;--s:5.9px;--t:16.2s;--d:-1.3s;--dx:18px"><svg viewBox="0 0 24 24"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg></i><i style="--x:10.8%;--s:8.5px;--t:18.3s;--d:-3.9s;--dx:-30px"><svg viewBox="0 0 24 24"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg></i><i style="--x:42.8%;--s:5.4px;--t:11.7s;--d:-7.6s;--dx:18px"><svg viewBox="0 0 24 24"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg></i><i style="--x:13.6%;--s:6.3px;--t:16.0s;--d:-17.1s;--dx:18px"><svg viewBox="0 0 24 24"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg></i><i style="--x:57.0%;--s:5.3px;--t:12.8s;--d:-10.0s;--dx:-18px"><svg viewBox="0 0 24 24"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg></i><i style="--x:29.2%;--s:5.9px;--t:11.9s;--d:-5.6s;--dx:30px"><svg viewBox="0 0 24 24"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg></i><i style="--x:19.0%;--s:8.5px;--t:16.1s;--d:-6.7s;--dx:18px"><svg viewBox="0 0 24 24"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg></i><i style="--x:68.9%;--s:8.4px;--t:16.0s;--d:-8.9s;--dx:18px"><svg viewBox="0 0 24 24"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg></i><i style="--x:42.2%;--s:6.9px;--t:15.7s;--d:-8.2s;--dx:-8px"><svg viewBox="0 0 24 24"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg></i><i style="--x:25.4%;--s:6.1px;--t:17.2s;--d:-1.5s;--dx:-8px"><svg viewBox="0 0 24 24"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg></i><i style="--x:51.4%;--s:10.3px;--t:16.8s;--d:-5.2s;--dx:-30px"><svg viewBox="0 0 24 24"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg></i><i style="--x:13.1%;--s:7.5px;--t:17.1s;--d:-2.7s;--dx:8px"><svg viewBox="0 0 24 24"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg></i><i style="--x:41.6%;--s:10.8px;--t:11.6s;--d:-10.0s;--dx:-8px"><svg viewBox="0 0 24 24"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg></i><i style="--x:34.0%;--s:7.1px;--t:15.0s;--d:-14.3s;--dx:-30px"><svg viewBox="0 0 24 24"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg></i></div>
 
 <!-- ═══ SPLASH ═══ (shared markup: features/splash/splashMarkup.mjs) -->
 <!--SPLASH-->
@@ -78,7 +76,10 @@
 
 <!-- ═══════ SKY (home) ═══════ -->
 <section class="v on" id="v-sky">
-  <div class="eb"><span class="cer">☉︎ · </span><span class="cer"> · ☽︎</span></div>
+  <header class="home-mast">
+    <button class="hm-wm" onclick="replayIntro()" aria-label="transit intelligence — replay the intro"><em>transit</em> intelligence</button>
+    <div class="hm-tag">the sky, translated</div>
+  </header>
   <div class="h1"><em>today's</em> sky</div>
   <div class="h1s" id="skyDate"></div>
   <div id="skyBody"></div>

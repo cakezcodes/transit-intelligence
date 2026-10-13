@@ -75,7 +75,7 @@ const LAYERS=[
   {id:'cycle',n:'cycle & ovulation',d:'period, fertile window, luteal — logged and predicted',c:'#FF90E8',on:1,gl:'◉'}]},
  {g:'cosmic sky',items:[
   {id:'global',n:'global transits',d:'what the sky is doing for everyone',c:'#5a564f',on:1,gl:'☉︎'},
-  {id:'retro',n:'retrogrades',d:'stations, shadows, the whole mess',c:'#C7B0F5',on:0,gl:'℞'},
+  {id:'retro',n:'retrogrades',d:'stations, shadows, the whole mess',c:'#C7B0F5',on:1,gl:'℞'},
   {id:'rulers',n:'house rulers on the move',d:'where your chart ruler is walking today',c:'#7FE0B5',on:0,gl:'⌂'}]},
  {g:'cosmic natal',items:[
   {id:'natal',n:'transits to natal',d:'what\'s actually hitting your placements',c:'#F4CC2E',on:1,gl:'✦'},
@@ -84,9 +84,11 @@ const LAYERS=[
   {id:'syn',n:'synastry hits',d:'when the sky touches both charts at once',c:'#FF90E8',on:0,gl:'◇'},
   {id:'comp',n:'composite transits',d:'the relationship\'s own chart, activated',c:'#C7B0F5',on:0,gl:'◍'}]},
  {g:'cosmic convergence',items:[
-  {id:'prof',n:'annual profections',d:'which house is running your year',c:'#D6EC4F',on:0,gl:'◈'},
-  {id:'firdaria',n:'firdaria & timelords',d:'the planet holding the keys right now',c:'#D6EC4F',on:0,gl:'♄︎'},
-  {id:'zr',n:'zodiacal releasing',d:'chapters, peaks, and loosings of the bond',c:'#FF5A36',on:0,gl:'⟳'},
+  {id:'prof',n:'profections',d:'which house is running your year, and this month',c:'#D6EC4F',on:1,gl:'◈'},
+  {id:'firdaria',n:'firdaria & timelords',d:'the planet holding the keys right now',c:'#D6EC4F',on:1,gl:'♄︎'},
+  {id:'zr',n:'zodiacal releasing',d:'chapters, peaks, and loosings of the bond',c:'#FF5A36',on:1,gl:'⟳'},
+  {id:'prog',n:'progressed moon',d:'the inner clock — where your progressed moon is touching',c:'#7FE0B5',on:1,gl:'☽︎'},
+  {id:'power',n:'power days',d:'career, luck, money, deal and love days — when it all lines up',c:'#F4CC2E',on:1,gl:'✦'},
   {id:'sixmo',n:'six-month plan',d:'each new moon as a planning checkpoint',c:'#FF9A3C',on:0,gl:'◐'}]},
  {g:'cosmic divination',items:[
   {id:'pull',n:'tarot pulls',d:'every card you\'ve logged, on its date',c:'#C7B0F5',on:1,gl:'✦'},
@@ -321,6 +323,55 @@ const TRICKS=[['✦ significators','pick the court that matches your sun/moon/ri
  ['◑ the repeat rule','if a card comes back three times, stop asking. it already answered.']];
 
 /* ══════════ SKY VIEW ══════════ */
+/* ══════════ THE SKY RIGHT NOW (celestine, via /api/sky) ══════════ */
+let SKY={chart:null,at:0,busy:false};
+async function loadSky(force){
+  if(SKY.busy||(!force&&SKY.chart&&Date.now()-SKY.at<15*60000))return;
+  SKY.busy=true;
+  const me=S.me;
+  try{
+    const r=await fetch('/api/sky',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({
+      lat:me.lat??(me.natal&&me.natal.lat)??null,lng:me.lng??me.lon??(me.natal&&me.natal.lng)??null,
+      tzName:Intl.DateTimeFormat().resolvedOptions().timeZone})});
+    if(!r.ok)throw new Error('sky '+r.status);
+    SKY={chart:(await r.json()).chart,at:Date.now(),busy:false};
+    const v=document.querySelector('.v.on');if(v&&v.id==='v-sky')renderSky();
+  }catch(e){SKY.busy=false;}
+}
+/* illumination from the engine's sun–moon elongation when the sky is cast, else the inline phase */
+function illum(p){const ch=SKY.chart,su=ch&&bodyOf(ch,'sun'),mo=ch&&bodyOf(ch,'moon');
+  if(su&&mo){const e=((mo.lon-su.lon)%360+360)%360;return Math.round((1-Math.cos(e*Math.PI/180))/2*100);}
+  return Math.round((1-Math.cos(2*Math.PI*p))/2*100);}
+const SKY_ASP=[[0,'☌','conjunct',8],[60,'⚹','sextile',4],[90,'□','square',6],[120,'△','trine',6],[180,'☍','opposite',8]];
+function skyAspects(ch){
+  const B=ch.bodies.filter(b=>['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'].includes(b.key)),out=[];
+  for(let i=0;i<B.length;i++)for(let j=i+1;j<B.length;j++){let d=Math.abs(B[i].lon-B[j].lon);if(d>180)d=360-d;
+    for(const [a,g,n,o] of SKY_ASP){const orb=Math.abs(d-a);if(orb<=o)out.push({a:B[i],b:B[j],g,n,orb});}}
+  return out.sort((x,y)=>x.orb-y.orb);
+}
+function renderSkyWheel(){
+  const el=document.getElementById('skyWheel');if(!el)return;
+  const ch=SKY.chart;
+  if(!ch){el.innerHTML='<div class="sky-load">casting the sky ✧</div>';loadSky();return;}
+  const b=k=>bodyOf(ch,k),pt=x=>x?`${dm(degIn(x.lon))} ${GLY[signOf(x.lon)]}`:'—';
+  const rx=ch.bodies.filter(x=>x.retro&&!['north_node','south_node','lilith'].includes(x.key));
+  const asp=skyAspects(ch)[0];
+  const p=phase(new Date()),pn=phaseName(p);
+  const el2={fire:0,earth:0,air:0,water:0};
+  ch.bodies.filter(x=>['sun','moon','mercury','venus','mars','jupiter','saturn'].includes(x.key)).forEach(x=>el2[['fire','earth','air','water'][signOf(x.lon)%4]]++);
+  const lead=Object.entries(el2).sort((a,c)=>c[1]-a[1])[0];
+  const stat=(k,v,why)=>`<button class="sst" onclick="${why}"><span class="k">${k}</span><span class="v2">${v}</span></button>`;
+  el.innerHTML=`<div class="sky-wheel">${wheelSVG(ch,'sky')}</div>
+    <div class="sky-stats">
+      ${stat('☉︎ sun',pt(b('sun')),"explainPlacement('sky','sun')")}
+      ${stat('☽︎ moon',pt(b('moon'))+' · '+illum(p)+'%',"moonSheet()")}
+      ${stat('↑ rising now',ch.timeKnown&&ch.asc!=null?`${dm(degIn(ch.asc))} ${GLY[signOf(ch.asc)]}`:'add a place',ch.timeKnown?"explainPlacement('sky','asc')":"castMine()")}
+      ${stat('℞ retrograde',rx.length?rx.map(x=>WAB[x.key]||x.key).join(' · '):'none',"explain('retrograde')")}
+      ${stat('✦ tightest',asp?`${WAB[asp.a.key]} ${asp.g} ${WAB[asp.b.key]} · ${asp.orb.toFixed(1)}°`:'—',"explain('aspects')")}
+      ${stat('◐ element',`${lead[0]} ${lead[1]}/7`,"explain('elements')")}
+    </div>
+    <div class="sky-meta">${pn} · cast by the celestine engine for ${new Date(SKY.at).toLocaleTimeString('en-us',{hour:'numeric',minute:'2-digit'})}${S.me.place?' · '+esc(S.me.place.split(',')[0]):''}</div>`;
+}
 function renderSky(){
   const d=new Date(); const p=phase(d),pn=phaseName(p),ml=moonLon(d),si=signOf(ml);
   const r=dailyRead(d), vd=voidWindow(d);
@@ -329,14 +380,16 @@ function renderSky(){
    `<button class="today" onclick="moonSheet()" aria-label="${pn} in ${SIGNS[si]} — open the moon"><div class="hl"></div>
       <div class="mn">${moonSVG(p,58)}</div>
       <div><div class="t1">${pn} in ${SIGNS[si]} ${GLY[si]}</div>
-        <div class="t2">${Math.round((1-Math.cos(2*Math.PI*p))/2*100)}% illuminated · ${degIn(ml).toFixed(0)}° ${SIGNS[si]}</div>
+        <div class="t2">${illum(p)}% illuminated · ${degIn(ml).toFixed(0)}° ${SIGNS[si]}</div>
         <div class="t3">${vd.active?'⊘ void in '+vd.hrs+'h — hold the send':'☉︎ sun in '+SIGNS[signOf(sunLon(d))]}</div></div><span class="c">›</span>
     </button>
+    <div id="skyWheel"></div>
     <div class="read">
       <div class="rl">✦ today's read</div>
       <p>${r.l1}</p><p>${r.l2}</p><p>${r.l3}</p>
       <button class="mv" onclick="openEntry('${key(d)}',null,PH_MOVE['${pn}'])"><b>today's move</b>${r.move}<span class="mv-go">log it ›</span></button>
     </div>`;
+  renderSkyWheel();
   const ups=upcoming(d,4);
   document.getElementById('skyUp').innerHTML=ups.map(e=>evRow(e)).join('')||'<div class="card" style="color:var(--dust);font-size:13px">quiet stretch — nothing loud incoming ✧</div>';
   const today=S.entries.filter(e=>e.date===key(d));
@@ -352,8 +405,45 @@ const PROMPTS={'new moon':'what are you actually planting — not what sounds go
 const prompt=(pn,s)=>PROMPTS[pn];
 
 /* ══════════ EVENTS ENGINE ══════════ */
+/* ══════════ THE COSMIC CALENDAR (engine) ══════════
+   /api/calendar returns every sky, moon, natal, divination, ritual and convergence event
+   for a month, with the full descriptions. cached per month + chart; the inline sky math
+   below stays as the offline fallback. */
+const COS={};
+const cosKey=(y,m)=>`${y}-${m}-${(S.me.natal&&S.me.natal.computedAt)||'sky'}`;
+function cosFor(d){
+  const y=d.getFullYear(),m=d.getMonth(),k=cosKey(y,m),c=COS[k];
+  if(!c){loadCosmic(y,m);return null;}
+  return c.state==='ok'?c:null;
+}
+async function loadCosmic(y,m){
+  const k=cosKey(y,m);if(COS[k])return;COS[k]={state:'loading'};
+  const pad=n=>String(n).padStart(2,'0'),last=new Date(y,m+1,0).getDate();
+  const me=S.me,ch=me.natal;
+  try{
+    const r=await fetch('/api/calendar',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({
+      start:`${y}-${pad(m+1)}-01`,end:`${y}-${pad(m+1)}-${pad(last)}`,
+      tz:Intl.DateTimeFormat().resolvedOptions().timeZone,
+      chart:ch&&ch.timeKnown?ch:null,birth:ch?{date:me.date,time:me.time||'',tzName:ch.tzName||me.tzName||null}:null})});
+    if(!r.ok)throw new Error('calendar '+r.status);
+    const j=await r.json(),ev={};
+    j.events.forEach(e=>{(ev[e.date]=ev[e.date]||[]).push(e);});
+    COS[k]={state:'ok',ev,personal:j.personal};
+  }catch(e){COS[k]={state:'err'};setTimeout(()=>{if(COS[k]&&COS[k].state==='err')delete COS[k];},60000);return;}
+  try{renderCal();const v=document.querySelector('.v.on');if(v&&v.id==='v-sky'&&typeof renderSky==='function')renderSky();}catch(e){}
+}
 function evForDate(d){
   const out=[];const k=key(d),p=phase(d),pn=phaseName(p),ml=moonLon(d),si=signOf(ml);
+  const cm=cosFor(d);
+  if(cm){
+    /* the engine owns the sky, the moon, natal and convergence layers for this month */
+    (cm.ev[k]||[]).forEach(e=>{if(LON[e.lay]!==false&&LON[e.lay]!==undefined)out.push({id:e.id,lay:e.lay,gl:e.gl,t:e.title,s:e.sub||'',date:k,big:e.big?1:0,cos:e});});
+    if(LON.lunar&&signOf(moonLon(new Date(d.getTime()-86400000)))!==si)
+      out.push({id:'ms-'+k,lay:'lunar',gl:'☽︎',t:`moon enters ${SIGNS[si]}`,s:`${MOOD[pn].split('.')[0]} · ${SIGN_READ[SIGNS[si]][0]}`,date:k});
+    if(LON.ritual){const r=RIT.find(x=>x.ph.includes(pn));if(r&&(pn==='new moon'||pn==='full moon'))out.push({id:'r-'+k,lay:'ritual',gl:'✧',t:`matched working · ${r.n}`,s:r.v,date:k});}
+    if(LON.sixmo&&pn==='new moon')out.push({id:'6-'+k,lay:'sixmo',gl:'◐',t:'six-month checkpoint',s:'new moon = plan review. what shipped, what stalled?',date:k});
+    return out.concat(mineFor(k));
+  }
   const pv=phase(new Date(d.getTime()-86400000));
   const cross=(a,b,t)=>(a<t&&b>=t)||(a>b&&(b>=t));
   if(LON.lunation){
@@ -373,6 +463,10 @@ function evForDate(d){
   if(LON.ritual){const r=RIT.find(x=>x.ph.includes(pn));if(r&&(pn==='new moon'||pn==='full moon'))out.push({id:'r-'+k,lay:'ritual',gl:'✧',t:`matched working · ${r.n}`,s:r.v,date:k});}
   if(LON.prof&&d.getDate()===1)out.push({id:'pf-'+k,lay:'prof',gl:'◈',t:'profection check-in',s:'which house is running your year — and who rules it',date:k});
   if(LON.sixmo&&pn==='new moon')out.push({id:'6-'+k,lay:'sixmo',gl:'◐',t:'six-month checkpoint',s:'new moon = plan review. what shipped, what stalled?',date:k});
+  return out.concat(mineFor(k));
+}
+function mineFor(k){
+  const out=[];
   S.cal.filter(c=>c.date===k).forEach(c=>{if(LON[c.lay||'ritual']!==false)out.push({...c,gl:c.gl||'✧',lay:c.lay||'ritual',mine:1});});
   S.entries.filter(e=>e.date===k).forEach(e=>{
     const lay=e.type==='pull'?'pull':e.type==='ritual'?'ritual':e.type==='cycle'?'cycle':e.type==='sex'?'sex':'entry';
@@ -403,7 +497,7 @@ const CC_LEG_GROUPS=[
  {n:'moon',ids:['lunar','lunation','void','lunret','cycle'],c:'#8FD0F2'},
  {n:'sky',ids:['global','retro','rulers'],c:'#5a564f'},
  {n:'natal',ids:['natal','promise','theirs','syn','comp'],c:'#F4CC2E'},
- {n:'convergence',ids:['prof','firdaria','zr','sixmo'],c:'#D6EC4F'},
+ {n:'convergence',ids:['prof','firdaria','zr','prog','power','sixmo'],c:'#D6EC4F'},
  {n:'divination',ids:['pull','entry'],c:'#C7B0F5'},
  {n:'ritual',ids:['ritual','sex'],c:'#FF5A36'}
 ];
@@ -499,8 +593,43 @@ function renderLayers(){
         <span class="ln">${i.n}<div class="ld">${i.d}</div></span>
         <span class="tog${LON[i.id]?' on':''}"></span></button>`).join('')}</div>`).join('');
 }
+/* a calendar description, laid out: CAPS lines are section heads, the rest is text */
+function cosText(txt){
+  return String(txt||'').split('\n').map(l=>{const t=l.trim();if(!t)return'';
+    if(/^[A-Z][A-Z ·+&/0-9-]+$/.test(t)&&t.length<40)return `<div class="cos-h">${esc(t.toLowerCase())}</div>`;
+    return `<div class="cos-l">${esc(t)}</div>`;}).join('');
+}
+function cosDetail(dk,ev){
+  const c=ev.cos,d=new Date(c.t);
+  const when=c.allDay?fmtL(parse(dk)):`${fmtL(parse(dk))} · ${d.toLocaleTimeString('en-us',{hour:'numeric',minute:'2-digit',timeZoneName:'short'})}`;
+  const blk=(lab,gl,txt,cls)=>txt?`<div class="card cos${cls?' '+cls:''}"><div class="cos-lab">${gl} ${lab}</div>${cosText(txt)}</div>`:'';
+  const noTime=!c.natal&&!c.conv&&S.me.natal&&!S.me.natal.timeKnown;
+  return `<div class="eb"><span class="cer">✧ · </span><button class="lk" onclick="nav('layers')">${(layMeta(ev.lay)||{n:'the sky'}).n}</button><span class="cer"> · ✧</span></div>
+    <div class="h1 cos-title">${esc(c.title)}</div>
+    <div class="h1s"><button class="lk" onclick="pickDay('${dk}');nav('cal')">${when}</button>${c.house?` · <button class="lk" onclick="explainHouse(${c.house})">your ${c.house}H</button>`:''}</div>
+    ${blk('the sky','☉︎',c.sky,'sky')}
+    ${blk('natal','✦',c.natal)}
+    ${blk('divination','☽︎',c.divination)}
+    ${blk('ritual','✧',c.ritual)}
+    ${blk('convergence','◈',c.conv)}
+    ${noTime?`<button class="card qd" onclick="castMine()">add your birth time and this event gets your houses — natal, divination and ritual layers.<span class="qd-go">add birth time ›</span></button>`:''}`;
+}
 function openEv(dk,id){
   const d=parse(dk), ev=evForDate(d).find(e=>e.id===id)||{t:'the sky',s:'',lay:'global',gl:'☉︎'};
+  if(ev.cos){
+    const p=phase(d),pn=phaseName(p),rit=RIT.find(x=>x.ph.includes(pn))||RIT[0];
+    document.getElementById('evBody').innerHTML=cosDetail(dk,ev)+
+     `<div class="lab">work with this sky</div>
+      <div class="card"><b class="cap" style="font-size:9px;color:var(--deep)">✧ working</b>
+        <div style="font-size:16px;font-weight:700;margin-top:4px">${rit.n}</div>
+        <div style="font-size:12.5px;color:var(--dust)">${rit.v}</div>
+        <button class="btn g" onclick="nav('lib');setShelf('work');setTimeout(()=>jumpRit('${rit.n}'),80)">open the working ›</button></div>
+      <div class="card"><b class="cap" style="font-size:9px;color:var(--deep)">✦ spread</b>
+        <div style="font-size:16px;font-weight:700;margin-top:4px">${rit.pair}</div>
+        <button class="btn g" onclick="openPull(0,'${rit.pair}')">✦ pull this spread ›</button></div>
+      <button class="btn" onclick="addCal('${dk}','${rit.n}')">+ add a working to this day</button>`;
+    nav('event');return;
+  }
   const p=phase(d),pn=phaseName(p),si=signOf(moonLon(d));
   const rit=RIT.find(x=>x.ph.includes(pn))||RIT[0];
   const r=dailyRead(d);
@@ -1028,6 +1157,8 @@ const PLANET_MEAN={sun:'your core identity — what you\'re here to become',moon
  saturn:'where life makes you earn it — discipline, fear, mastery',uranus:'where you rebel and break the pattern',neptune:'where you dream, dissolve, and get foggy',pluto:'where power, obsession, and rebirth live',chiron:'the wound that becomes the medicine',
  north_node:'the direction you\'re growing toward',south_node:'the comfort zone you\'re growing out of',lilith:'the part of you that refused to be tamed',asc:'your rising — the lens, the body, the vibe people clock first',mc:'the midheaven — your public direction and reputation',dsc:'the descendant — what you seek in partners',ic:'the IC — your roots and private foundation'};
 const GLOSS={
+ retrograde:['℞ retrograde','a planet looks like it\'s walking backwards from here. it isn\'t — earth is lapping it. in practice: that planet\'s topics go into review. redo, revisit, reread. launching is harder; fixing is easier.'],
+ elements:['◐ the element balance','count the seven classical planets by element: fire (aries, leo, sagittarius) acts, earth (taurus, virgo, capricorn) builds, air (gemini, libra, aquarius) talks, water (cancer, scorpio, pisces) feels. whichever leads is the day\'s default setting.'],
  rising:['↑ the rising','your ascendant — the zodiac sign that was rising on the eastern horizon the minute you were born. it sets every house in your chart, so it needs your exact birth time and place. the app casts it with the celestine engine — no time, no rising (we won\'t fake it).'],
  sun:['☉︎ the sun','where the sun was when you were born. your core identity, your engine, the thing you\'re built to become.'],
  moon:['☽︎ the moon','your emotional body. what you need to feel safe, how you self-soothe, what you do when nobody\'s watching.'],
@@ -1079,7 +1210,7 @@ function explainHouse(n){
     ${inside.length?`<div class="xp-lab">who lives here</div><div class="ich">${inside.map(b=>`<button class="ic2" onclick="explainPlacement('me','${b.key}')">${BG[b.key]||''} ${bname(b.key)}</button>`).join('')}</div>`:'<p class="xp-p" style="opacity:.7">empty house — not empty life. look to the sign on the cusp and its ruler.</p>'}
     <button class="btn g" onclick="pickHouseSystem()">house system · ${HSYS[S.set.house]||'porphyry'} ›</button>`);
 }
-const whoChart=who=>who==='me'?S.me:S.people[who];
+const whoChart=who=>who==='me'?S.me:who==='sky'?{name:'the sky',natal:SKY.chart}:S.people[who];
 function explainPlacement(who,k){
   const p=whoChart(who);if(!p)return;
   const ch=p.natal;
@@ -1225,21 +1356,18 @@ function replayIntro(){
 /* ══════════ SPARKLES ══════════ */
 const RM=matchMedia('(prefers-reduced-motion: reduce)');
 const SPK='<svg viewBox="0 0 24 24"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg>';
+/* a soft shower for the moments that earn it (saved, cast, logged) — sparkles drift down
+   from above the spot and fade. no more bursts on every tap. */
 function sparkleBurst(x,y,n){
   if(RM.matches)return;
   const fx=document.getElementById('fx');if(!fx)return;
   for(let i=0;i<(n||6);i++){
-    const s=document.createElement('span');s.className='spk';s.innerHTML=SPK;
-    const a=Math.random()*Math.PI*2,dist=24+Math.random()*46,sz=6+Math.random()*9;
-    s.style.cssText=`left:${x}px;top:${y}px;width:${sz}px;height:${sz}px;--dx:${Math.cos(a)*dist}px;--dy:${Math.sin(a)*dist}px;--rot:${Math.random()*180}deg;animation-delay:${Math.random()*60}ms`;
-    fx.appendChild(s);setTimeout(()=>s.remove(),900);
+    const s=document.createElement('span');s.className='spk fall';s.innerHTML=SPK;
+    const sz=5+Math.random()*7,dur=1400+Math.random()*900;
+    s.style.cssText=`left:${x+(Math.random()-.5)*220}px;top:${Math.max(0,y-140-Math.random()*80)}px;width:${sz}px;height:${sz}px;--fy:${150+Math.random()*120}px;--fx:${(Math.random()-.5)*40}px;--rot:${Math.random()*180}deg;animation-duration:${dur}ms;animation-delay:${Math.random()*350}ms`;
+    fx.appendChild(s);setTimeout(()=>s.remove(),dur+500);
   }
 }
-/* a little dopamine on the things you tap most */
-document.addEventListener('pointerdown',e=>{
-  const t=e.target.closest('.btn,.tab,.cc-day,.sw,.chip,.hero,.cc-li,.hs,.mch');
-  if(t)sparkleBurst(e.clientX,e.clientY,t.classList.contains('btn')||t.classList.contains('hero')?7:4);
-},{passive:true});
 
 /* ══════════ ONBOARDING ══════════ */
 const LANES=['transits','tarot','rituals','synastry','journaling','moon tracking','cycle','shadow work'];
@@ -1457,7 +1585,7 @@ async function healChart(){
 /* ── cloud state · supabase app_state ──
    the S object is still the single source of truth at runtime; the cloud is its shadow.
    loads before first render so a returning bestie lands in her own app, not a blank one. */
-const TI_PERSIST_KEYS=['me','people','entries','cal','notes','lon','accent','cursor','sel','jcursor','jfilter','set','plus','onboarded'];
+const TI_PERSIST_KEYS=['me','people','entries','cal','notes','lon','layv','accent','cursor','sel','jcursor','jfilter','set','plus','onboarded'];
 function tiSnapshot(){
   const out={};
   TI_PERSIST_KEYS.forEach(k=>{
@@ -1482,6 +1610,9 @@ function tiRestore(state){
     if(state.__ui.grad)de.dataset.grad=state.__ui.grad;
   }
   if(state.lon&&typeof state.lon==='object')Object.assign(LON,state.lon);
+  /* layers v2: the full cosmic calendar arrived — switch its layers on once for existing records */
+  if((state.layv||0)<2)['global','retro','lunar','lunation','void','natal','prof','firdaria','zr','prog','power'].forEach(i=>LON[i]=true);
+  S.layv=2;
   S.lon=LON;
   S.notes=S.notes||{};S.set=Object.assign({house:'porphyry'},S.set||{});
   if(typeof S.accent==='number'&&S.accent>0)setAcc(S.accent);

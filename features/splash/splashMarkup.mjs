@@ -2,16 +2,18 @@
    the app without a visual seam. styles: app/astrocake.css (.ti-splash). */
 const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg>';
 
-// a fixed constellation (deterministic so server and client markup match)
+// sparkles falling through the frame: [x %, size px, fall seconds, delay s (negative = already mid-fall)]
+// fixed values so server and client markup match
 const FIELD = [
-  [12, 14, 9, 0.0], [82, 11, 7, 0.4], [70, 24, 5, 1.1], [18, 33, 6, 1.6], [88, 41, 10, 0.8],
-  [8, 58, 8, 2.0], [78, 63, 6, 1.3], [26, 72, 5, 0.2], [64, 79, 9, 1.8], [44, 18, 4, 2.3],
-  [52, 86, 5, 0.6], [33, 52, 4, 1.0], [92, 82, 6, 2.1], [6, 86, 7, 1.5],
+  [6, 7, 6.5, -0.4], [14, 5, 8, -3.1], [22, 9, 7, -5.2], [31, 6, 9, -1.7], [39, 8, 6.8, -4.4],
+  [47, 5, 8.6, -0.9], [55, 10, 7.4, -2.6], [63, 6, 6.2, -5.8], [71, 8, 8.8, -3.5], [79, 5, 7.2, -1.2],
+  [87, 9, 6.6, -4.9], [94, 6, 9.2, -2.2], [10, 6, 7.8, -6.3], [35, 7, 8.2, -6.9], [58, 5, 6.9, -7.4],
+  [83, 7, 7.6, -0.2], [26, 8, 9.6, -8.1], [67, 6, 8.4, -7.7],
 ];
 
 export function splashMarkup(id = '') {
   const field = FIELD.map(
-    ([x, y, s, d]) => `<i style="--x:${x}%;--y:${y}%;--s:${s}px;--d:${d}s">${STAR}</i>`,
+    ([x, s, t, d], i) => `<i style="--x:${x}%;--s:${s}px;--t:${t}s;--d:${d}s;--dx:${i % 2 ? 14 : -14}px">${STAR}</i>`,
   ).join('');
   return `<div ${id ? `id="${id}" ` : ''}class="ti-splash" role="img" aria-label="transit intelligence, the sky translated — an astrocake app">
   <div class="tsp-frame"></div>

@@ -22,7 +22,8 @@ export const viewport: Viewport = {
    cream flash) and marks a splash that already played this session, so the hand-off
    from /welcome into /app shows the finished splash instead of replaying it. */
 const prepaint = `try{var u=JSON.parse(localStorage.getItem('ti-ui')||'null'),d=document.documentElement;
-if(u){if(u.mode)d.dataset.mode=u.mode;if(u.type)d.dataset.type=u.type;if(u.grad)d.dataset.grad=u.grad;if(u.accent)d.style.setProperty('--accent',u.accent);}
+d.dataset.grad=(u&&u.grad)||'on';
+if(u){if(u.mode)d.dataset.mode=u.mode;if(u.type)d.dataset.type=u.type;if(u.accent)d.style.setProperty('--accent',u.accent);}
 var t=+sessionStorage.getItem('ti-splash-at');if(t&&Date.now()-t<120000)d.dataset.splash='seen';}catch(e){}`;
 
 // every astro glyph the app draws — a subset keeps the symbol font tiny

@@ -358,8 +358,6 @@ img{display:block;max-width:100%}
 :root{--accent:#C7B0F5;--soft:#C7B0F5;--glow:transparent;--deep:var(--moon)}
 [data-mode="light"]{--ink:rgba(255,252,246,.55);--ink2:rgba(255,255,255,.6);--bar:#f2ebdd;--void:#f2ebdd}
 [data-mode="dark"]{--ink:#232220;--ink2:#1a1917}
-[data-mode="light"][data-grad="on"] #ti-root::before,[data-mode="light"][data-grad="on"] #splash,[data-mode="light"][data-grad="on"] #ob{background:linear-gradient(180deg,#f2ebdd 0%,#f4e7e6 38%,#efe7ef 72%,#f2ebdd 100%);background-attachment:fixed}
-[data-mode="dark"][data-grad="on"] #ti-root::before,[data-mode="dark"][data-grad="on"] #splash,[data-mode="dark"][data-grad="on"] #ob{background:linear-gradient(180deg,#1a1917 0%,#1e1a20 38%,#1a1c20 72%,#1a1917 100%);background-attachment:fixed}
 #grad,.today .hl,.sky .hl{display:none!important}
 #ti-root *{border-radius:0!important}
 /* splash */
