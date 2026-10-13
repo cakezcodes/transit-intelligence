@@ -1,45 +1,40 @@
-/* welcome · account gate — astrocake design system: square, neutral, Inter Tight */
-/* hardcoded colors — prototype.css redefines --ink/--line/etc. on [data-mode], so
-   CSS var fallbacks don't work here; use the actual values directly. */
-.wl-wrap{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 32px;position:relative;background:#eeece8;color:#1a1917}
-.wl-glow{position:fixed;top:-120px;left:50%;transform:translateX(-50%);width:560px;max-width:150vw;height:340px;border-radius:999px;background:radial-gradient(closest-side,rgba(199,176,245,.18),transparent 72%);pointer-events:none;filter:blur(6px);opacity:.5}
-.wl-card{width:100%;max-width:360px;position:relative;z-index:1}
-.wl-caps{font-family:'Inter Tight',sans-serif;text-transform:uppercase;font-weight:700;letter-spacing:.28em;font-size:10px;color:#1a1917;text-align:center}
-.wl-title{font-family:'Inter Tight',sans-serif;font-style:italic;text-transform:uppercase;font-weight:800;font-size:28px;text-align:center;margin-top:8px;letter-spacing:.04em}
-.wl-orn{text-align:center;color:#1a1917;font-size:13px;letter-spacing:.4em;margin:14px 0 6px;opacity:.45}
-.wl-sub{text-align:center;font-size:13px;color:#5a564f;margin-bottom:26px;font-family:'Inter Tight',sans-serif;letter-spacing:.12em;text-transform:uppercase;font-weight:500}
-.wl-field{margin-top:12px}
-.wl-field label{font-family:'Inter Tight',sans-serif;text-transform:uppercase;font-weight:700;letter-spacing:.2em;font-size:9px;color:#1a1917;display:block;margin-bottom:6px;margin-left:2px}
-.wl-field input{width:100%;padding:13px 14px;border:1.5px solid #cfcac1;border-radius:0;background:transparent;font:400 14px/1.4 'Inter Tight',sans-serif;color:#1a1917;outline:none;transition:border-color .2s}
-.wl-field input:focus{border-color:#1a1917}
-.wl-field input::placeholder{color:#5a564f;opacity:.6}
-.wl-btn{display:block;width:100%;margin-top:22px;background:#1a1917;color:#eeece8;border:1.5px solid #1a1917;border-radius:0;padding:14px;text-align:center;font:700 13px/1 'Inter Tight',sans-serif;letter-spacing:.18em;text-transform:uppercase;transition:transform .26s,opacity .26s;cursor:pointer}
+/* welcome · v1-final's first onboarding screen (WELCOME / TRANSIT INTELLIGENCE / let's begin).
+   hardcoded colors — prototype.css redefines --ink/--line/etc. on [data-mode]. */
+.wl-wrap{min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:0 24px;position:relative;background:#eeece8;color:#1a1917;font-family:'Inter Tight',sans-serif;text-transform:lowercase}
+.wl-card{width:100%;max-width:340px;flex:1;display:flex;flex-direction:column;align-items:center;padding-top:calc(72px + env(safe-area-inset-top))}
+.wl-star{width:26px;height:26px;fill:#c7b0f5;stroke:#1a1917;stroke-width:.8}
+.wl-eb{margin-top:14px;font-size:10px;letter-spacing:.42em;text-transform:uppercase;font-weight:500;color:#5a564f;text-align:center}
+.wl-h{margin:6px 0 0;font-weight:400;font-size:clamp(22px,8.4vw,34px);line-height:.92;letter-spacing:-.04em;text-transform:uppercase;text-align:center;white-space:nowrap}
+.wl-h em{font-style:italic;font-weight:800}
+.wl-p{margin:10px 0 0;font-size:13.5px;line-height:1.55;color:#5a564f;text-align:center}
+.wl-f{margin-top:22px;width:100%;display:flex;flex-direction:column;gap:9px}
+.wl-f input{width:100%;padding:12px 13px;border:1px solid #1a1917;border-radius:0;background:rgba(255,252,246,.55);font:400 16px/1.3 'Inter Tight',sans-serif;color:#1a1917;outline:none;text-transform:none}
+.wl-f input:focus{outline:2px solid #1a1917;outline-offset:1px}
+.wl-f input::placeholder{color:#5a564f}
+.wl-swap{margin:6px auto 0;font-size:12px;font-style:italic;color:#5a564f;background:none;border:none;cursor:pointer;font-family:inherit;text-transform:lowercase}
+.wl-swap u{color:#1a1917;text-underline-offset:2px}
+.wl-ft{width:100%;max-width:390px;padding:8px 0 calc(24px + env(safe-area-inset-bottom))}
+.wl-btn{display:block;width:100%;background:transparent;color:#1a1917;border:1px solid #1a1917;border-radius:0;padding:15px;text-align:center;font:700 13px/1 'Inter Tight',sans-serif;letter-spacing:.24em;text-transform:uppercase;cursor:pointer}
+.wl-btn::after{content:"\2726";margin-left:12px;letter-spacing:0}
 .wl-btn:active{transform:scale(.97)}
 .wl-btn[disabled]{opacity:.55}
-.wl-swap{display:block;margin:18px auto 0;font-size:12.5px;color:#5a564f;text-align:center;font-family:'Inter Tight',sans-serif;background:none;border:none;cursor:pointer}
-.wl-swap b{color:#1a1917;font-weight:700}
-.wl-err{margin-top:14px;font-size:12.5px;color:#FF5A36;text-align:center;line-height:1.5;font-family:'Inter Tight',sans-serif}
-.wl-note{margin-top:16px;background:transparent;border:1.5px solid #cfcac1;border-radius:0;padding:13px 15px;font-size:13px;line-height:1.55;text-align:center;font-family:'Inter Tight',sans-serif}
+.wl-err{margin-top:4px;font-size:12.5px;color:#1a1917;text-align:center;line-height:1.5;border:1px solid #1a1917;background:#ff5a36;padding:8px 10px}
+.wl-note{margin-top:22px;width:100%;border:1px solid #1a1917;padding:13px 15px;font-size:13px;line-height:1.55;text-align:center}
+.wl-btn:focus-visible,.wl-swap:focus-visible{outline:2px solid #1a1917;outline-offset:2px}
 
-/* dark mode */
+/* dark mode: flat ink */
 [data-mode="dark"] .wl-wrap{background:#1a1917;color:#eeece8}
-[data-mode="dark"] .wl-caps,[data-mode="dark"] .wl-orn,[data-mode="dark"] .wl-field label{color:#eeece8}
-[data-mode="dark"] .wl-title{color:#eeece8}
-[data-mode="dark"] .wl-sub,[data-mode="dark"] .wl-swap,[data-mode="dark"] .wl-field input::placeholder{color:#b5ac9d}
-[data-mode="dark"] .wl-field input{color:#eeece8;border-color:#3a3835}
-[data-mode="dark"] .wl-field input:focus{border-color:#eeece8}
-[data-mode="dark"] .wl-btn{background:#eeece8;color:#1a1917;border-color:#eeece8}
-[data-mode="dark"] .wl-swap b{color:#eeece8}
-[data-mode="dark"] .wl-note{border-color:#3a3835}
-[data-mode="dark"] .wl-glow{background:radial-gradient(closest-side,rgba(199,176,245,.12),transparent 72%)}
+[data-mode="dark"] .wl-eb,[data-mode="dark"] .wl-p,[data-mode="dark"] .wl-swap,[data-mode="dark"] .wl-f input::placeholder{color:#b5ac9d}
+[data-mode="dark"] .wl-f input{background:#232220;color:#eeece8;border-color:#eeece8}
+[data-mode="dark"] .wl-f input:focus{outline-color:#eeece8}
+[data-mode="dark"] .wl-swap u,[data-mode="dark"] .wl-btn{color:#eeece8;border-color:#eeece8}
+[data-mode="dark"] .wl-note{border-color:#eeece8}
+[data-mode="dark"] .wl-btn:focus-visible,[data-mode="dark"] .wl-swap:focus-visible{outline-color:#eeece8}
 
 /* splash hand-off — the shared .ti-splash sits on top until the card rises in */
 .wl-splash .ti-splash{transition:opacity .6s ease,visibility 0s linear .6s}
 .wl-splash.off .ti-splash{opacity:0;visibility:hidden;pointer-events:none}
 .wl-splash:not(.off) .ti-splash{transition:opacity .4s ease}
-.wl-card{opacity:0;transform:translateY(14px);transition:opacity .7s ease .15s,transform .8s cubic-bezier(.16,1,.3,1) .15s}
-.wl-card.in{opacity:1;transform:none}
-.wl-card::before{content:'';position:absolute;inset:-26px -18px;border:1px solid #1a1917;outline:1px solid #1a1917;outline-offset:-9px;opacity:.85;pointer-events:none}
-[data-mode="dark"] .wl-card::before{border-color:#eeece8;outline-color:#eeece8}
-.wl-btn:focus-visible,.wl-swap:focus-visible,.wl-field input:focus-visible{outline:2px solid #c7b0f5;outline-offset:2px}
-@media (prefers-reduced-motion: reduce){.wl-card{transition:none}}
+.wl-card,.wl-ft{opacity:0;transform:translateY(14px);transition:opacity .7s ease .15s,transform .8s cubic-bezier(.16,1,.3,1) .15s}
+.wl-card.in,.wl-ft.in{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){.wl-card,.wl-ft{transition:none}}

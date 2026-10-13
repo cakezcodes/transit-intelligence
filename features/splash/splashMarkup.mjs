@@ -19,7 +19,7 @@ export function splashMarkup(id = '') {
   <div class="tsp-core">
     <svg class="tsp-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg>
     <div class="tsp-eb">welcome to</div>
-    <div class="tsp-wm">transit intelligence</div>
+    <div class="tsp-wm"><span class="tsp-l1">transit <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg></span><span class="tsp-l2">intelligence</span></div>
     <div class="tsp-rule"></div>
     <div class="tsp-sub">the sky, translated</div>
   </div>

@@ -1,6 +1,6 @@
 # Design System — astrocake (app v2)
 
-Canonical brand: `cakezcodes/astrocake-design-system` — `docs/brand-book.md` (Apps section) and `docs/app-rules.md`. Tokens: `design-system/tokens.json`.
+Canonical brand: `cakezcodes/design-system` — `docs/brand-book.md` (Apps section) and `docs/app-rules.md`. Tokens: `design-system/tokens.json`.
 This file is the app-side summary. When the two disagree, the design-system repo wins.
 
 ## Direction
@@ -22,7 +22,7 @@ new UI matches it, never the other way around.
 
 - Grounds: bone `#eeece8`, cream `#f2ebdd`, ink `#1a1917`, dark-grey `#2b2a28`; gradient `cream → blush → mist → cream`.
 - Ribbon accent (user-chosen, re-tints everything): lilac, pink, yellow, chartreuse, orange, ice, mint, tomato.
-- Type: Inter Tight does the work (caps + tight tracking for heads, bold italic for the pop word). Blackletter only for the wordmark, sign names in explain sheets, sign-offs.
+- Type: Inter Tight does the work (caps + tight tracking for heads, bold italic for the pop word). **In this app, blackletter appears only on the small "astrocake" mark** (splash foot, app footer), as in v1-final. The app name, the calendar masthead, sheet titles and sign names are all Inter Tight. Owner decision, 2026-10-12.
 - Astro glyphs render with the text variation selector (`U+FE0E`) and Noto Sans Symbols so they never turn into emoji.
 
 ## Shape + motion
@@ -35,13 +35,13 @@ new UI matches it, never the other way around.
 ## Splash
 
 One markup (`features/splash/splashMarkup.mjs`) rendered by both `/welcome` and `/app`: the double frame, "welcome to",
-**✦transit intelligence** in lowercase blackletter with the pink ✦, the tagline, and "an ✦astrocake app" at the foot.
+The v1-final wordmark in Inter Tight: TRANSIT ✦ (400, tracked) over *INTELLIGENCE* (700 italic), the tagline, and "an ✦astrocake app" at the foot (the only blackletter).
 Arrival: splash → sign-in card rises in. Sign-in: splash fades back over → `/app` paints the same finished frame
 (pre-paint script sets `data-splash="seen"`) → fades into the app.
 
 ## The calendar
 
-The Cosmic Calendar sheet (`astrocake-design-system/calendar/cosmic-calendar-sheet.html`) at phone size:
+The Cosmic Calendar sheet (`design-system/calendar/cosmic-calendar-sheet.html`) at phone size:
 ✦astrocake masthead, the engine's natal line (ASC · MC · ☉︎ · ☽︎ with houses), month in 800 italic + year, square
 layer keys with an ink hairline (Cosmic Sky in stone, flagged days in tomato), the black standing bar, a Mon–Sun
 grid with events written in sheet shorthand, What to Watch in the double frame, notes, and the sheet footer.
@@ -49,7 +49,7 @@ grid with events written in sheet shorthand, What to Watch in the double frame, 
 
 ## The chart wheel
 
-A port of the Natal Blueprint `wheel()` (`astrocake-design-system/chart-engine/template.html`), ink only: three rings,
+A port of the Natal Blueprint `wheel()` (`astrocake-site-shop/chart-engine/template.html`), ink only: three rings,
 3-letter sign codes, 5° ticks, bold 2-letter body codes, ASC–DSC solid, MC–IC dashed, aspects under 4° in the hub
 (squares/oppositions solid, the rest dashed). The app draws Porphyry cusps by default; Whole Sign draws exactly like
 the Blueprint. Every code is tappable.

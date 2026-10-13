@@ -394,7 +394,7 @@ function evRow(e){const m=layMeta(e.lay)||{c:'#FF9A3C'};
   return `<button class="evrow" onclick="openEv('${e.date}','${e.id}')"><span class="g" style="background:${m.c}22;color:${m.c}">${e.gl}</span>
     <div><div class="e1">${e.t}</div><div class="e2">${e.s}</div></div><span class="w">${e.when||fmt(parse(e.date))}</span></button>`;}
 
-let CV='words';   /* the sheet view — events written in the day, like the cosmic calendar sheet */
+let CV='dots';    /* the v1 grid by default; 'words' is the sheet view, 'ledger' the list */
 const ccDot=c=>`<i class="cc-dot" style="background:${c}"></i>`;
 const lc=e=>(layMeta(e.lay)||{c:'var(--c-sky)'}).c;
 const layGroup=id=>{for(const g of LAYERS)if(g.items.some(i=>i.id===id))return g.g.replace(/^(the|your) /,'');return'sky';};
@@ -894,7 +894,7 @@ function aspectsOf(ch){
   return out.sort((x,y)=>x.orb-y.orb);
 }
 const dm=deg=>{const d=Math.floor(deg),m=Math.floor((deg-d)*60);return `${d}°${String(m).padStart(2,'0')}′`;};
-/* the wheel — a port of the Natal Blueprint wheel() (astrocake-design-system
+/* the wheel — a port of the Natal Blueprint wheel() (design-system
    chart-engine/template.html): ink only, three rings, 3-letter sign codes, 5° ticks,
    bold 2-letter body codes, ASC–DSC solid, MC–IC dashed, aspects under 4° in the hub
    (squares/oppositions solid, the rest dashed). The app adds: porphyry/placidus cusp
@@ -1403,7 +1403,8 @@ async function obDone(){
 function obReplay(step){
   obS=step||0;obR();
   const set=(id,v)=>{const el=document.getElementById(id);if(el&&v)el.value=v;};
-  set('obName',S.me.name!=='you'?S.me.name:'');set('obDate',S.me.date);set('obTime',S.me.time);set('obPlace',S.me.place);
+  let wn='';try{wn=localStorage.getItem('ti-name')||'';}catch(e){}   /* the name typed on /welcome */
+  set('obName',S.me.name&&S.me.name!=='you'?S.me.name:wn);set('obDate',S.me.date);set('obTime',S.me.time);set('obPlace',S.me.place);
   if(S.me.lat!=null)obCity={n:S.me.place,lat:S.me.lat,lng:S.me.lng,tz:S.me.tzName};
   const ob=document.getElementById('ob');ob.classList.remove('off');ob.classList.add('on');
 }
@@ -1567,7 +1568,10 @@ function tiSplash(){
     setTimeout(()=>{toast(g[0]+' '+g[1]);sparkleBurst(innerWidth/2,innerHeight*.42,10);},hold+500);
   } else {
     /* new: splash → onboarding (prefilled with whatever the account already knows) */
-    setTimeout(()=>{obReplay(0);},hold-350);
+    /* the name was already asked on /welcome, so skip straight to the ribbon */
+    let wn='';try{wn=localStorage.getItem('ti-name')||'';}catch(e){}
+    if(wn&&(!S.me.name||S.me.name==='you'))S.me.name=wn;
+    setTimeout(()=>{obReplay(S.me.name&&S.me.name!=='you'?1:0);},hold-350);
     setTimeout(off,hold);
   }
 }

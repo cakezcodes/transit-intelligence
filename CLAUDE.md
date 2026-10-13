@@ -42,7 +42,7 @@ Storage: a bucket exists for RWS card art (public domain, 1909) — images not s
 - `npm test` = chart validation + prototype parse + dead-handler + markup-balance checks.
 
 ## Prototype → screens
-`docs/prototype/Transit Intelligence.html` is the interaction reference: views = Calendar, Orbit, Me (chart), Grimoire/Library, Health, Reminders, Settings; plus journal, tarot pull logging, spell logging, custom events. Design tokens/components live in the `cakezcodes/design-system` repo.
+`docs/prototype/Transit Intelligence.html` is the interaction reference: views = Calendar, Orbit, Me (chart), Grimoire/Library, Health, Reminders, Settings; plus journal, tarot pull logging, spell logging, custom events. Design tokens/components live in the `cakezcodes/design-system` repo (UI kit: `src/design-system/`, shell class `.app-transit`). The public shop and app previews are published from `astro-cake/astrocake` via GitHub Pages.
 
 ## Known open items
 - `card_themes` assignments await Syd's curation.

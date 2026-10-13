@@ -90,19 +90,19 @@
 
 <!-- ═══════ CALENDAR ═══════ -->
 <section class="v" id="v-cal" data-screen-label="Calendar">
-  <!-- mirrors astrocake-design-system/calendar/cosmic-calendar-sheet.html at phone size -->
+  <!-- mirrors design-system/calendar/cosmic-calendar-sheet.html at phone size -->
   <div class="cc-mast">
-    <div><button class="cc-brand cc-wm" onclick="explain('calendar')">astrocake</button><div class="cc-tag">charts · transits · natal reports</div></div>
+    <div><button class="cc-brand cc-wm" onclick="explain('calendar')"><em>transit</em> intelligence</button><div class="cc-tag">charts · transits · natal reports</div></div>
     <div class="cc-meta" id="ccMeta"></div>
   </div>
   <button class="cc-natal" id="ccNatal" onclick="nav('natal')"></button>
   <div class="cc-mrow"><div class="cc-mname" id="mTitle"></div><div class="cc-stats" id="ccStats"></div></div>
   <div class="cc-nav"><button class="cc-ar" onclick="mShift(-1)" aria-label="previous month">‹</button><button class="cc-tod" onclick="ccToday()">today</button><button class="cc-ar" onclick="mShift(1)" aria-label="next month">›</button>
-    <div class="seg cc-seg" id="ccView"><button data-v="words" class="on">sheet</button><button data-v="dots">grid</button><button data-v="ledger">ledger</button></div></div>
+    <div class="seg cc-seg" id="ccView"><button data-v="dots" class="on">grid</button><button data-v="words">sheet</button><button data-v="ledger">ledger</button></div></div>
   <div class="cc-leg" id="quickLay"></div>
   <div class="cc-legh"><span>tap a layer to hide it</span><button onclick="nav('layers')">all layers ›</button></div>
   <div class="cc-stand" id="ccStand"></div>
-  <div class="cc-grid words" id="mGrid"></div>
+  <div class="cc-grid" id="mGrid"></div>
   <div class="cc-watch"><div class="cc-win"><div class="cc-h">what to watch</div><div id="ccWatch"></div></div></div>
   <div class="cc-h" id="dSelLab">selected day</div>
   <div id="dSel"></div>
