@@ -32,8 +32,8 @@ Dual-ruler signs (Scorpio, Aquarius, Pisces) return BOTH traditional + modern ho
 Reference: `planets`, `signs` (rulers trad+modern), `houses` (number, domain), `celestial_bodies`, `decans` (36, Book T, linked to cards), `aspect_patterns`, `transit_event_types`, `progression_event_types`, `moon_phases` (8), `color_meanings` (6), `placement_meanings` (240: every planet × sign and × house, each with core/constructive/distorted), `synastry_meanings` (48).
 Tarot: `tarot_cards` (78, with astro_type/astro_ruler/astro_glyph), `tarot_suits` (4), `tarot_numerology` (10), `meaning_enrichments` (114), `card_themes` (8, structure only — assignments NOT curated yet, do not auto-fill), `tarot_spreads` (20).
 Grimoire: `rituals` (20), `correspondences` (16), `grimoire_reference` (8), `ritual_log` (user, RLS).
-Calendar/state: `global_events` (251), `sky_positions` (empty — job in step 2), `calendar_events` (empty — user events), `cycle_logs`, `journal_entries` (empty, RLS'd).
-People: `people` (1 row), `profiles`. Archive (read-only, never an engine source): `prototype_archive`.
+Calendar/state: `calendar_copy` (64 rows, Q4 2026 product copy; signed-in read), `global_events` (251), `sky_positions` (empty — job in step 2), `calendar_events` (empty — user events), `cycle_logs`, `journal_entries` (empty, RLS'd).
+People: `people` (1 row; `is_self` marks the user's own chart), `profiles`. Archive (read-only, never an engine source): `prototype_archive`.
 Storage: a bucket exists for RWS card art (public domain, 1909) — images not sourced/uploaded yet; add `card_image_url` to `tarot_cards` when wiring.
 
 ## App markup + charts (2026-10-12)

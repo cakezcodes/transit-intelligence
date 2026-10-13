@@ -2,7 +2,7 @@
 -- keyed by lib/calendar/feeds.mjs copyKey(). The text is product writing, so it lives
 -- here and never in the repo; scripts/calendar/import-copy.mjs loads it from the
 -- published .ics files. Signed-in users can read it (the app's calendar shows it);
--- only the service role writes.
+-- only the service role writes. Applied to lfukxvbcfetdzbauigxe on 2026-10-13 (64 rows loaded from the Q4 2026 sky + moon feeds).
 create table if not exists public.calendar_copy (
   key text primary key,
   body text not null,
