@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { computeNatalPositions } from '@/lib/astro/computeNatalPositions.mjs';
 import { calculateFullPersonChart } from '@/lib/astro/calculateFullPersonChart.mjs';
 import { normalizeDegrees } from '@/lib/astro/porphyry.mjs';
+import { rowsToChart, type PositionRow } from '@/lib/astro/rowsToChart';
 
 /* POST /api/natal — the only place the app casts a chart.
    Celestine runs here (server-side, Rule 1); the client never does chart math for
@@ -112,46 +113,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const rows = positions.rows as {
-    kind: string;
-    body_key: string;
-    house: number | null;
-    sign: string;
-    degree_in_sign: number;
-    absolute_longitude: number;
-    retrograde: boolean | null;
-    speed: number | null;
-  }[];
-  const angle = (k: string) => rows.find((r) => r.kind === 'angle' && r.body_key === k);
-  const asc = angle('asc')?.absolute_longitude ?? null;
-  const mc = angle('mc')?.absolute_longitude ?? null;
-  const porphyry = rows
-    .filter((r) => r.kind === 'house_cusp')
-    .sort((a, b) => (a.house ?? 0) - (b.house ?? 0))
-    .map((r) => r.absolute_longitude);
-  const whole = asc === null ? null : Array.from({ length: 12 }, (_, i) => (Math.floor(asc / 30) * 30 + i * 30) % 360);
-
-  const chart = {
-    engine: 'celestine',
-    timeKnown,
-    tzName,
-    lat,
-    lng,
-    asc,
-    mc,
-    cusps: { porphyry: porphyry.length === 12 ? porphyry : null, whole_sign: whole, placidus },
-    bodies: rows
-      .filter((r) => r.kind === 'body')
-      .map((r) => ({
-        key: r.body_key,
-        sign: String(r.sign).toLowerCase(),
-        deg: Number(r.degree_in_sign),
-        lon: Number(r.absolute_longitude),
-        house: r.house,
-        retro: Boolean(r.retrograde),
-      })),
-    computedAt: new Date().toISOString(),
-  };
+  const rows = positions.rows as PositionRow[];
+  const chart = rowsToChart(rows, { timeKnown, tzName, lat, lng, placidus });
 
   let stored = false;
   let storeError: string | null = null;

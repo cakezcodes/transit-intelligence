@@ -323,6 +323,55 @@ const TRICKS=[['✦ significators','pick the court that matches your sun/moon/ri
  ['◑ the repeat rule','if a card comes back three times, stop asking. it already answered.']];
 
 /* ══════════ SKY VIEW ══════════ */
+/* ══════════ THE SKY RIGHT NOW (celestine, via /api/sky) ══════════ */
+let SKY={chart:null,at:0,busy:false};
+async function loadSky(force){
+  if(SKY.busy||(!force&&SKY.chart&&Date.now()-SKY.at<15*60000))return;
+  SKY.busy=true;
+  const me=S.me;
+  try{
+    const r=await fetch('/api/sky',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({
+      lat:me.lat??(me.natal&&me.natal.lat)??null,lng:me.lng??me.lon??(me.natal&&me.natal.lng)??null,
+      tzName:Intl.DateTimeFormat().resolvedOptions().timeZone})});
+    if(!r.ok)throw new Error('sky '+r.status);
+    SKY={chart:(await r.json()).chart,at:Date.now(),busy:false};
+    const v=document.querySelector('.v.on');if(v&&v.id==='v-sky')renderSky();
+  }catch(e){SKY.busy=false;}
+}
+/* illumination from the engine's sun–moon elongation when the sky is cast, else the inline phase */
+function illum(p){const ch=SKY.chart,su=ch&&bodyOf(ch,'sun'),mo=ch&&bodyOf(ch,'moon');
+  if(su&&mo){const e=((mo.lon-su.lon)%360+360)%360;return Math.round((1-Math.cos(e*Math.PI/180))/2*100);}
+  return Math.round((1-Math.cos(2*Math.PI*p))/2*100);}
+const SKY_ASP=[[0,'☌','conjunct',8],[60,'⚹','sextile',4],[90,'□','square',6],[120,'△','trine',6],[180,'☍','opposite',8]];
+function skyAspects(ch){
+  const B=ch.bodies.filter(b=>['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'].includes(b.key)),out=[];
+  for(let i=0;i<B.length;i++)for(let j=i+1;j<B.length;j++){let d=Math.abs(B[i].lon-B[j].lon);if(d>180)d=360-d;
+    for(const [a,g,n,o] of SKY_ASP){const orb=Math.abs(d-a);if(orb<=o)out.push({a:B[i],b:B[j],g,n,orb});}}
+  return out.sort((x,y)=>x.orb-y.orb);
+}
+function renderSkyWheel(){
+  const el=document.getElementById('skyWheel');if(!el)return;
+  const ch=SKY.chart;
+  if(!ch){el.innerHTML='<div class="sky-load">casting the sky ✧</div>';loadSky();return;}
+  const b=k=>bodyOf(ch,k),pt=x=>x?`${dm(degIn(x.lon))} ${GLY[signOf(x.lon)]}`:'—';
+  const rx=ch.bodies.filter(x=>x.retro&&!['north_node','south_node','lilith'].includes(x.key));
+  const asp=skyAspects(ch)[0];
+  const p=phase(new Date()),pn=phaseName(p);
+  const el2={fire:0,earth:0,air:0,water:0};
+  ch.bodies.filter(x=>['sun','moon','mercury','venus','mars','jupiter','saturn'].includes(x.key)).forEach(x=>el2[['fire','earth','air','water'][signOf(x.lon)%4]]++);
+  const lead=Object.entries(el2).sort((a,c)=>c[1]-a[1])[0];
+  const stat=(k,v,why)=>`<button class="sst" onclick="${why}"><span class="k">${k}</span><span class="v2">${v}</span></button>`;
+  el.innerHTML=`<div class="sky-wheel">${wheelSVG(ch,'sky')}</div>
+    <div class="sky-stats">
+      ${stat('☉︎ sun',pt(b('sun')),"explainPlacement('sky','sun')")}
+      ${stat('☽︎ moon',pt(b('moon'))+' · '+illum(p)+'%',"moonSheet()")}
+      ${stat('↑ rising now',ch.timeKnown&&ch.asc!=null?`${dm(degIn(ch.asc))} ${GLY[signOf(ch.asc)]}`:'add a place',ch.timeKnown?"explainPlacement('sky','asc')":"castMine()")}
+      ${stat('℞ retrograde',rx.length?rx.map(x=>WAB[x.key]||x.key).join(' · '):'none',"explain('retrograde')")}
+      ${stat('✦ tightest',asp?`${WAB[asp.a.key]} ${asp.g} ${WAB[asp.b.key]} · ${asp.orb.toFixed(1)}°`:'—',"explain('aspects')")}
+      ${stat('◐ element',`${lead[0]} ${lead[1]}/7`,"explain('elements')")}
+    </div>
+    <div class="sky-meta">${pn} · cast by the celestine engine for ${new Date(SKY.at).toLocaleTimeString('en-us',{hour:'numeric',minute:'2-digit'})}${S.me.place?' · '+esc(S.me.place.split(',')[0]):''}</div>`;
+}
 function renderSky(){
   const d=new Date(); const p=phase(d),pn=phaseName(p),ml=moonLon(d),si=signOf(ml);
   const r=dailyRead(d), vd=voidWindow(d);
@@ -331,14 +380,16 @@ function renderSky(){
    `<button class="today" onclick="moonSheet()" aria-label="${pn} in ${SIGNS[si]} — open the moon"><div class="hl"></div>
       <div class="mn">${moonSVG(p,58)}</div>
       <div><div class="t1">${pn} in ${SIGNS[si]} ${GLY[si]}</div>
-        <div class="t2">${Math.round((1-Math.cos(2*Math.PI*p))/2*100)}% illuminated · ${degIn(ml).toFixed(0)}° ${SIGNS[si]}</div>
+        <div class="t2">${illum(p)}% illuminated · ${degIn(ml).toFixed(0)}° ${SIGNS[si]}</div>
         <div class="t3">${vd.active?'⊘ void in '+vd.hrs+'h — hold the send':'☉︎ sun in '+SIGNS[signOf(sunLon(d))]}</div></div><span class="c">›</span>
     </button>
+    <div id="skyWheel"></div>
     <div class="read">
       <div class="rl">✦ today's read</div>
       <p>${r.l1}</p><p>${r.l2}</p><p>${r.l3}</p>
       <button class="mv" onclick="openEntry('${key(d)}',null,PH_MOVE['${pn}'])"><b>today's move</b>${r.move}<span class="mv-go">log it ›</span></button>
     </div>`;
+  renderSkyWheel();
   const ups=upcoming(d,4);
   document.getElementById('skyUp').innerHTML=ups.map(e=>evRow(e)).join('')||'<div class="card" style="color:var(--dust);font-size:13px">quiet stretch — nothing loud incoming ✧</div>';
   const today=S.entries.filter(e=>e.date===key(d));
@@ -1106,6 +1157,8 @@ const PLANET_MEAN={sun:'your core identity — what you\'re here to become',moon
  saturn:'where life makes you earn it — discipline, fear, mastery',uranus:'where you rebel and break the pattern',neptune:'where you dream, dissolve, and get foggy',pluto:'where power, obsession, and rebirth live',chiron:'the wound that becomes the medicine',
  north_node:'the direction you\'re growing toward',south_node:'the comfort zone you\'re growing out of',lilith:'the part of you that refused to be tamed',asc:'your rising — the lens, the body, the vibe people clock first',mc:'the midheaven — your public direction and reputation',dsc:'the descendant — what you seek in partners',ic:'the IC — your roots and private foundation'};
 const GLOSS={
+ retrograde:['℞ retrograde','a planet looks like it\'s walking backwards from here. it isn\'t — earth is lapping it. in practice: that planet\'s topics go into review. redo, revisit, reread. launching is harder; fixing is easier.'],
+ elements:['◐ the element balance','count the seven classical planets by element: fire (aries, leo, sagittarius) acts, earth (taurus, virgo, capricorn) builds, air (gemini, libra, aquarius) talks, water (cancer, scorpio, pisces) feels. whichever leads is the day\'s default setting.'],
  rising:['↑ the rising','your ascendant — the zodiac sign that was rising on the eastern horizon the minute you were born. it sets every house in your chart, so it needs your exact birth time and place. the app casts it with the celestine engine — no time, no rising (we won\'t fake it).'],
  sun:['☉︎ the sun','where the sun was when you were born. your core identity, your engine, the thing you\'re built to become.'],
  moon:['☽︎ the moon','your emotional body. what you need to feel safe, how you self-soothe, what you do when nobody\'s watching.'],
@@ -1157,7 +1210,7 @@ function explainHouse(n){
     ${inside.length?`<div class="xp-lab">who lives here</div><div class="ich">${inside.map(b=>`<button class="ic2" onclick="explainPlacement('me','${b.key}')">${BG[b.key]||''} ${bname(b.key)}</button>`).join('')}</div>`:'<p class="xp-p" style="opacity:.7">empty house — not empty life. look to the sign on the cusp and its ruler.</p>'}
     <button class="btn g" onclick="pickHouseSystem()">house system · ${HSYS[S.set.house]||'porphyry'} ›</button>`);
 }
-const whoChart=who=>who==='me'?S.me:S.people[who];
+const whoChart=who=>who==='me'?S.me:who==='sky'?{name:'the sky',natal:SKY.chart}:S.people[who];
 function explainPlacement(who,k){
   const p=whoChart(who);if(!p)return;
   const ch=p.natal;
@@ -1303,21 +1356,18 @@ function replayIntro(){
 /* ══════════ SPARKLES ══════════ */
 const RM=matchMedia('(prefers-reduced-motion: reduce)');
 const SPK='<svg viewBox="0 0 24 24"><path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"/></svg>';
+/* a soft shower for the moments that earn it (saved, cast, logged) — sparkles drift down
+   from above the spot and fade. no more bursts on every tap. */
 function sparkleBurst(x,y,n){
   if(RM.matches)return;
   const fx=document.getElementById('fx');if(!fx)return;
   for(let i=0;i<(n||6);i++){
-    const s=document.createElement('span');s.className='spk';s.innerHTML=SPK;
-    const a=Math.random()*Math.PI*2,dist=24+Math.random()*46,sz=6+Math.random()*9;
-    s.style.cssText=`left:${x}px;top:${y}px;width:${sz}px;height:${sz}px;--dx:${Math.cos(a)*dist}px;--dy:${Math.sin(a)*dist}px;--rot:${Math.random()*180}deg;animation-delay:${Math.random()*60}ms`;
-    fx.appendChild(s);setTimeout(()=>s.remove(),900);
+    const s=document.createElement('span');s.className='spk fall';s.innerHTML=SPK;
+    const sz=5+Math.random()*7,dur=1400+Math.random()*900;
+    s.style.cssText=`left:${x+(Math.random()-.5)*220}px;top:${Math.max(0,y-140-Math.random()*80)}px;width:${sz}px;height:${sz}px;--fy:${150+Math.random()*120}px;--fx:${(Math.random()-.5)*40}px;--rot:${Math.random()*180}deg;animation-duration:${dur}ms;animation-delay:${Math.random()*350}ms`;
+    fx.appendChild(s);setTimeout(()=>s.remove(),dur+500);
   }
 }
-/* a little dopamine on the things you tap most */
-document.addEventListener('pointerdown',e=>{
-  const t=e.target.closest('.btn,.tab,.cc-day,.sw,.chip,.hero,.cc-li,.hs,.mch');
-  if(t)sparkleBurst(e.clientX,e.clientY,t.classList.contains('btn')||t.classList.contains('hero')?7:4);
-},{passive:true});
 
 /* ══════════ ONBOARDING ══════════ */
 const LANES=['transits','tarot','rituals','synastry','journaling','moon tracking','cycle','shadow work'];
