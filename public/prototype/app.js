@@ -1403,7 +1403,8 @@ async function obDone(){
 function obReplay(step){
   obS=step||0;obR();
   const set=(id,v)=>{const el=document.getElementById(id);if(el&&v)el.value=v;};
-  set('obName',S.me.name!=='you'?S.me.name:'');set('obDate',S.me.date);set('obTime',S.me.time);set('obPlace',S.me.place);
+  let wn='';try{wn=localStorage.getItem('ti-name')||'';}catch(e){}   /* the name typed on /welcome */
+  set('obName',S.me.name&&S.me.name!=='you'?S.me.name:wn);set('obDate',S.me.date);set('obTime',S.me.time);set('obPlace',S.me.place);
   if(S.me.lat!=null)obCity={n:S.me.place,lat:S.me.lat,lng:S.me.lng,tz:S.me.tzName};
   const ob=document.getElementById('ob');ob.classList.remove('off');ob.classList.add('on');
 }
@@ -1567,7 +1568,10 @@ function tiSplash(){
     setTimeout(()=>{toast(g[0]+' '+g[1]);sparkleBurst(innerWidth/2,innerHeight*.42,10);},hold+500);
   } else {
     /* new: splash → onboarding (prefilled with whatever the account already knows) */
-    setTimeout(()=>{obReplay(0);},hold-350);
+    /* the name was already asked on /welcome, so skip straight to the ribbon */
+    let wn='';try{wn=localStorage.getItem('ti-name')||'';}catch(e){}
+    if(wn&&(!S.me.name||S.me.name==='you'))S.me.name=wn;
+    setTimeout(()=>{obReplay(S.me.name&&S.me.name!=='you'?1:0);},hold-350);
     setTimeout(off,hold);
   }
 }

@@ -70,7 +70,6 @@
 #ti-root .back{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:6px;min-height:var(--tap);width:calc(100% + 40px);margin:0 -20px 4px;padding:calc(6px + env(safe-area-inset-top)) 20px 6px;
   font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--moon);
   background:var(--void);border-bottom:1px solid var(--line)}
-[data-grad="on"] #ti-root .back{background:color-mix(in srgb,var(--void) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 #ti-root .back:hover{text-decoration:underline;text-underline-offset:3px}
 .tabs{padding:4px!important}
 .tab{min-height:52px;justify-content:center;font-size:9px!important;letter-spacing:.14em!important;position:relative}
