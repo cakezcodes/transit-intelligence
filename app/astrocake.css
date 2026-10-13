@@ -270,3 +270,96 @@ html[data-mode="dark"] body{background:#161513}
 .spk.fall{position:fixed;margin:0;color:var(--accent);opacity:0;animation-name:spkDrop;animation-timing-function:cubic-bezier(.3,.2,.4,1);animation-fill-mode:forwards}
 @keyframes spkDrop{0%{opacity:0;transform:translate(0,0) rotate(0)}15%{opacity:.95}100%{opacity:0;transform:translate(var(--fx),var(--fy)) rotate(var(--rot))}}
 @media (prefers-reduced-motion: reduce){.fall{display:none}}
+
+/* ═══ spreads: real card outlines in the spread's real shape ═══ */
+.spl{position:relative;margin:0 auto;flex:none}
+.spl .slot{position:absolute;display:flex;align-items:center;justify-content:center;border:1px solid var(--moon);background:color-mix(in srgb,var(--ink) 70%,transparent);overflow:hidden;padding:0;transition:transform .2s var(--ease-out),background .2s}
+.spl .slot.cr{z-index:2;background:var(--ink)}
+.spl .slot .sn{font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--moon)}
+.spl .slot img{width:100%;height:100%;object-fit:cover;display:block}
+.spl .slot img.rv{transform:rotate(180deg)}
+.spl .slot.act{background:var(--accent);outline:2px solid var(--moon);outline-offset:2px;z-index:3}
+.spl .slot.act.full{background:var(--ink)}
+.spl.mini .slot{border-width:1px;background:transparent}
+.spl.mini .slot.cr{background:var(--ink)}
+/* library: a little diagram on each spread, the full shape when opened */
+.wk.spr .wkh{gap:12px}
+.spr-mini{flex:0 0 58px;display:flex;align-items:center;justify-content:center;min-height:30px}
+.spr-show{display:flex;justify-content:center;padding:16px 0 10px}
+.spr-pos{margin:4px 0 6px;padding-left:22px;columns:2;column-gap:18px;font-size:12.5px;line-height:1.7}
+.spr-pos li::marker{font-weight:700;font-size:11px}
+/* ═══ log a pull: the four-step sheet ═══ */
+.pl-steps{display:flex;border:1px solid var(--moon);margin:2px 0 14px}
+#ti-root .pl-steps button,.sht .pl-steps button{flex:1;padding:8px 2px;text-align:center!important;font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--dust);border-right:1px solid var(--line)}
+.pl-steps button:last-child{border-right:0}
+.pl-steps button.on{background:var(--accent);color:#1a1917}
+.pl-steps button.done{color:var(--moon)}
+.pl-h{font-size:24px;text-transform:uppercase;letter-spacing:-.04em;line-height:.95;text-align:center}
+.pl-h em{font-style:italic;font-weight:800}
+.pl-h.sm{font-size:17px;margin-top:2px}
+.pl-sub{font-size:12.5px;color:var(--dust);text-align:center;margin-top:6px}
+.pl-drop{display:flex;flex-direction:column;align-items:center;gap:6px;margin:16px auto 4px;padding:26px 12px;border:1px dashed var(--moon);cursor:pointer}
+.pl-drop .t{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.pl-drop .s{font-size:11.5px;color:var(--dust)}
+.pl-cards{display:flex;gap:6px;margin-bottom:6px}
+.pl-cards i{width:22px;height:36px;border:1px solid var(--moon);background:var(--ink)}
+.pl-cards i:nth-child(2){background:var(--accent);transform:translateY(-4px)}
+.pl-photo{margin-top:14px;border:1px solid var(--moon);background:var(--ink)}
+.pl-photo img{display:block;width:100%;max-height:300px;object-fit:contain}
+.pl-more{display:block;text-align:center}
+.pl-ref{display:block;width:84px;height:84px;object-fit:cover;margin:12px auto 0;border:1px solid var(--moon)}
+.pl-list{margin-top:12px;border:1px solid var(--moon)}
+#ti-root .pl-sp,.sht .pl-sp{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-bottom:1px solid var(--line);text-align:left}
+.pl-sp:last-child{border-bottom:0}
+.pl-sp.on{background:var(--accent);color:#1a1917}
+.pl-mini{flex:0 0 64px;display:flex;justify-content:center;align-items:center;min-height:32px}
+.pl-sn{display:flex;flex-direction:column;gap:2px}
+.pl-sn b{font-size:14px}
+.pl-sn span{font-size:11px;color:var(--dust)}
+.pl-sp.on .pl-sn span{color:#1a1917}
+.pl-thumb{position:absolute;right:20px;margin-top:-4px;width:46px;height:46px;border:1px solid var(--moon);padding:0}
+.pl-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.pl-stage{display:flex;justify-content:center;padding:18px 0 14px;overflow-x:auto}
+.pl-stage.sm{padding:12px 0 6px}
+.pl-pos{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;padding:9px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:13px}
+.pl-pos .n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:var(--accent);color:#1a1917;font-size:11px;font-weight:800}
+.pl-pos .p{font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:11px}
+.pl-pos .c{flex:1;min-width:120px}
+.pl-pos .c.dim{color:var(--faint);font-style:italic}
+.pl-search{margin-top:10px}
+.pl-pick{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:8px;max-height:212px;overflow-y:auto;padding:1px}
+#ti-root .pc,.sht .pc{position:relative;padding:0;aspect-ratio:.62;border:1px solid var(--line);overflow:hidden;background:var(--ink2)}
+.pc img{width:100%;height:100%;object-fit:cover;display:block}
+.pc.used{border-color:var(--moon)}
+.pc.used img{opacity:.35}
+.pc .b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--moon)}
+.pl-fields{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.pl-fields label,.pl-notes{display:flex;flex-direction:column;gap:4px}
+.pl-fields span,.pl-notes span{font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--dust)}
+.pl-notes{margin-top:12px}
+.pl-in{margin-top:12px;border-top:1px solid var(--line)}
+#ti-root .pl-row,.sht .pl-row{display:flex;gap:12px;align-items:center;width:100%;padding:9px 0;border-bottom:1px solid var(--line);text-align:left}
+.pl-row img{width:30px;height:48px;object-fit:cover;border:1px solid var(--moon);flex:none}
+.pl-row img.rv{transform:rotate(180deg)}
+.pl-row>span{display:flex;flex-direction:column;gap:1px;min-width:0}
+.pl-row .pp{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--dust);font-weight:700}
+.pl-row b{font-size:14px}
+.pl-row .kw{font-size:12px;color:var(--dust)}
+.pl-foot{display:flex;gap:8px;margin-top:16px}
+.pl-foot .btn{flex:1;margin-top:0!important}
+.ent-spl{display:flex;justify-content:center;padding:10px 0 4px}
+/* ═══ compact sheet forms (add to calendar, add to orbit) ═══ */
+.fm{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.fl{display:flex;flex-direction:column;gap:5px;min-width:0}
+.fl>span{font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--dust)}
+.frow{display:flex;gap:10px}
+.frow .fl{flex:1}
+.sht .fm input,.sht .fm textarea{padding:10px 12px}
+.fchips{display:flex;flex-wrap:wrap;gap:6px}
+#ti-root .fchip,.sht .fchip{padding:7px 11px;border:1px solid var(--moon);font-size:12px;font-weight:600;line-height:1;text-align:center!important}
+.fchip.on{background:var(--accent);color:#1a1917}
+/* the crossing card lies across the heart: see-through, its number out at its own end, upright */
+.spl .slot.cr:not(.full){background:transparent;align-items:flex-start;padding-top:3px}
+.spl .slot.cr .sn{transform:rotate(-90deg)}
+.spl .slot.cr.act:not(.full){background:color-mix(in srgb,var(--accent) 55%,transparent)}
+.pl-row b{line-height:1.2}.pl-row .kw{line-height:1.35}

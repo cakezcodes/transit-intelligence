@@ -687,13 +687,14 @@ function big3(p,who){
 function openPerson(i){
   if(i===undefined){
     sheet(`<div class="gb"></div><div class="cap" style="font-size:9.5px;color:var(--deep);text-align:center">☍ · add to orbit · ☍</div>
-     <div class="sf" style="font-size:24px;text-align:center;margin-top:4px">someone new</div>
-     <div class="ob-f" style="margin-top:14px">
-       <input id="pN" placeholder="name" aria-label="name">
-       <label class="ob-label"><span class="ob-lt">date of birth</span><input id="pD" type="date"></label>
-       <label class="ob-label"><span class="ob-lt">time of birth · optional</span><input id="pT" type="time"></label>
-       <div style="position:relative"><input id="pP" placeholder="birth city — start typing" autocomplete="off" aria-label="birth city" oninput="placeSearch(this.value,'pPlaceList',c=>pCity=c)"><div id="pPlaceList" class="ob-places"></div></div>
-       <select id="pR" style="appearance:none"><option>partner</option><option>ex</option><option>situationship</option><option>friend</option><option>family</option><option>enemy</option><option>client</option></select>
+     <div class="xp-h">someone new</div>
+     <div class="fm">
+       <label class="fl"><span>name</span><input id="pN" placeholder="what you call them"></label>
+       <div class="frow"><label class="fl"><span>birthday</span><input id="pD" type="date"></label>
+         <label class="fl"><span>time · optional</span><input id="pT" type="time"></label></div>
+       <label class="fl" style="position:relative"><span>birth city</span><input id="pP" placeholder="start typing" autocomplete="off" oninput="placeSearch(this.value,'pPlaceList',c=>pCity=c)"><div id="pPlaceList" class="ob-places"></div></label>
+       <div class="fl"><span>they're your</span><div class="fchips" id="pRc">${['partner','situationship','ex','friend','family','client','enemy'].map((r,i)=>`<button type="button" class="fchip${i===0?' on':''}" data-r="${r}" onclick="document.querySelectorAll('#pRc button').forEach(x=>x.classList.toggle('on',x===this));document.getElementById('pR').value='${r}'">${r}</button>`).join('')}</div>
+         <input type="hidden" id="pR" value="partner"></div>
      </div>
      <button class="btn" onclick="savePerson()">cast their chart</button>`);
     return;
@@ -858,8 +859,9 @@ function renderShelf(){
           <div class="uses"><span class="k">cards →</span>${it.cd.map(k=>`<button class="ic2" onclick="openCard('${k}')">${byKey(k).n}</button>`).join('')}</div></div>`).join('')}`).join('')}`;
   }
 }
-const sprHTML=s=>`<div class="wk"><button class="wkh"><span><span class="nm">${s.n}</span><div class="mt">${s.f}</div></span><span class="wkc">›</span></button>
-  <div class="wkb"><div class="pos">${s.p.map((p,i)=>`<div><div class="n">${i+1}</div><div class="p">${p}</div></div>`).join('')}</div>
+const sprHTML=s=>`<div class="wk spr"><button class="wkh"><span class="spr-mini">${spreadHTML(layoutOf(s,s.p.length),s.p.map(()=>null),{w:9,mini:1})}</span><span><span class="nm">${s.n}</span><div class="mt">${s.f}</div></span><span class="wkc">›</span></button>
+  <div class="wkb"><div class="spr-show">${spreadHTML(layoutOf(s,s.p.length),s.p.map(()=>null),{w:s.p.length>=9?22:28})}</div>
+  <ol class="spr-pos">${s.p.map(p=>`<li>${p}</li>`).join('')}</ol>
   <button class="btn g" onclick="openPull(0,'${s.n}')">✦ log a pull on this spread</button></div></div>`;
 function wire(h){h.querySelectorAll('.wkh').forEach(b=>b.onclick=()=>b.parentElement.classList.toggle('open'));}
 function nextWin(r){const d=new Date();for(let i=0;i<45;i++){if(r.ph.includes(phaseName(phase(d))))return i===0?'tonight ☽︎':fmt(d);d.setDate(d.getDate()+1);}return'—';}
@@ -884,62 +886,146 @@ function openCard(k,rev){
     <button class="btn g" onclick="closeSheet();openPull(0,null,'${k}')">+ log this card</button>`);
 }
 
-/* ══════════ LOG A PULL ══════════ */
-let pullSel=[],pullPhotos=[];
+/* ══════════ LOG A PULL ══════════
+   four steps, one sheet: ◉ photo → ✦ spread → ⟡ cards → ✧ the read.
+   the spread is drawn as real card outlines in its real shape; tap a slot, tap a card. */
+/* layouts: [x, y, crossed?] — x in card widths, y in card heights, from the spread's centre */
+const SPR_LAYOUT={
+ 'one card':[[0,0]],
+ 'past · present · future':[[-1.2,0],[0,0],[1.2,0]],
+ 'should i text back':[[-1.2,0],[0,0],[1.2,0]],
+ 'the cage door':[[-1.8,0],[-.6,0],[.6,0],[1.8,0]],
+ 'where do i feel safe':[[0,-.62],[-1.2,0],[1.2,0],[0,.62]],
+ 'the shadow dive':[[-2.4,-.3],[-1.2,.15],[0,.6],[1.2,.15],[2.4,-.3]],
+ 'the clarity cross':[[0,0],[0,0,1],[0,1.08],[0,-1.08],[1.4,0]],
+ 'the celtic cross':[[-.9,0],[-.9,0,1],[-.9,1.08],[-2.3,0],[-.9,-1.08],[.5,0],[2.1,1.62],[2.1,.54],[2.1,-.54],[2.1,-1.62]]
+};
+const ONE={n:'one card',f:'1 card · the daily pull',p:['the card']};
+const FREE={n:'free pull',f:'any number · lay it how it fell',p:[]};
+const allSpreads=()=>[ONE,...SPR.classic,...SPR.yours];
+const sprBy=n=>allSpreads().find(x=>x.n===n);
+function layoutOf(sp,count){
+  if(sp&&SPR_LAYOUT[sp.n])return SPR_LAYOUT[sp.n];
+  const n=Math.max(1,count),per=Math.min(5,n),rows=Math.ceil(n/per);   /* free pull: rows of five */
+  return Array.from({length:n},(_,i)=>{const r=Math.floor(i/per),c=i%per,inRow=Math.min(per,n-r*per);
+    return [(c-(inRow-1)/2)*1.2,(r-(rows-1)/2)*1.12];});
+}
+/* draws a spread: slots = [{k,rev}|null], opts = {w, active, tap (fn name), labels, mini} */
+function spreadHTML(L,slots,o){
+  const w=o.w,h=Math.round(w*1.62),pos=L.map(([x,y,cr])=>({x:x*w,y:y*h,cr:!!cr}));
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  pos.forEach(q=>{const hw=(q.cr?h:w)/2,hh=(q.cr?w:h)/2;x0=Math.min(x0,q.x-hw);x1=Math.max(x1,q.x+hw);y0=Math.min(y0,q.y-hh);y1=Math.max(y1,q.y+hh);});
+  const W=Math.ceil(x1-x0)+2,H=Math.ceil(y1-y0)+2;
+  return `<div class="spl${o.mini?' mini':''}" style="width:${W}px;height:${H}px">${pos.map((q,i)=>{
+    const c=slots[i],act=o.active===i;
+    const st=`left:${(q.x-x0-w/2+1).toFixed(1)}px;top:${(q.y-y0-h/2+1).toFixed(1)}px;width:${w}px;height:${h}px${q.cr?';transform:rotate(90deg)':''}`;
+    const inner=c?`<img src="${IMG[c.k]||''}" alt="${byKey(c.k).n}" class="${c.rev?'rv':''}">`:(o.mini?'':`<span class="sn">${i+1}</span>`);
+    return o.tap?`<button class="slot${c?' full':''}${act?' act':''}${q.cr?' cr':''}" style="${st}" onclick="${o.tap}(${i})" aria-label="position ${i+1}${c?' · '+byKey(c.k).n:''}">${inner}</button>`
+      :`<span class="slot${c?' full':''}${q.cr?' cr':''}" style="${st}">${inner}</span>`;}).join('')}</div>`;
+}
+let PL=null;
 function openPull(past,spread,pre){
-  pullSel=pre?[{k:pre,rev:false}]:[];pullPhotos=[];
-  const today=key(new Date());
-  sheet(`<div class="gb"></div>
-    <div class="cap" style="font-size:9.5px;color:var(--deep);text-align:center">✦ · ${past?'restore the record':'log a pull'} · ✦</div>
-    <div class="sf" style="font-size:24px;text-align:center;margin-top:3px">${past?'a past night':'what came up'}</div>
-    <div style="font-size:12px;color:var(--dust);text-align:center;margin-top:4px">${spread?'spread · '+spread:'photo it, or pick the cards'}</div>
-    <div class="ob-f" style="margin-top:14px">
-      <input id="puD" type="date" value="${today}">
-      <input id="puT" placeholder="what was the question?">
-    </div>
-    <div class="lab" style="margin:16px 0 6px">◉ snap it</div>
-    <label class="up"><input type="file" id="puF" accept="image/*" multiple hidden>
-      <div class="g">◉</div><div class="t">upload a photo of the spread</div><div class="s">tap to choose · the cards stay as you laid them</div></label>
-    <div class="prev" id="puP"></div>
-    <div class="lab" style="margin:16px 0 6px">✦ or pick the cards</div>
-    <input id="puS" placeholder="search all 78…" oninput="renderPick()">
-    <div class="selr" id="puSel"></div>
-    <div class="pick" id="puPick"></div>
-    <div class="hint">tap to add · tap again to reverse ⟲</div>
-    <div class="lab" style="margin:14px 0 6px">✧ the read</div>
-    <textarea id="puN" rows="3" placeholder="what did it say? what did you feel?"></textarea>
-    <button class="btn" onclick="savePull('${spread||''}')">into the book</button>`);
-  document.getElementById('puF').onchange=e=>{
-    [...e.target.files].forEach(f=>{const r=new FileReader();r.onload=x=>{pullPhotos.push(x.target.result);
-      document.getElementById('puP').innerHTML=pullPhotos.map(p=>`<img src="${p}">`).join('');};r.readAsDataURL(f);});};
-  renderPick();
+  const sp=spread?sprBy(spread):null;
+  PL={step:sp||pre?2:0,past:!!past,spread:sp,slots:sp?sp.p.map(()=>null):[],active:0,photos:[],q:'',notes:'',date:key(new Date()),search:''};
+  if(pre){if(!PL.spread){PL.spread=ONE;PL.slots=[null];}PL.slots[0]={k:pre,rev:false};PL.active=PL.slots.length>1?1:0;}
+  renderPull();
 }
-function renderPick(){
-  const q=(document.getElementById('puS')?.value||'').toLowerCase();
-  const L=DECK.filter(c=>!q||c.n.includes(q));
-  document.getElementById('puPick').innerHTML=L.map(c=>{
-    const s=pullSel.find(x=>x.k===c.k);
-    return `<button class="tc${s?' sel':''}${s&&s.rev?' rev':''}" onclick="tapCard('${c.k}')"><img src="${IMG[c.k]||''}" loading="lazy"><span class="rb">⟲</span></button>`;}).join('');
-  document.getElementById('puSel').innerHTML=pullSel.map((s,i)=>
-    `<span class="sc"><img src="${IMG[s.k]}" class="${s.rev?'rv':''}"><span class="x" onclick="pullSel.splice(${i},1);renderPick()">×</span></span>`).join('');
+const PL_STEPS=[['◉','photo'],['✦','spread'],['⟡','cards'],['✧','the read']];
+function plGo(n){if(n>=2&&!PL.spread)return toast('pick a spread first ✦');PL.step=n;renderPull();}
+function renderPull(){
+  const st=PL.step,sp=PL.spread;
+  const head=`<div class="gb"></div><div class="pl-steps">${PL_STEPS.map(([g,n],i)=>`<button class="${i===st?'on':''}${i<st?' done':''}" onclick="plGo(${i})">${g} ${n}</button>`).join('')}</div>`;
+  let body='',foot='';
+  if(st===0){
+    body=`<div class="pl-h"><em>${PL.past?'a past':'snap the'}</em> spread</div>
+      <div class="pl-sub">a photo keeps it exactly as it fell. you'll name the cards next.</div>
+      ${PL.photos.length?`<div class="pl-photo"><img src="${PL.photos[0]}" alt="your spread"></div>
+        ${PL.photos.length>1?`<div class="prev">${PL.photos.slice(1).map(x=>`<img src="${x}">`).join('')}</div>`:''}`
+      :`<label class="pl-drop"><input type="file" accept="image/*" capture="environment" hidden onchange="plPhoto(this)">
+          <span class="pl-cards"><i></i><i></i><i></i></span>
+          <span class="t">photo of the spread</span><span class="s">camera or library</span></label>`}
+      ${PL.photos.length?`<label class="btn g pl-more"><input type="file" accept="image/*" hidden onchange="plPhoto(this)">+ another photo</label>`:''}`;
+    foot=`<button class="btn" onclick="plGo(1)">${PL.photos.length?'next':'skip — lay it out by hand'}</button>`;
+  } else if(st===1){
+    body=`<div class="pl-h"><em>which</em> spread</div><div class="pl-sub">the shape you laid it in</div>
+      ${PL.photos.length?`<img class="pl-ref" src="${PL.photos[0]}" alt="">`:''}
+      <div class="pl-list">${[...allSpreads(),FREE].map(x=>`<button class="pl-sp${sp&&sp.n===x.n?' on':''}" onclick="plSpread('${x.n.replace(/'/g,"\\'")}')">
+        <span class="pl-mini">${spreadHTML(layoutOf(x.p.length?x:null,x.p.length||3),(x.p.length?x.p:[0,0,0]).map(()=>null),{w:9,mini:1})}</span>
+        <span class="pl-sn"><b>${x.n}</b><span>${x.f}</span></span></button>`).join('')}</div>`;
+    foot=`<button class="btn g" onclick="plGo(0)">‹ back</button><button class="btn" onclick="plGo(2)">next</button>`;
+  } else if(st===2){
+    const L=layoutOf(sp.p.length?sp:null,PL.slots.length+(sp.p.length?0:1));
+    const slots=sp.p.length?PL.slots:[...PL.slots,null];
+    const n=L.length,w=n>=9?34:n>=5?40:n>=3?50:64;
+    const a=PL.active,cur=slots[a];
+    const posName=sp.p[a]||`card ${a+1}`;
+    body=`${PL.photos.length?`<button class="pl-thumb" onclick="plGo(0)"><img src="${PL.photos[0]}" alt="your photo"></button>`:''}
+      <div class="pl-h sm"><em>${sp.n}</em></div>
+      <div class="pl-stage">${spreadHTML(L,slots,{w,active:a,tap:'plSlot'})}</div>
+      <div class="pl-pos"><span class="n">${a+1}</span><span class="p">${posName}</span>
+        ${cur?`<span class="c">${byKey(cur.k).n}${cur.rev?' · reversed':''}</span><button class="lk" onclick="plRev()">⟲ ${cur.rev?'upright':'reverse'}</button><button class="lk" onclick="plClear()">clear</button>`:'<span class="c dim">tap a card below</span>'}</div>
+      <input class="pl-search" placeholder="search the 78…" value="${esc(PL.search)}" oninput="PL.search=this.value;plPick()">
+      <div class="pl-pick" id="plPick"></div>`;
+    foot=`<button class="btn g" onclick="plGo(1)">‹ back</button><button class="btn" onclick="plGo(3)">next</button>`;
+  } else {
+    const cards=PL.slots.map((c,i)=>c?{...c,i}:null).filter(Boolean);
+    const L=layoutOf(sp.p.length?sp:null,PL.slots.length);
+    body=`<div class="pl-h"><em>the</em> read</div>
+      <div class="pl-stage sm">${spreadHTML(L,PL.slots,{w:L.length>=9?24:L.length>=5?30:38})}</div>
+      <div class="pl-fields">
+        <label><span>date</span><input id="plD" type="date" value="${PL.date}" onchange="PL.date=this.value"></label>
+        <label><span>the question</span><input id="plQ" placeholder="what were you asking?" value="${esc(PL.q)}" oninput="PL.q=this.value"></label>
+      </div>
+      <div class="pl-in">${cards.length?cards.map(c=>{const d=byKey(c.k);return `<button class="pl-row" onclick="openCard('${c.k}',${!!c.rev})">
+          <img src="${IMG[c.k]||''}" class="${c.rev?'rv':''}" alt=""><span><span class="pp">${c.i+1} · ${sp.p[c.i]||'card '+(c.i+1)}</span><b>${d.n}${c.rev?' ⟲':''}</b><span class="kw">${(c.rev?d.rv:d.up).split(/[.;]/)[0]}</span></span></button>`;}).join('')
+        :'<div class="pl-sub">no cards named — the photo still goes in the book.</div>'}</div>
+      <label class="pl-notes"><span>what it said · what you felt</span><textarea id="plN" rows="3" oninput="PL.notes=this.value">${esc(PL.notes)}</textarea></label>`;
+    foot=`<button class="btn g" onclick="plGo(2)">‹ back</button><button class="btn" onclick="savePull()">into the book</button>`;
+  }
+  sheet(`${head}<div class="pl-body">${body}</div><div class="pl-foot">${foot}</div>`);
+  if(st===2)plPick();
 }
-function tapCard(k){
-  const i=pullSel.findIndex(x=>x.k===k);
-  if(i<0)pullSel.push({k,rev:false});
-  else if(!pullSel[i].rev)pullSel[i].rev=true;
-  else pullSel.splice(i,1);
-  renderPick();
+function plPhoto(inp){
+  [...inp.files].forEach(f=>{const r=new FileReader();r.onload=x=>{PL.photos.push(x.target.result);renderPull();};r.readAsDataURL(f);});
 }
-function savePull(spread){
-  const d=document.getElementById('puD').value||key(new Date());
-  if(!pullSel.length&&!pullPhotos.length)return toast('pick a card or snap the spread ✦');
+function plSpread(n){
+  const sp=n===FREE.n?FREE:sprBy(n);
+  const keep=PL.slots.filter(Boolean);
+  PL.spread=sp;PL.slots=sp.p.length?sp.p.map((_,i)=>keep[i]||null):keep;
+  PL.active=Math.max(0,PL.slots.findIndex(x=>!x));if(PL.active<0||!sp.p.length)PL.active=sp.p.length?0:PL.slots.length;
+  PL.step=2;renderPull();
+}
+function plSlot(i){PL.active=i;renderPull();}
+function plRev(){const c=PL.slots[PL.active];if(c){c.rev=!c.rev;renderPull();}}
+function plClear(){if(PL.spread.p.length)PL.slots[PL.active]=null;else PL.slots.splice(PL.active,1);renderPull();}
+function plPick(){
+  const q=(PL.search||'').toLowerCase(),used=new Map(PL.slots.map((c,i)=>c?[c.k,i]:null).filter(Boolean));
+  const el=document.getElementById('plPick');if(!el)return;
+  el.innerHTML=DECK.filter(c=>!q||c.n.includes(q)).map(c=>{const u=used.get(c.k);
+    return `<button class="pc${u!=null?' used':''}" onclick="plCard('${c.k}')" aria-label="${c.n}"><img src="${IMG[c.k]||''}" loading="lazy" alt="">${u!=null?`<span class="b">${u+1}</span>`:''}</button>`;}).join('');
+}
+function plCard(k){
+  const sp=PL.spread,at=PL.slots.findIndex(c=>c&&c.k===k);
+  if(at>=0&&at!==PL.active){PL.active=at;return renderPull();}          /* already down — jump to it */
+  if(sp.p.length){PL.slots[PL.active]={k,rev:false};
+    const nx=PL.slots.findIndex((c,i)=>!c&&i>PL.active),any=PL.slots.findIndex(c=>!c);
+    PL.active=nx>=0?nx:any>=0?any:PL.active;}
+  else{PL.slots[PL.active]={k,rev:false};PL.active=PL.slots.length;}
+  PL.search='';renderPull();
+  if(PL.slots.length&&PL.slots.every(Boolean)&&sp.p.length)toast('✦ the spread is laid — reverse any that fell upside down');
+}
+function savePull(){
+  const d=PL.date||key(new Date()),cards=PL.slots.map((c,i)=>c?{...c,pos:PL.spread.p[i]||null,i}:null).filter(Boolean);
+  if(!cards.length&&!PL.photos.length)return toast('name a card or snap the spread ✦');
   const dt=parse(d),p=phase(dt),si=signOf(moonLon(dt));
-  S.entries.unshift({id:Date.now(),date:d,type:'pull',title:document.getElementById('puT').value||(spread||'a pull'),
-    body:document.getElementById('puN').value,photos:[...pullPhotos],cards:[...pullSel],
-    sky:`${phaseName(p)} in ${SIGNS[si]} ${GLY[si]}`});
-  closeSheet();toast(`✦ into the book — stamped ${phaseName(p)} in ${SIGNS[si]}`);
+  S.entries.unshift({id:Date.now(),date:d,type:'pull',title:PL.q||PL.spread.n,spread:PL.spread.n,slots:PL.slots.map(c=>c?{k:c.k,rev:c.rev}:null),
+    body:PL.notes,photos:[...PL.photos],cards,sky:`${phaseName(p)} in ${SIGNS[si]} ${GLY[si]}`});
+  closeSheet();toast(`✦ into the book — stamped ${phaseName(p)} in ${SIGNS[si]}`);sparkleBurst(innerWidth/2,innerHeight/2,10);
   renderGrim();renderJournal();
 }
+/* kept for older markup: the old picker entry points now open the new flow */
+function renderPick(){if(PL&&PL.step===2)plPick();}
+function tapCard(k){plCard(k);}
 
 /* ══════════ ENTRIES ══════════ */
 let entPhotos=[];
@@ -984,7 +1070,8 @@ function entHTML(e){
       <button class="sky lk" onclick="moonSheet('${e.date}')">${e.sky||''}</button></div>
     ${e.title?`<div class="tt">${esc(e.title)}</div>`:''}
     ${e.body?`<div class="bd">${esc(e.body)}</div>`:''}
-    ${e.cards&&e.cards.length?`<div class="cds">${e.cards.map(c=>`<button class="cdb" onclick="openCard('${c.k}',${!!c.rev})"><img src="${IMG[c.k]}" class="${c.rev?'rv':''}" alt="${byKey(c.k).n}"></button>`).join('')}</div>`:''}
+    ${e.spread&&e.slots&&e.slots.some(Boolean)?`<div class="ent-spl">${spreadHTML(layoutOf(sprBy(e.spread)||null,e.slots.length),e.slots,{w:e.slots.length>=9?22:28})}</div>`:''}
+    ${!e.spread&&e.cards&&e.cards.length?`<div class="cds">${e.cards.map(c=>`<button class="cdb" onclick="openCard('${c.k}',${!!c.rev})"><img src="${IMG[c.k]}" class="${c.rev?'rv':''}" alt="${byKey(c.k).n}"></button>`).join('')}</div>`:''}
     ${e.photos&&e.photos.length?`<div class="ph">${e.photos.map(p=>`<img src="${p}">`).join('')}</div>`:''}</div>`;
 }
 function renderJournal(){
@@ -1327,13 +1414,13 @@ function showCompare(kind,i){
 const ADD_TYPES=[['ritual','✧','working'],['entry','✧','reminder'],['pull','✦','reading'],['cycle','◉','cycle'],['global','☉︎','sky watch']];
 function openAdd(dk){
   sheet(`<div class="gb"></div><div class="xp-eb">✧ · add to the calendar · ✧</div><div class="xp-h">something to remember</div>
-    <div class="ob-f" style="margin-top:12px">
-      <input id="adT" placeholder="what is it?" aria-label="title">
-      <input id="adD" type="date" value="${dk||S.sel||key(new Date())}" aria-label="date">
-      <textarea id="adN" rows="2" placeholder="a note for future you" aria-label="note"></textarea>
+    <div class="fm">
+      <label class="fl"><span>what is it</span><input id="adT" placeholder="a working, a reminder, a date…"></label>
+      <label class="fl"><span>when</span><input id="adD" type="date" value="${dk||S.sel||key(new Date())}"></label>
+      <div class="fl"><span>what kind</span><div class="fchips" id="adL">${ADD_TYPES.map((t,i)=>`<button type="button" data-l="${t[0]}" class="fchip${i===0?' on':''}" onclick="document.querySelectorAll('#adL button').forEach(x=>x.classList.toggle('on',x===this))">${t[1]} ${t[2]}</button>`).join('')}</div></div>
+      <label class="fl"><span>a note · optional</span><textarea id="adN" rows="2" placeholder="for future you"></textarea></label>
     </div>
-    <div class="seg" id="adL" style="margin-top:10px">${ADD_TYPES.map((t,i)=>`<button type="button" data-l="${t[0]}" class="${i===0?'on':''}" onclick="document.querySelectorAll('#adL button').forEach(x=>x.classList.toggle('on',x===this))">${t[1]} ${t[2]}</button>`).join('')}</div>
-    <button class="btn" onclick="saveEvent()">✧ put it on the calendar</button>`);
+    <button class="btn" onclick="saveEvent()">put it on the calendar</button>`);
   setTimeout(()=>{const t=document.getElementById('adT');if(t)t.focus();},60);
 }
 function saveEvent(){
