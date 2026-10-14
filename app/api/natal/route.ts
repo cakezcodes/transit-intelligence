@@ -76,7 +76,7 @@ export async function POST(req: Request) {
   }
   if (lat === null || lng === null || !tzName) {
     return NextResponse.json(
-      { error: 'birth place not found — pick a city from the list' },
+      { error: 'couldn’t find that birth city. edit the details and pick it from the list' },
       { status: 422 },
     );
   }

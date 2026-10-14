@@ -686,7 +686,7 @@ function renderOrbit(){
       <button class="btn" onclick="castMine()">cast my chart</button></div>`;
   document.getElementById('orbitList').innerHTML= S.people.length? S.people.map((p,i)=>
    `<button class="row" onclick="openPerson(${i})"><span class="disc" style="flex:0 0 40px;height:40px;font-size:16px">${(p.name||'?')[0]}</span>
-     <span><span class="t">${esc(p.name)}</span><div class="s">${p.natal?(()=>{const b=big3Of(p);return `☉︎ ${SIGNS[b.sun]} · ☽︎ ${SIGNS[b.moon]}${b.rise!=null?' · ↑ '+SIGNS[b.rise]:''}`;})():p.date?'casting…':'birth data pending'}</div></span><span class="c">›</span></button>`).join('')
+     <span><span class="t">${esc(p.name)}</span><div class="s">${p.natal?(()=>{const b=big3Of(p);return `☉︎ ${SIGNS[b.sun]} · ☽︎ ${SIGNS[b.moon]}${b.rise!=null?' · ↑ '+SIGNS[b.rise]:''}`;})():p.date?(p.cast==='failed'?'couldn\'t cast · tap to fix':'casting…'):'birth data pending'}</div></span><span class="c">›</span></button>`).join('')
    :`<div class="card"><div class="empty" style="padding:20px 8px"><div class="eg">☍</div><div class="et">orbit's empty</div>
       <div class="ed">add the people whose charts you actually care about. their transits become a calendar layer you can toggle on.</div></div></div>`;
 }
@@ -699,27 +699,31 @@ function big3(p,who){
   return `<div class="b3">${cell('☉︎','sun',b.sun,"explain('sun')")}${cell('☽︎','moon',b.moon,"explain('moon')")}${
     b.rise!=null?cell('↑','rising',b.rise):`<button class="b3c" onclick="${ref==='me'?'castMine()':riseWhy}"><div class="g">↑</div><div class="k">rising</div><div class="v">${b.noTime?'add birth time':(b.pending?'casting…':'—')}</div></button>`}</div>`;
 }
-function openPerson(i){
-  if(i===undefined){
-    sheet(`<div class="gb"></div><div class="cap" style="font-size:9.5px;color:var(--deep);text-align:center">☍ · add to orbit · ☍</div>
-     <div class="xp-h">someone new</div>
+function personForm(i){
+  const p=i===undefined?{rel:'partner'}:S.people[i];
+  pCity=p.lat!=null&&p.tzName?{lat:p.lat,lng:p.lng,tz:p.tzName,n:p.place}:null;
+  sheet(`<div class="gb"></div><div class="cap" style="font-size:9.5px;color:var(--deep);text-align:center">☍ · ${i===undefined?'add to orbit':'birth details'} · ☍</div>
+     <div class="xp-h">${i===undefined?'someone new':esc(p.name)}</div>
      <div class="fm">
-       <label class="fl"><span>name</span><input id="pN" placeholder="what you call them"></label>
-       <div class="frow"><label class="fl"><span>birthday</span><input id="pD" type="date"></label>
-         <label class="fl"><span>time · optional</span><input id="pT" type="time"></label></div>
-       <label class="fl" style="position:relative"><span>birth city</span><input id="pP" placeholder="start typing" autocomplete="off" oninput="placeSearch(this.value,'pPlaceList',c=>pCity=c)"><div id="pPlaceList" class="ob-places"></div></label>
-       <div class="fl"><span>they're your</span><div class="fchips" id="pRc">${['partner','situationship','ex','friend','family','client','enemy'].map((r,i)=>`<button type="button" class="fchip${i===0?' on':''}" data-r="${r}" onclick="document.querySelectorAll('#pRc button').forEach(x=>x.classList.toggle('on',x===this));document.getElementById('pR').value='${r}'">${r}</button>`).join('')}</div>
-         <input type="hidden" id="pR" value="partner"></div>
+       <label class="fl"><span>name</span><input id="pN" placeholder="what you call them" value="${esc(p.name||'')}"></label>
+       <div class="frow"><label class="fl"><span>birthday</span><input id="pD" type="date" value="${esc(p.date||'')}"></label>
+         <label class="fl"><span>time · optional</span><input id="pT" type="time" value="${esc(p.time||'')}"></label></div>
+       <label class="fl" style="position:relative"><span>birth city</span><input id="pP" placeholder="start typing, then pick" autocomplete="off" value="${esc(p.place||'')}" oninput="pCity=null;placeSearch(this.value,'pPlaceList',c=>pCity=c)"><div id="pPlaceList" class="ob-places"></div></label>
+       <div class="fl"><span>they're your</span><div class="fchips" id="pRc">${['partner','situationship','ex','friend','family','client','enemy'].map(r=>`<button type="button" class="fchip${r===(p.rel||'partner')?' on':''}" data-r="${r}" onclick="document.querySelectorAll('#pRc button').forEach(x=>x.classList.toggle('on',x===this));document.getElementById('pR').value='${r}'">${r}</button>`).join('')}</div>
+         <input type="hidden" id="pR" value="${esc(p.rel||'partner')}"></div>
+       <div class="ferr" id="pErr"></div>
      </div>
-     <button class="btn" onclick="savePerson()">cast their chart</button>`);
-    return;
-  }
-  const p=S.people[i];
+     <button class="btn" id="pGo" onclick="savePerson(${i===undefined?'':i})">${i===undefined?'cast their chart':'save and recast'}</button>`);
+}
+function openPerson(i){
+  if(i===undefined)return personForm();
+  const p=S.people[i];S.personIdx=i;
   document.getElementById('pBody').innerHTML=
    `<div class="eb"><span class="cer">☍ · </span>${p.rel||'orbit'}<span class="cer"> · ☍</span></div>
     <div class="h1 sf">${p.name}<span class="k">✦</span></div>
-    <div class="h1s">${p.place||'—'} · ${p.date||'no birth data'}</div>
-    <div class="pnl">${p.natal?`<div class="pwheel">${wheelSVG(p.natal,i)}</div>`:''}${big3(p,i)}</div>
+    <div class="h1s">${esc(p.place||'—')} · ${p.date||'no birth data'} · <button class="lk" onclick="personForm(${i})">edit</button></div>
+    ${p.cast==='failed'&&!p.natal?castFailHTML(p,i):''}
+    ${p.cast==='failed'&&!p.natal?'':`<div class="pnl">${p.natal?`<div class="pwheel">${wheelSVG(p.natal,i)}</div>`:''}${big3(p,i)}</div>`}
     <div class="lab">their sky today</div>
     <div class="card">${p.date?theirSky(p):'<div style="font-size:13px;color:var(--dust)">add their birth date to read their transits</div>'}</div>
     <div class="lab">entanglement</div>
@@ -736,25 +740,65 @@ function openPerson(i){
 }
 function theirSky(p){
   const d=new Date(),si=signOf(moonLon(d));
-  const b3=big3Of(p);if(b3.sun==null)return '<div style="font-size:13px;color:var(--dust)">their chart is still casting — check back in a sec</div>';
+  const b3=big3Of(p);if(b3.sun==null)return `<div style="font-size:13px;color:var(--dust)">${p.cast==='failed'?'their sky reads once the chart casts.':'casting their chart with the engine…'}</div>`;
   const nsun=b3.sun,nmoon=b3.moon;
-  const hit=si===nsun?'the moon is sitting on their sun today — they\'re feeling extremely themselves. handle accordingly.'
-    :si===nmoon?'lunar return for them. they\'re raw, resetting, and probably won\'t admit it.'
-    :`moon in ${SIGNS[si]} for them too — ${SIGN_READ[SIGNS[si]][1]}`;
+  const hit=si===nsun?`the moon is crossing their sun sign today, so they feel more like themselves than usual: visible, a little louder, easier to read.`
+    :si===nmoon?`the moon is back in their moon sign: a small monthly reset for them. feelings sit closer to the surface; go gently.`
+    :`the moon in ${SIGNS[si]} touches them too: ${SIGN_READ[SIGNS[si]][0].split(': ')[1]}.`;
   return `<div class="tr"><span class="g">☽︎</span><div><div class="a">moon in ${SIGNS[si]} ${GLY[si]}</div><div class="b">${hit}</div></div></div>`;
 }
 let pCity=null;
-function savePerson(){
-  const n=document.getElementById('pN').value.trim();if(!n)return toast('name them first ☍');
-  const p={name:n,date:document.getElementById('pD').value,time:document.getElementById('pT').value,place:document.getElementById('pP').value,rel:document.getElementById('pR').value};
+/* a typed city that wasn't picked from the list: look it up once before casting */
+async function resolveCity(q){
+  const seed=CITIES.find(c=>c.n.toLowerCase().startsWith(q.toLowerCase()));
+  if(seed)return seed;
+  try{
+    const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q.split(',')[0].trim())}&count=1&language=en&format=json`,{signal:AbortSignal.timeout(6000)});
+    const x=((await r.json()).results||[]).find(h=>h.timezone);
+    return x?{n:[x.name,x.admin1,x.country_code].filter(Boolean).join(', '),lat:x.latitude,lng:x.longitude,tz:x.timezone}:null;
+  }catch(e){return null;}
+}
+async function savePerson(i){
+  const err=m=>{const e=document.getElementById('pErr');if(e)e.textContent=m;};
+  const n=document.getElementById('pN').value.trim();if(!n)return err('give them a name first.');
+  const date=document.getElementById('pD').value, time=document.getElementById('pT').value;
+  let place=document.getElementById('pP').value.trim();
+  if(date&&place&&!pCity){
+    const go=document.getElementById('pGo');if(go){go.disabled=true;go.textContent='finding that city…';}
+    pCity=await resolveCity(place);
+    if(go){go.disabled=false;go.textContent=i===undefined?'cast their chart':'save and recast';}
+    if(!pCity)return err('couldn\'t find that city. type a few letters and pick it from the list.');
+  }
+  if(date&&!place)return err('add their birth city so the chart has a place to stand.');
+  const p=i===undefined?{}:S.people[i];
+  Object.assign(p,{name:n,date,time,place:pCity?pCity.n||place:place,rel:document.getElementById('pR').value});
   if(pCity){p.lat=pCity.lat;p.lng=pCity.lng;p.tzName=pCity.tz;}
-  S.people.push(p);pCity=null;
-  closeSheet();renderOrbit();tiSave();
-  if(!p.date)return toast('☍ in orbit — add a birth date to cast their chart');
-  toast('☍ casting their chart…');
-  castChart(p,false).then(ch=>{p.natal=ch;renderOrbit();tiSave();const b=big3Of(p);
-    toast(`✦ ${esc(p.name)} is in orbit — ${SIGNS[b.sun]} sun${b.rise!=null?', '+SIGNS[b.rise]+' rising':''}`);})
-   .catch(e=>toast('✦ '+String(e.message||e).toLowerCase()));
+  if(i===undefined)S.people.push(p);
+  pCity=null;closeSheet();
+  if(!p.date){p.natal=null;p.cast=null;renderOrbit();tiSave();return toast('☍ in orbit. add a birth date to cast their chart');}
+  castPerson(p);
+}
+/* casting has three honest states: casting, cast, or failed with a reason and a way out */
+function castPerson(p){
+  p.natal=null;p.cast='casting';p.castErr='';
+  renderOrbit();rerenderPerson(p);tiSave();
+  return castChart(p,false).then(ch=>{
+    if(!ch)throw new Error('the chart didn\'t cast');
+    p.natal=ch;p.cast=null;renderOrbit();rerenderPerson(p);tiSave();const b=big3Of(p);
+    toast(`✦ ${esc(p.name)}: ${SIGNS[b.sun]} sun${b.rise!=null?', '+SIGNS[b.rise]+' rising':''}`);
+  }).catch(e=>{
+    p.cast='failed';p.castErr=String(e.message||e).toLowerCase();
+    renderOrbit();rerenderPerson(p);tiSave();
+    toast('☍ '+p.castErr);
+  });
+}
+function rerenderPerson(p){
+  const i=S.people.indexOf(p);
+  if(i>=0&&VSTACK[VSTACK.length-1]==='person'&&S.personIdx===i)openPerson(i);
+}
+function castFailHTML(p,i){
+  return `<div class="card cfail"><div class="t1">their chart didn't cast</div><div class="t2">${esc(p.castErr||'something went wrong reaching the engine.')}</div>
+    <div class="cfail-b"><button class="btn" onclick="castPerson(S.people[${i}])">try again</button><button class="btn g" onclick="personForm(${i})">edit birth details</button></div></div>`;
 }
 
 /* ══════════ GRIMOIRE ══════════ */
@@ -1580,7 +1624,8 @@ const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;
 async function castChart(who,self){
   if(!who||!who.date)return null;
   const r=await fetch('/api/natal',{method:'POST',headers:{'content-type':'application/json'},
-    body:JSON.stringify({name:who.name,date:who.date,time:who.time||'',place:who.place||'',lat:who.lat??null,lng:who.lng??null,tzName:who.tzName||null,self:!!self})});
+    body:JSON.stringify({name:who.name,date:who.date,time:who.time||'',place:who.place||'',lat:who.lat??null,lng:who.lng??null,tzName:who.tzName||null,self:!!self}),
+    signal:AbortSignal.timeout(25000)}).catch(e=>{throw new Error(e&&e.name==='TimeoutError'?'the engine took too long. check your connection and try again':'couldn\'t reach the engine. check your connection and try again');});
   const j=await r.json().catch(()=>({}));
   if(!r.ok)throw new Error(j.error||'the chart didn\'t cast');
   return j.chart;
@@ -1606,7 +1651,7 @@ function big3Of(p){
     sun:sun?SIGNS.indexOf(sun.sign):null,
     moon:moon?SIGNS.indexOf(moon.sign):null,
     rise:ch&&ch.timeKnown&&ch.asc!=null?signOf(ch.asc):null,
-    pending:!ch&&!!p.date,
+    pending:!ch&&!!p.date&&p.cast!=='failed',
     noTime:ch&&!ch.timeKnown
   };
 }
@@ -1707,10 +1752,11 @@ async function healChart(){
   const todo=[];
   if(S.onboarded&&S.me.date&&!S.me.natal)todo.push([S.me,true]);
   S.people.forEach(p=>{if(p.date&&!p.natal)todo.push([p,false]);});
+  S.people.forEach(p=>{if(p.cast==='casting'&&p.natal)p.cast=null;});
   if(!todo.length)return;
   let me=false;
   for(const [who,self] of todo){
-    try{who.natal=await castChart(who,self);if(self)me=true;}catch(e){/* offline or no place — next launch */}
+    try{who.natal=await castChart(who,self);if(self)me=true;else who.cast=null;}catch(e){if(!self){who.cast='failed';who.castErr=String(e.message||e).toLowerCase();}}
   }
   renderAll();tiSave();
   if(me){const b=big3Of(S.me);if(b.rise!=null)toast(`✦ chart recast by the engine — ${SIGNS[b.rise]} rising`);}
