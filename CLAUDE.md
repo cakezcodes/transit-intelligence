@@ -32,7 +32,7 @@ Dual-ruler signs (Scorpio, Aquarius, Pisces) return BOTH traditional + modern ho
 Reference: `planets`, `signs` (rulers trad+modern), `houses` (number, domain), `celestial_bodies`, `decans` (36, Book T, linked to cards), `aspect_patterns`, `transit_event_types`, `progression_event_types`, `moon_phases` (8), `color_meanings` (6), `placement_meanings` (240: every planet × sign and × house, each with core/constructive/distorted), `synastry_meanings` (48).
 Tarot: `tarot_cards` (78, with astro_type/astro_ruler/astro_glyph), `tarot_suits` (4), `tarot_numerology` (10), `meaning_enrichments` (114), `card_themes` (8, structure only — assignments NOT curated yet, do not auto-fill), `tarot_spreads` (20).
 Grimoire: `rituals` (20), `correspondences` (16), `grimoire_reference` (8), `ritual_log` (user, RLS).
-Calendar/state: `calendar_copy` (64 rows, Q4 2026 product copy; signed-in read), `global_events` (251), `sky_positions` (empty — job in step 2), `calendar_events` (empty — user events), `cycle_logs`, `journal_entries` (empty, RLS'd).
+Calendar/state: `voiced_readings` (owner RLS; written readings), `calendar_copy` (64 rows, Q4 2026 product copy; signed-in read), `global_events` (251), `sky_positions` (empty — job in step 2), `calendar_events` (empty — user events), `cycle_logs`, `journal_entries` (empty, RLS'd).
 People: `people` (1 row; `is_self` marks the user's own chart), `profiles`. Archive (read-only, never an engine source): `prototype_archive`.
 Storage: a bucket exists for RWS card art (public domain, 1909) — images not sourced/uploaded yet; add `card_image_url` to `tarot_cards` when wiring.
 
@@ -41,6 +41,8 @@ Storage: a bucket exists for RWS card art (public domain, 1909) — images not s
 - Charts are cast only by `POST /api/natal` (Celestine). The client never computes natal positions or angles.
 - `npm test` = chart validation + prototype parse + dead-handler + markup-balance checks.
 - The in-app calendar is the Cosmic Calendar engine: `POST /api/calendar` → `lib/calendar/app.mjs` (sky + moon + natal/divination/ritual + convergence, one month at a time). Event detail shows each layer's full text. Public-event product copy lives only in `calendar_copy` (migration 20261013000100), loaded with `scripts/calendar/import-copy.mjs` from the published .ics files — never commit it.
+- Written readings (Rule 2): `POST /api/read/natal` writes the natal promise on demand from `natal_positions` evidence (`lib/voice/natalEvidence.ts`) in the blend voice (`lib/voice/voice.ts`: serious-astrologer structure, bestie texture; owner-approved 2026-10-14, supersedes pure bestie for long readings). Saved once per chart + `VOICE_VERSION` in `voiced_readings`. Needs `ANTHROPIC_API_KEY` in Vercel.
+- App copy (every label, marker, glossary entry, card meaning, ritual, daily read) follows `docs/VOICE.md`: the blend — structure first, usable meaning second, at most one line of bite.
 - Ground: beige paper washed with the ribbon colour (`--ground` in `app/astrocake.css`, keyed off `--accent`).
 
 ## Prototype → screens
