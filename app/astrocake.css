@@ -377,3 +377,11 @@ html[data-mode="dark"] body{background:#161513}
 .ph-add .pl-cards i{width:14px;height:22px}
 .sht .fm input[type=date]{min-width:0;width:100%}
 .up{display:block}
+
+/* ═══ the written natal promise ═══ */
+.np{margin-top:4px}
+.np-t{font-size:22px;font-weight:800;font-style:italic;text-transform:uppercase;letter-spacing:-.03em;line-height:1;margin:2px 0 10px}
+.np p{font-size:14.5px;line-height:1.62;margin:0 0 12px}
+.np-f,.np-n{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.np-n{margin-top:8px;text-align:center}
+.np-w{margin-top:12px;padding:14px;border:1px dashed var(--moon);font-size:13px;color:var(--dust);text-align:center}

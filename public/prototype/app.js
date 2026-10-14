@@ -1180,9 +1180,42 @@ function renderNatal(){
   const A=aspectsOf(ch).slice(0,8);
   const ae=document.getElementById('natalAsp');
   if(ae)ae.innerHTML=A.length?A.map(x=>`<button class="nr" onclick="explainAspect('${x.a}','${x.b}','${x.t.n}',${x.orb.toFixed(1)})"><span class="g">${x.t.g}</span><span class="n">${bname(x.a)} ${x.t.n} ${bname(x.b)}</span><span class="w2">${x.orb.toFixed(1)}° orb</span><span class="c">›</span></button>`).join(''):'<div class="nr">no major aspects inside orb</div>';
+  loadPromise();
   const b=big3Of(S.me);
   document.getElementById('natalPromise').innerHTML=
    `your sun's in <b>${SIGNS[b.sun]}</b> and your moon's in <b>${SIGNS[b.moon]}</b> — so the thing you're built to become and the thing you actually need are ${b.sun===b.moon?'the same department, which is rare and means when you\'re on, you\'re fully on, and when you\'re off, there\'s nowhere to hide':'running on different frequencies. that\'s not a flaw, that\'s the whole tension the chart is asking you to metabolize'}. ${SIGN_READ[SIGNS[b.moon]][1]}${b.rise!=null?` and with <b>${SIGNS[b.rise]}</b> rising, that's the door everyone walks through first — ${SIGN_READ[SIGNS[b.rise]][0]}.`:''}`;
+}
+
+/* the written natal promise: generated once per chart on request (/api/read/natal), then kept */
+let PROMISE={state:'idle',reading:null,enabled:false,ref:null};
+async function loadPromise(){
+  const ref=S.me.natal&&S.me.natal.computedAt;if(PROMISE.ref===ref&&PROMISE.state!=='idle')return renderPromise();
+  PROMISE={state:'loading',reading:null,enabled:false,ref};renderPromise();
+  try{const r=await fetch('/api/read/natal');const j=await r.json();
+    PROMISE={state:j.reading?'done':'none',reading:j.reading,enabled:!!j.enabled,ref};}
+  catch(e){PROMISE.state='none';}
+  renderPromise();
+}
+async function writePromise(){
+  PROMISE.state='writing';renderPromise();
+  try{const r=await fetch('/api/read/natal',{method:'POST'});const j=await r.json();
+    if(!r.ok)throw new Error(j.error||'the reading didn\'t come through');
+    PROMISE.state='done';PROMISE.reading=j.reading;sparkleBurst(innerWidth/2,innerHeight*.4,10);}
+  catch(e){PROMISE.state='none';toast(e.message);}
+  renderPromise();
+}
+function renderPromise(){
+  const el=document.getElementById('natalRead');if(!el)return;
+  const P=PROMISE,teaser=document.getElementById('natalPromise');
+  if(P.state==='done'&&P.reading){
+    if(teaser)teaser.style.display='none';
+    el.innerHTML=`<div class="np"><div class="np-t">${esc(P.reading.title||'your natal promise')}</div>${String(P.reading.body).split(/\n\s*\n/).map(x=>`<p>${esc(x.trim())}</p>`).join('')}
+      <div class="np-f">written for your chart by the transit intelligence voice · kept in your record</div></div>`;return;}
+  if(teaser)teaser.style.display='';
+  if(P.state==='loading'){el.innerHTML='';return;}
+  if(P.state==='writing'){el.innerHTML='<div class="np-w">✦ reading your chart… this takes about a minute. you can leave this page — it\'ll be here.</div>';return;}
+  el.innerHTML=P.enabled?`<button class="btn" onclick="writePromise()" style="margin-top:12px">✦ read my full natal promise</button><div class="np-n">a full reading of your chart, written once and kept.</div>`
+    :`<div class="np-n" style="margin-top:12px">✦ the full written promise switches on once readings are connected.</div>`;
 }
 
 /* ══════════ ME ══════════ */
