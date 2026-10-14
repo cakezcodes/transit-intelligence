@@ -42,6 +42,7 @@ Storage: a bucket exists for RWS card art (public domain, 1909) — images not s
 - `npm test` = chart validation + prototype parse + dead-handler + markup-balance checks.
 - The in-app calendar is the Cosmic Calendar engine: `POST /api/calendar` → `lib/calendar/app.mjs` (sky + moon + natal/divination/ritual + convergence, one month at a time). Event detail shows each layer's full text. Public-event product copy lives only in `calendar_copy` (migration 20261013000100), loaded with `scripts/calendar/import-copy.mjs` from the published .ics files — never commit it.
 - Written readings (Rule 2): `POST /api/read/natal` writes the natal promise on demand from `natal_positions` evidence (`lib/voice/natalEvidence.ts`) in the blend voice (`lib/voice/voice.ts`: serious-astrologer structure, bestie texture; owner-approved 2026-10-14, supersedes pure bestie for long readings). Saved once per chart + `VOICE_VERSION` in `voiced_readings`. Needs `ANTHROPIC_API_KEY` in Vercel.
+- App copy (every label, marker, glossary entry, card meaning, ritual, daily read) follows `docs/VOICE.md`: the blend — structure first, usable meaning second, at most one line of bite.
 - Ground: beige paper washed with the ribbon colour (`--ground` in `app/astrocake.css`, keyed off `--accent`).
 
 ## Prototype → screens

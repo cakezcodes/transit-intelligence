@@ -33,69 +33,79 @@ function voidWindow(d){
   const lon=moonLon(d), degLeft=30-degIn(lon), hrsLeft=degLeft/13.176396*24;
   return hrsLeft<5 ? {active:true,hrs:hrsLeft.toFixed(1)} : {active:false,hrs:hrsLeft.toFixed(1)};
 }
-const MOOD={ 'new moon':'plant it. the field is finally clear.','waxing crescent':'the seed cracked. protect it, don\'t announce it.',
- 'first quarter':'friction on purpose. push where it resists.','waxing gibbous':'refine, don\'t restart.','full moon':'it\'s all lit up. you can see everything, including what you were avoiding.',
- 'waning gibbous':'say the thing. gratitude or grievance, either way — out loud.','last quarter':'cut what you\'ve outgrown.','waning crescent':'release weather. clear the field before you plant again.'};
+const MOOD={'new moon':'sun and moon meet, and the sky goes dark. this is the start of the cycle: quiet, low-light, good for choosing rather than doing.',
+ 'waxing crescent':'the first sliver of light after the new moon. what you started is real but fragile; give it care before you give it an audience.',
+ 'first quarter':'the moon sits square the sun, half lit. this is the first test of the cycle: friction shows you where the plan needs a stronger frame.',
+ 'waxing gibbous':'the moon is nearly full. this is the edit before the reveal: improve what you started, don\'t tear it down.',
+ 'full moon':'the moon stands opposite the sun, fully lit. what grew since the new moon is visible now, including what you were avoiding looking at.',
+ 'waning gibbous':'the light starts to recede. this is the phase of telling: share what you learned, give thanks or name the grievance, then let it settle.',
+ 'last quarter':'the moon squares the sun again, half dark this time. a turning point toward release: decide what stays and what you\'ve outgrown.',
+ 'waning crescent':'the last sliver before the dark. the cycle is closing; rest, clear, and let the field go fallow before you plant again.'};
 
-/* ══════════ BESTIE DAILY READ ══════════ */
+/* ══════════ DAILY READ (the blend: structure, then meaning, then at most one line of bite) ══════════ */
 const SIGN_READ={
- aries:['fast, loud, zero patience','you want it done yesterday and honestly? swing.'],
- taurus:['slow, sensory, stubborn as hell','if it doesn\'t feel good in your body, it\'s a no. that\'s not laziness, that\'s data.'],
- gemini:['fast talk, faster brain, twelve tabs open','the info is coming in hot. don\'t make a forever call on a group-chat rumor.'],
- cancer:['soft, watery, feelings-first','you\'re not too much, you\'re just uncovered today. armor optional, boundaries required.'],
- leo:['loud, warm, main-character','be seen on purpose. dimming yourself to make someone comfortable is not humility, it\'s a favor they didn\'t earn.'],
- virgo:['precise, useful, secretly anxious','fix the one thing that\'s actually broken. not the six things that are just annoying you.'],
- libra:['charming, indecisive, deeply aware','you already know what you want. you\'re just polling the room hoping someone agrees so it\'s not your fault.'],
- scorpio:['deep, private, all or nothing','you can feel what\'s under the surface. you don\'t have to announce that you know.'],
- sagittarius:['blunt, restless, cosmically optimistic','say the honest thing. just maybe not at the volume you\'re currently drafting it at.'],
- capricorn:['cold, competent, playing the long game','do the boring thing that pays in six months. that IS the magic.'],
- aquarius:['detached, weird, ten steps ahead','you\'re not being cold, you\'re being clear. those look identical from the outside.'],
- pisces:['dreamy, porous, absorbing everything','half of what you\'re feeling isn\'t yours. put it down.']};
-const PH_MOVE={'new moon':'name one thing. one. write it down like it\'s already yours.','waxing crescent':'don\'t explain the plan to anyone who\'ll water it down.',
- 'first quarter':'do the hard part first. the resistance is the assignment.','waxing gibbous':'edit, don\'t abandon.','full moon':'don\'t send the text at peak volume. draft it, sleep on it, decide sober.',
- 'waning gibbous':'tell someone the truth today. start with yourself.','last quarter':'delete something. a draft, a habit, a contact. anything.','waning crescent':'rest is not a reward for finishing. take it now.'};
+ aries:['cardinal fire, ruled by mars: quick, direct, impatient with waiting','start the thing instead of discussing it. watch the temper; the urgency is real, the emergency usually isn\'t.'],
+ taurus:['fixed earth, ruled by venus: slow, sensory, loyal to what already works','trust what your body says yes and no to today. that isn\'t laziness, it\'s information.'],
+ gemini:['mutable air, ruled by mercury: quick-minded, curious, talkative','good for conversations, errands and gathering information. bad for final decisions made on half the facts.'],
+ cancer:['cardinal water, ruled by the moon itself: tender, protective, feelings first','moods run closer to the surface and home matters more. look after yourself the way you\'d look after someone you love.'],
+ leo:['fixed fire, ruled by the sun: warm, generous, wants to be seen','be visible on purpose. making yourself smaller so someone else feels comfortable is not humility.'],
+ virgo:['mutable earth, ruled by mercury: precise, useful, quietly anxious','fix the one thing that is actually broken. the urge to fix everything at once is the anxiety talking.'],
+ libra:['cardinal air, ruled by venus: diplomatic, aesthetic, relationship-minded','good for repair, beauty and fair deals. if you\'re polling everyone before you choose, you probably already know.'],
+ scorpio:['fixed water, ruled by mars and pluto: deep, private, all or nothing','feelings run deep and you can sense what sits under the surface. you don\'t have to announce what you\'ve noticed.'],
+ sagittarius:['mutable fire, ruled by jupiter: honest, restless, hungry for meaning','reach for something bigger: a class, a trip, a long view. say the honest thing, just not at full volume.'],
+ capricorn:['cardinal earth, ruled by saturn: serious, capable, playing the long game','do the unglamorous task that pays off in six months. structure is the magic here.'],
+ aquarius:['fixed air, ruled by saturn and uranus: detached, inventive, future-facing','step back and see the pattern. you aren\'t being cold, you\'re being clear; from outside they look the same.'],
+ pisces:['mutable water, ruled by jupiter and neptune: porous, dreamy, compassionate','good for art, rest and intuition. not everything you\'re feeling is yours; put down what you picked up.']};
+const PH_MOVE={'new moon':'name one intention, in one sentence, in the present tense. write it where you\'ll see it.',
+ 'waxing crescent':'take the first small step, and keep the plan to yourself until it can stand on its own.',
+ 'first quarter':'do the hard part first. the resistance is showing you where to reinforce.',
+ 'waxing gibbous':'revise one thing you\'ve already made. edit, don\'t abandon.',
+ 'full moon':'feel it fully, decide later. draft the message tonight and send it, if at all, in daylight.',
+ 'waning gibbous':'tell one person something true: a thank-you, a lesson, or a boundary.',
+ 'last quarter':'remove one thing: a draft, a habit, a commitment you only keep out of momentum.',
+ 'waning crescent':'rest before you\'ve earned it. clearing space is part of the work, not a break from it.'};
 function dailyRead(d){
   const p=phase(d), pn=phaseName(p), ms=SIGNS[signOf(moonLon(d))], ss=SIGNS[signOf(sunLon(d))];
-  const [vibe,read]=SIGN_READ[ms];
+  const [frame,read]=SIGN_READ[ms];
   const vd=voidWindow(d);
-  const l1=`the moon's in <button class="lk il" onclick="explainSign(${SIGNS.indexOf(ms)})"><b>${ms} ${GLY[SIGNS.indexOf(ms)]}</b></button> and she's ${vibe}. ${MOOD[pn]}`;
+  const l1=`the moon is in <button class="lk il" onclick="explainSign(${SIGNS.indexOf(ms)})"><b>${ms} ${GLY[SIGNS.indexOf(ms)]}</b></button>, ${frame}. ${MOOD[pn]}`;
   const l2=read;
-  const l3=vd.active?`heads up — she goes void in about ${vd.hrs}h. anything you launch, send, or swear to in that window tends to just… evaporate. <button class="lk il" onclick="explain('void')">wait it out ◇</button>`:
-    `sun's still cooking in <button class="lk il" onclick="explainSign(${SIGNS.indexOf(ss)})"><b>${ss}</b></button>, so that's the background hum under all of it.`;
+  const l3=vd.active?`the moon goes void of course in about ${vd.hrs}h: no major aspects left before she changes sign. what you launch, sign or promise in that window tends to go nowhere. <button class="lk il" onclick="explain('void')">what void means ◇</button>`:
+    `the sun is in <button class="lk il" onclick="explainSign(${SIGNS.indexOf(ss)})"><b>${ss}</b></button>, setting the season underneath the moon\'s daily weather: ${SIGN_READ[ss][0].split(': ')[1]}.`;
   return {l1,l2,l3,move:PH_MOVE[pn],pn,ms};
 }
 
 /* ══════════ LAYERS ══════════ */
 const LAYERS=[
  {g:'cosmic moon',items:[
-  {id:'lunar',n:'lunar transits',d:'the moon through the signs, daily',c:'#8FD0F2',on:1,gl:'☽︎'},
-  {id:'lunation',n:'lunations & eclipses',d:'new moons, full moons, the big ones',c:'#F4CC2E',on:1,gl:'◑'},
-  {id:'void',n:'void of course',d:'the dead zones — don\'t launch, don\'t send',c:'#5a564f',on:1,gl:'⊘'},
-  {id:'lunret',n:'lunar return',d:'the moon comes home — your monthly reset',c:'#8FD0F2',on:0,gl:'☾'},
-  {id:'cycle',n:'cycle & ovulation',d:'period, fertile window, luteal — logged and predicted',c:'#FF90E8',on:1,gl:'◉'}]},
+  {id:'lunar',n:'lunar transits',d:'the moon\'s sign each day, the fastest mood shift in the sky',c:'#8FD0F2',on:1,gl:'☽︎'},
+  {id:'lunation',n:'lunations & eclipses',d:'new and full moons and eclipses: the month\'s beginnings and culminations',c:'#F4CC2E',on:1,gl:'◑'},
+  {id:'void',n:'void of course',d:'moon between signs: rest and edit; don\'t launch or send',c:'#5a564f',on:1,gl:'⊘'},
+  {id:'lunret',n:'lunar return',d:'the moon back at its natal degree: your monthly emotional reset',c:'#8FD0F2',on:0,gl:'☾'},
+  {id:'cycle',n:'cycle & ovulation',d:'period, fertile window and luteal phase, logged and estimated',c:'#FF90E8',on:1,gl:'◉'}]},
  {g:'cosmic sky',items:[
-  {id:'global',n:'global transits',d:'what the sky is doing for everyone',c:'#5a564f',on:1,gl:'☉︎'},
-  {id:'retro',n:'retrogrades',d:'stations, shadows, the whole mess',c:'#C7B0F5',on:1,gl:'℞'},
-  {id:'rulers',n:'house rulers on the move',d:'where your chart ruler is walking today',c:'#7FE0B5',on:0,gl:'⌂'}]},
+  {id:'global',n:'global transits',d:'ingresses and aspects everyone lives under, whatever their chart',c:'#5a564f',on:1,gl:'☉︎'},
+  {id:'retro',n:'retrogrades',d:'stations and shadow periods, when a planet\'s topics go into review',c:'#C7B0F5',on:1,gl:'℞'},
+  {id:'rulers',n:'house rulers on the move',d:'where your chart ruler travels today, and which houses it stirs',c:'#7FE0B5',on:0,gl:'⌂'}]},
  {g:'cosmic natal',items:[
-  {id:'natal',n:'transits to natal',d:'what\'s actually hitting your placements',c:'#F4CC2E',on:1,gl:'✦'},
-  {id:'promise',n:'natal promise windows',d:'when the chart finally pays out what it promised',c:'#F4CC2E',on:0,gl:'✧'},
-  {id:'theirs',n:'their transits',d:'what each person in orbit is living through',c:'#C7B0F5',on:0,gl:'☍'},
-  {id:'syn',n:'synastry hits',d:'when the sky touches both charts at once',c:'#FF90E8',on:0,gl:'◇'},
-  {id:'comp',n:'composite transits',d:'the relationship\'s own chart, activated',c:'#C7B0F5',on:0,gl:'◍'}]},
+  {id:'natal',n:'transits to natal',d:'today\'s planets aspecting your placements: what is personal, not general',c:'#F4CC2E',on:1,gl:'✦'},
+  {id:'promise',n:'natal promise windows',d:'when transits trigger what your birth chart already promises',c:'#F4CC2E',on:0,gl:'✧'},
+  {id:'theirs',n:'their transits',d:'what each person in your orbit is living through',c:'#C7B0F5',on:0,gl:'☍'},
+  {id:'syn',n:'synastry hits',d:'transits that touch both charts at once, felt by both',c:'#FF90E8',on:0,gl:'◇'},
+  {id:'comp',n:'composite transits',d:'transits to the relationship\'s own chart, the bond as one entity',c:'#C7B0F5',on:0,gl:'◍'}]},
  {g:'cosmic convergence',items:[
-  {id:'prof',n:'profections',d:'which house is running your year, and this month',c:'#D6EC4F',on:1,gl:'◈'},
-  {id:'firdaria',n:'firdaria & timelords',d:'the planet holding the keys right now',c:'#D6EC4F',on:1,gl:'♄︎'},
-  {id:'zr',n:'zodiacal releasing',d:'chapters, peaks, and loosings of the bond',c:'#FF5A36',on:1,gl:'⟳'},
-  {id:'prog',n:'progressed moon',d:'the inner clock — where your progressed moon is touching',c:'#7FE0B5',on:1,gl:'☽︎'},
-  {id:'power',n:'power days',d:'career, luck, money, deal and love days — when it all lines up',c:'#F4CC2E',on:1,gl:'✦'},
-  {id:'sixmo',n:'six-month plan',d:'each new moon as a planning checkpoint',c:'#FF9A3C',on:0,gl:'◐'}]},
+  {id:'prof',n:'profections',d:'the house, and its ruler, running your year and month',c:'#D6EC4F',on:1,gl:'◈'},
+  {id:'firdaria',n:'firdaria & timelords',d:'the planet ruling this period of your life, by traditional timing',c:'#D6EC4F',on:1,gl:'♄︎'},
+  {id:'zr',n:'zodiacal releasing',d:'your life in chapters: peak periods and loosings of the bond',c:'#FF5A36',on:1,gl:'⟳'},
+  {id:'prog',n:'progressed moon',d:'your inner clock: the progressed moon\'s sign, house and contacts',c:'#7FE0B5',on:1,gl:'☽︎'},
+  {id:'power',n:'power days',d:'days where career, money, luck or love indicators line up',c:'#F4CC2E',on:1,gl:'✦'},
+  {id:'sixmo',n:'six-month plan',d:'each new moon as a checkpoint for the six months ahead',c:'#FF9A3C',on:0,gl:'◐'}]},
  {g:'cosmic divination',items:[
-  {id:'pull',n:'tarot pulls',d:'every card you\'ve logged, on its date',c:'#C7B0F5',on:1,gl:'✦'},
-  {id:'entry',n:'journal entries',d:'notes, photos, synchronicities',c:'#7FE0B5',on:1,gl:'✧'}]},
+  {id:'pull',n:'tarot pulls',d:'every card you\'ve logged, on its date, beside the sky',c:'#C7B0F5',on:1,gl:'✦'},
+  {id:'entry',n:'journal entries',d:'notes, photos and synchronicities, matched to the day\'s sky',c:'#7FE0B5',on:1,gl:'✧'}]},
  {g:'cosmic ritual',items:[
-  {id:'ritual',n:'rituals & workings',d:'what you planned, what you performed',c:'#FF9A3C',on:1,gl:'✧'},
-  {id:'sex',n:'intimacy log',d:'private. yours. cross-referenced with the sky.',c:'#FF90E8',on:0,gl:'◇'}]}
+  {id:'ritual',n:'rituals & workings',d:'what you planned and what you performed, with its timing',c:'#FF9A3C',on:1,gl:'✧'},
+  {id:'sex',n:'intimacy log',d:'private to you, cross-referenced with the sky',c:'#FF90E8',on:0,gl:'◇'}]}
 ];
 let LON={}; LAYERS.forEach(g=>g.items.forEach(i=>LON[i.id]=!!i.on));
 const layMeta=id=>{for(const g of LAYERS)for(const i of g.items)if(i.id===id)return i;};
@@ -192,7 +202,7 @@ function saveUi(){try{const d=document.documentElement;localStorage.setItem('ti-
 const swHTML=()=>ACC.map((A,i)=>`<button class="sw${i===S.accent?' on':''}" data-i="${i}" style="--c1:${A.c1};--c2:${A.c2}" onclick="setAcc(${i})"><span class="d"></span><span class="n">${A.n}</span></button>`).join('');
 function setMode(m){document.documentElement.dataset.mode=m;saveUi();document.querySelectorAll('#meMode button,#obMode button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));stars();}
 function toggleGrad(){const on=document.documentElement.dataset.grad==='on';document.documentElement.dataset.grad=on?'off':'on';saveUi();document.getElementById('gradTog').classList.toggle('on',!on);}
-const TSUB={clean:'all sans, zero ceremony',balanced:'serif titles + quotes only',ceremony:'full book of shadows — stars, glyphs, ✦'};
+const TSUB={clean:'all sans serif, no ornament',balanced:'serif for titles and quotes, sans for the rest',ceremony:'the full book of shadows: serif, stars, glyphs, ✦'};
 document.querySelectorAll('#meType button').forEach(b=>b.onclick=()=>{document.documentElement.dataset.type=b.dataset.t;saveUi();document.querySelectorAll('#meType button').forEach(x=>x.classList.toggle('on',x===b));toast(TSUB[b.dataset.t]);stars();});
 document.querySelectorAll('#meMode button,#obMode button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
 
@@ -208,119 +218,119 @@ function stars(){const c=document.getElementById('stars'),x=c.getContext('2d');
 addEventListener('resize',stars);
 
 /* ══════════ DECK (all 78 · real 1909 scans) ══════════ */
-const MAJ=[['m00','the fool','♅︎ uranus','the leap. beginnings, trust, the open road.','recklessness in a freedom costume. look before the cliff.','a yes to starting — pack light'],
-['m01','the magician','☿︎ mercury','every tool is already on the table.','manifesting leaking into manipulating. whose spell is this?','skill, will, receipts'],
-['m02','the high priestess','☽︎ moon','the knowing behind the veil. don\'t say it out loud yet.','intuition on mute — you\'re asking everyone but yourself.','sit with it. the answer surfaces'],
-['m03','the empress','♀︎ venus','abundance, body, softness as a power move.','over-giving until there\'s nothing left to give from.','feed it and it grows'],
-['m04','the emperor','♈︎ aries','structure. the boring thing that holds it all up.','control cosplaying as protection.','build the frame first'],
-['m05','the hierophant','♉︎ taurus','tradition, teachers, the way it\'s always been done.','the rulebook is expired. write your own.','ask someone who\'s done it'],
-['m06','the lovers','♊︎ gemini','a real choice — and choosing means losing the other.','indecision dressed as options.','choose. then commit.'],
-['m07','the chariot','♋︎ cancer','armor on, wheels moving. willpower wins this one.','white-knuckling in the wrong direction.','drive. don\'t drift.'],
-['m08','strength','♌︎ leo','soft hands on the lion. power that doesn\'t raise its voice.','forcing it. the lion isn\'t tamed, it\'s exhausted.','patience wins this one'],
-['m09','the hermit','♍︎ virgo','the lantern, the distance, the answer only silence gives.','isolation with a spiritual excuse.','go quiet on purpose'],
-['m10','wheel of fortune','♃︎ jupiter','the turn. luck, timing, the thing outside your grip.','stuck on the same loop of the same wheel.','the cycle is turning'],
-['m11','justice','♎︎ libra','cause, effect, receipts. the scales don\'t care about your feelings.','avoiding accountability and calling it peace.','tell the truth'],
-['m12','the hanged man','♆︎ neptune','the pause that changes the angle.','stalling and calling it surrender.','stop struggling. look again.'],
-['m13','death','♏︎ scorpio','the ending that was already true. clear the field.','clutching the corpse of a chapter. let go.','transformation, not tragedy'],
-['m14','temperance','♐︎ sagittarius','the blend. slow alchemy, right proportions.','extremes. all or nothing is a personality, not a plan.','middle path, on purpose'],
-['m15','the devil','♑︎ capricorn','the chain you can take off whenever. that\'s the trick.','you\'re already loosening it. keep going.','name the addiction'],
-['m16','the tower','♂︎ mars','the lightning does you a favor. false structures fall fast.','the collapse in slow motion — you\'re holding the wall up yourself.','sudden clarity, dramatic exit'],
-['m17','the star','♒︎ aquarius','after the tower, the water. hope with evidence.','faith running on fumes. refill before you pour.','healing is on schedule'],
-['m18','the moon','♓︎ pisces','the path between the towers. not everything is as lit as it looks.','the fog lifts — the confusion WAS the message.','trust the dog, watch the wolf'],
-['m19','the sun','☉︎ sun','it\'s good. let it be good.','dimming yourself for someone else\'s comfort.','joy, no asterisk'],
-['m20','judgement','♇ pluto','the call. you already heard it.','ignoring the call and pretending the phone\'s off.','rise. answer it.'],
-['m21','the world','♄︎ saturn','the full circle. it\'s actually done.','so close. finish the last 5%.','completion, then the next spiral']];
-const SUIT={w:['wands','△','fire','drive, will, the spark'],c:['cups','▽','water','feelings, love, the tide'],s:['swords','△','air','thought, truth, the blade'],p:['pents','▽','earth','money, body, the ground']};
-const RANK=[['ace','the seed. raw and undiluted.','the seed, unplanted. potential rotting on the counter.'],
-['2','the choice, the pair, the balance point.','imbalance. someone\'s carrying more.'],
-['3','the first proof it\'s working.','a crack in the collaboration.'],
-['4','stability. maybe too much of it.','stagnation. the walls got comfortable.'],
-['5','the loss, the conflict, the humbling.','the recovery starts here.'],
-['6','the exchange. giving, getting, moving on.','the debt nobody named out loud.'],
-['7','the strategy. defend it or reassess it.','delusion or overwhelm — pick one.'],
-['8','the movement. speed, skill, or escape.','stuck. or moving without direction.'],
-['9','almost there. the last hard stretch.','the fear is louder than the facts.'],
-['10','the full weight. completion or collapse.','it\'s over. put it down.'],
-['page','the student. curious, awkward, learning.','immature. all vibes, no follow-through.'],
-['knight','the pursuit. fast, focused, a little reckless.','reckless without the focus.'],
-['queen','mastery held inward. she feels it, she doesn\'t leak it.','absorbing everything. drowning in the tide.'],
-['king','mastery held outward. authority, direction, the call.','the throne used as a weapon.']];
+const MAJ=[['m00','the fool','♅︎ uranus','the fool is zero, the step taken before you know where the ground is. beginnings, trust, the open road, and the nerve to look a little foolish.','the leap without the looking: recklessness in freedom\'s clothes, or the opposite, a start you keep postponing because the ground isn\'t guaranteed.','say yes to the start. pack light.'],
+['m01','the magician','☿︎ mercury','the magician is one: all four suit tools on the table, one hand to the sky, one to the earth. skill meets will, and you already have what you need to begin.','the same skill turned to sleight of hand: talent left idle, plans that stay talk, or persuasion sliding into manipulation. check whose spell this is.','the tools are on the table. use them.'],
+['m02','the high priestess','☽︎ moon','the high priestess sits between the pillars, the scroll half-hidden in her robe. she is the knowing that comes before words; keep it close, it isn\'t ready to be said.','intuition on mute: you poll everyone but yourself, or discretion hardens into withholding. the inner voice is still talking; you stopped listening.','sit with it. the answer surfaces.'],
+['m03','the empress','♀︎ venus','the empress, venus\'s card, sits in a ripening field: fertility, the body, abundance that grows from care. softness here is a form of power, not the absence of it.','the garden overgrown or left untended: over-giving until nothing is left, care that smothers, or creative work blocked because you stopped feeding yourself.','what you tend, grows.'],
+['m04','the emperor','♈︎ aries','the emperor sits on a stone throne carved with rams: aries\'s fire turned into order. structure, authority, the plain frame that holds everything else up.','the frame becomes a cage: control passing itself off as protection, rigidity for its own sake, or no discipline where structure is actually needed.','build the frame first.'],
+['m05','the hierophant','♉︎ taurus','the hierophant blesses two initiates at his feet: teaching handed down, tradition, the institutions that keep knowledge. under taurus it lasts because it was tested.','the rulebook outlives its reason: conformity out of habit, or a teacher who stopped earning the title. you may need to write your own doctrine.','ask someone who has walked this road.'],
+['m06','the lovers','♊︎ gemini','the lovers stand under an angel, the tree of knowledge behind them. gemini\'s card is a choice made with heart and values together, and choosing means letting the other path go.','values and desire pulling apart: indecision dressed up as having options, or a bond held together by habit rather than choice.','choose. then commit.'],
+['m07','the chariot','♋︎ cancer','the chariot is cancer\'s shell on wheels, two sphinxes pulling opposite ways. victory through will: hold the reins steady and opposing forces move as one.','the reins slip: momentum without direction, white-knuckling the wrong route, or armor so thick that nothing gets in, help included.','drive. don\'t drift.'],
+['m08','strength','♌︎ leo','strength is leo\'s card: a woman closes the lion\'s jaws with bare hands. courage as patience and composure; power that doesn\'t need to raise its voice.','force replacing gentleness, or self-doubt replacing courage. the lion isn\'t tamed, just tired, and so are you.','patience is the stronger hand.'],
+['m09','the hermit','♍︎ virgo','the hermit stands alone on the peak, lantern raised, a star inside it. virgo\'s discernment turned inward: stepping back to find the answer only quiet gives.','solitude past its use: isolation with a spiritual excuse, or refusing to go inward at all because of what you might hear.','go quiet on purpose.'],
+['m10','wheel of fortune','♃︎ jupiter','the wheel of fortune turns under jupiter, the great benefic: timing, luck, a change of cycle you didn\'t arrange. what was down comes up.','the turn resisted, or the same loop on repeat: bad timing, setbacks taken personally, a lesson returning because it wasn\'t learned the first time.','the cycle is turning.'],
+['m11','justice','♎︎ libra','justice holds the sword and the scales, libra\'s balance with an edge. cause and effect, fairness, decisions weighed on fact: what you put in comes back.','the scales tipped: dishonesty, an unfair outcome, or avoiding accountability and calling it keeping the peace.','tell the truth. the scales are already moving.'],
+['m12','the hanged man','♆︎ neptune','the hanged man hangs by one foot, calm, a halo at his head. neptune\'s surrender: the chosen pause that turns the world upside down so you see it differently.','stalling and calling it surrender: martyrdom, indecision, a sacrifice nobody asked for. the pause has stopped teaching you anything.','stop struggling. look again.'],
+['m13','death','♏︎ scorpio','death is thirteen, scorpio\'s card, riding past a sun rising between two towers. an ending that is already true; transformation by clearing the field, rarely anything literal.','resisting the ending: clutching a chapter that has closed, stagnation, change dragging slowly because you won\'t let it happen fast.','transformation, not tragedy.'],
+['m14','temperance','♐︎ sagittarius','temperance pours water between two cups, one foot on land, one in the stream. after death comes the slow alchemy: moderation, right proportion, opposites mixed into something new.','the mix goes wrong: excess, impatience, swinging between extremes. all or nothing is a temperament, not a plan.','the middle path, on purpose.'],
+['m15','the devil','♑︎ capricorn','the devil crouches over two chained figures whose collars are loose enough to lift off. capricorn\'s shadow: attachment, compulsion, materialism, the bond you agreed to.','the chains loosening: release, detachment, naming the habit out loud. read the other way, a deeper hold you won\'t look at yet.','name the chain. then lift it off.'],
+['m16','the tower','♂︎ mars','the tower is struck by lightning under mars, its crown blown off. sudden upheaval, false structures falling fast, a revelation that clears ground you couldn\'t clear yourself.','the collapse in slow motion: delaying an overdue fall, holding the wall up yourself. it comes down either way; you only choose how long it takes.','sudden clarity, dramatic exit.'],
+['m17','the star','♒︎ aquarius','the star kneels by the pool after the tower, pouring water onto land and back into the source. aquarius\'s card: hope, renewal, healing you can actually see.','faith running on fumes: discouragement, disconnection, pouring for everyone else from an empty jug. refill before you pour.','healing is on schedule.'],
+['m18','the moon','♓︎ pisces','the moon lights a path between two towers while a dog and a wolf howl at it. pisces\'s card: dreams, illusion, fear and intuition. not everything is as lit as it looks.','the fog lifting: confusion clears, a deception surfaces, fear loosens its grip. or the fog thickens because you keep avoiding what it hides.','trust the dog. watch the wolf.'],
+['m19','the sun','☉︎ sun','the sun shines on a child riding a white horse past the garden wall. the sun\'s own card: joy, vitality, success, clarity. it\'s good. let it be good.','the light dimmed, not gone: joy delayed, optimism shaded by doubt, or yourself made smaller for someone else\'s comfort.','joy, no asterisk.'],
+['m20','judgement','♇ pluto','judgement sounds the trumpet and the dead rise from their coffins. pluto\'s card of rebirth: the reckoning, the call to become who you already are.','the call ignored: self-doubt, harsh self-judgement, refusing to learn from the past. pretending the phone is off doesn\'t stop it ringing.','rise. answer it.'],
+['m21','the world','♄︎ saturn','the world is the last major, a dancer inside the wreath, saturn closing the circle. completion, integration, a cycle that is genuinely done.','so close: an ending left loose, shortcuts, the last five percent unfinished. closure waits until you finish.','completion, then the next spiral.']];
+const SUIT={w:['wands','△','fire','drive, will, ambition, the spark'],c:['cups','▽','water','feeling, love, intuition, the tide'],s:['swords','△','air','thought, truth, conflict, the blade'],p:['pents','▽','earth','money, body, work, the ground']};
+const RANK=[['ace','the ace is the root of its suit: the element in its purest form, offered by a hand from the cloud. a seed, a beginning, raw potential.','the seed left unplanted: an opportunity delayed, missed, or left to rot on the counter.'],
+['2','two is the element meeting itself for the first time: a pair, a choice, a balance point you have to hold.','balance lost: one side carrying more, or a choice put off so long it makes itself.'],
+['3','three is the first result: the element takes shape as growth, collaboration, early proof that it works.','growth stalls: delays, a crack in the collaboration, or plans that never leave the planning stage.'],
+['4','four is the square: foundation, stability, rest. the element holds still long enough to settle, sometimes too long.','stability tipping into stagnation: the walls got comfortable, or the foundation is shifting under you.'],
+['5','five breaks the square open: conflict, loss, struggle, the humbling that forces change.','the worst is passing and recovery begins, or the conflict goes quiet without being resolved.'],
+['6','six restores harmony after five\'s disruption: exchange, giving and receiving, moving through and moving on.','the exchange goes uneven: a debt nobody named, strings on the gift, or a past you keep going back to.'],
+['7','seven tests what six earned: strategy, assessment, defending your position or rethinking it.','the test fumbled: overwhelm, self-deception, or giving up the ground before anyone took it.'],
+['8','eight is movement and mastery: speed, skill, change in motion, or the urge to get out.','motion blocked or aimless: stuck in place, or moving fast with no direction.'],
+['9','nine is the element near its fullest: almost there, the last hard stretch before the close.','the fear is louder than the facts: anxiety, exhaustion, or the finish slipping because you stopped believing in it.'],
+['10','ten is the cycle completed: the element at its full weight, ending in fulfilment or in burden.','the weight released or refused. either way, it\'s over. put it down.'],
+['page','the page is the student of the suit: curious, a little awkward, carrying news and learning the element from scratch.','the student who won\'t study: immaturity, news that doesn\'t arrive, enthusiasm with no follow-through.'],
+['knight','the knight carries the suit at full speed: pursuit, action, focus, a little reckless.','speed without the focus: impulsive, scattered, or the charge that never leaves the stable.'],
+['queen','the queen holds the element inward: mastery as care and receptivity. she feels it fully and doesn\'t leak it.','mastery turned against herself: absorbing everyone else\'s weather until there\'s no shore left.'],
+['king','the king holds the element outward: mastery as authority, direction, the final call.','authority misused: the throne as a weapon, control without care, or a hand that is never there.']];
 const DECK=[];
 MAJ.forEach((m,i)=>DECK.push({k:m[0],n:m[1],a:'major · '+m[2],up:m[3],rv:m[4],f:m[5],suit:'major'}));
 Object.keys(SUIT).forEach(s=>RANK.forEach((r,i)=>{const[nm,gl,el,th]=SUIT[s];
   DECK.push({k:`${s}${String(i+1).padStart(2,'0')}`,n:`${r[0]} of ${nm}`,a:`${gl} ${el} · ${th}`,
-    up:r[1],rv:r[2],f:`${el} energy — ${th.split(',')[0]}`,suit:s});}));
+    up:r[1],rv:r[2],f:`${el} · ${th.split(',')[0]}`,suit:s});}));
 const byKey=k=>DECK.find(c=>c.k===k);
 
 /* ══════════ CONTENT ══════════ */
 const RIT=[
- {n:'cut & clear',s:'banishing · candle',v:'for the one who overstayed',t:['release','protection'],ph:['waning crescent','last quarter','waning gibbous'],
+ {n:'cut & clear',s:'banishing · candle',v:'a saturn working for the tie that outlived its purpose. you cut the pattern, not the person.',t:['release','protection'],ph:['waning crescent','last quarter','waning gibbous'],
   best:'waning moon · saturday ♄︎ · after dark',need:['black candle','bay leaf','rosemary','black tourmaline'],pair:'the cage door',
-  st:['write what you\'re cutting on the bay leaf — the pattern, not the person','dress the black candle base-to-tip with rosemary','burn the leaf in the flame. name the cut out loud, once','let it finish. tourmaline at the door for three nights'],
-  sg:'they cross your mind and nothing moves. the urge to check just… stops.'},
- {n:'road opener',s:'clearing · candle',v:'when everything\'s stuck in traffic',t:['money','clarity'],ph:['new moon','waxing crescent'],
+  st:['set up on a fireproof dish, clear of anything that catches. on the bay leaf, write the pattern you\'re ending, not the name of the person.','dress the black candle from base to tip with rosemary. pushing away from you is the banishing direction.','light the leaf from the candle and drop it in the dish. say the cut out loud, once. repeating it is how you keep it.','let the candle burn down while you stay in the room; snuff it if you have to leave. set the tourmaline by the front door for three nights.'],
+  sg:'they cross your mind and nothing in you moves. the urge to check on them quietly stops.'},
+ {n:'road opener',s:'clearing · candle',v:'a solar working for the plan that stalled with no clear reason. it clears the way; you still walk it.',t:['money','clarity'],ph:['new moon','waxing crescent'],
   best:'new moon · sunday ☉︎ · morning',need:['orange candle','cinnamon','bay leaf','clear quartz'],pair:'the clarity cross',
-  st:['write the blocked road on the bay leaf — one road per working','dress the orange candle with cinnamon, tip-to-base (drawing in)','burn the leaf. open an actual door or window as it catches','quartz on the sill until the road moves'],
-  sg:'callbacks. green lights. the thing that was "pending" suddenly isn\'t.'},
- {n:'honey jar',s:'sweetening · jar',v:'warm the current, don\'t force the tide',t:['love'],ph:['waxing crescent','waxing gibbous','first quarter'],
+  st:['name one blocked road and write it on the bay leaf. one road per working keeps the aim clean.','dress the orange candle with cinnamon from tip to base. drawing toward you is the calling-in direction.','burn the leaf in a fireproof dish, and open a real door or window as it catches. the body learns the gesture.','set the quartz on the sill until the road moves. never leave the candle burning in an empty room.'],
+  sg:'callbacks, green lights, replies. the thing marked pending stops being pending.'},
+ {n:'honey jar',s:'sweetening · jar',v:'a venus working, slow by design. honey softens how someone feels toward you; it does not override what they want.',t:['love'],ph:['waxing crescent','waxing gibbous','first quarter'],
   best:'waxing moon · friday ♀︎ · venus hour',need:['honey','rose petals','cinnamon','pink candle','rose quartz'],pair:'should i text back',
-  st:['petition: their name ×3 crossed with yours, folded toward you','into the jar — honey, petals, a pinch of cinnamon','taste the honey first: "as this is sweet to me…"','pink candle on the lid every friday. quartz beside it.'],
-  sg:'softer replies. they reach first. the tone shifts before the facts do.'},
- {n:'return to sender',s:'protection · mirror',v:'not cursing — forwarding the mail',t:['protection'],ph:['new moon','waning crescent'],
+  st:['write their name three times, then yours across it. fold the paper toward you and place it in the jar.','add honey, rose petals, and a pinch of cinnamon to warm it.','the traditional seal is a taste of the honey and the words "as this is sweet to me, so i am sweet to you." a fingertip pressed in works too.','each friday, burn a small pink candle on a heatproof plate on the lid, with the rose quartz beside it. stay with it while it burns.'],
+  sg:'softer replies. they reach out first. the tone warms before the facts change.'},
+ {n:'return to sender',s:'protection · mirror',v:'a mars-hour reflection, not a curse. you send back what was sent; where it lands is not your job.',t:['protection'],ph:['new moon','waning crescent'],
   best:'dark moon · mars hour ♂︎',need:['small mirror','black salt','black candle','clear quartz'],pair:'the shadow dive',
-  st:['mirror faces outward — toward the door. never at yourself.','ring it in black salt. candle behind it.','whoever it\'s for is not your business. the mail knows the address.','quartz cleanses the room when the candle\'s done'],
-  sg:'the weird energy stops finding you. their chaos gets loud somewhere else.'},
- {n:'glamour before the shift',s:'glamour · self',v:'the room notices before you speak',t:['confidence'],ph:['waxing gibbous','full moon'],
+  st:['stand the mirror facing outward, toward the door. never point it at yourself.','ring the mirror with black salt and set the candle behind it on a heatproof surface.','don\'t name a target. reflection only returns what was aimed; it needs no address from you.','when the candle is out, set the quartz in the room to clear it. sweep up the salt and throw it out away from the house.'],
+  sg:'the strange run of friction stops landing on you. their chaos gets loud somewhere else.'},
+ {n:'glamour before the shift',s:'glamour · self',v:'a venus glamour for walking in already decided. it changes how you carry yourself, so the room reads you differently.',t:['confidence'],ph:['waxing gibbous','full moon'],
   best:'venus hour · moon in libra ♎︎',need:['rose water','gold candle','citrine','mirror'],pair:'past · present · future',
-  st:['rose water on the pulse points. name the version of you clocking in.','gold candle beside the mirror while you get ready','one full look — hold your own eyes for ten seconds','citrine in the bag. it works the room with you.'],
-  sg:'compliments from strangers. tips up. the light finds you in photos.'},
- {n:'build the inner home',s:'grounding · water',v:'plant the safety before you plant anything else',t:['clarity','love'],ph:['new moon','waxing crescent'],
+  st:['touch rose water to your pulse points (patch-test first if your skin is sensitive) and name the version of you who is clocking in.','light the gold candle beside the mirror while you get ready, well away from hair, sprays, and fabric.','take one full look and hold your own eyes for ten seconds. it is harder than it sounds.','put the citrine in your bag and blow out the candle before you leave.'],
+  sg:'compliments from strangers. better tips. the light finds you in photos.'},
+ {n:'build the inner home',s:'grounding · water',v:'a lunar working for the cancer in everyone: make safety in yourself before you ask a place to provide it.',t:['clarity','love'],ph:['new moon','waxing crescent'],
   best:'new moon · moon hour ☽︎',need:['white candle','moon water','jasmine'],pair:'where do i feel safe',
-  st:['moon water in a bowl at the center. that\'s the hearth.','white candle behind it. jasmine beside.','name three things that make a place feel like yours','write them down. paper under the bowl overnight.'],
-  sg:'home starts feeling like a verb. you stop apologizing for taking up your own space.'},
- {n:'full moon truth pull',s:'divination · light',v:'she\'s lit — you can see everything now',t:['clarity','release'],ph:['full moon','waning gibbous'],
+  st:['set a bowl of moon water at the center of your space. that is the hearth.','place the white candle behind it on a heatproof dish and the jasmine beside it.','name three things that make a place feel like yours. be specific: a smell, a sound, a lock.','write them down and leave the paper under the bowl overnight. snuff the candle before you sleep.'],
+  sg:'home starts to feel like something you do, not somewhere you wait. you stop apologizing for taking up your own space.'},
+ {n:'full moon truth pull',s:'divination · light',v:'the full moon is sun and moon in opposition, everything lit from both sides. ask while nothing can hide.',t:['clarity','release'],ph:['full moon','waning gibbous'],
   best:'full moon · anywhere the light lands',need:['clear quartz','white candle','your deck'],pair:'the clarity cross',
-  st:['deck in the moonlight for an hour. quartz on top.','one candle. one question. no follow-ups.','pull until it repeats. the repeat IS the answer.','write it before you interpret it'],
-  sg:'the answer annoys you slightly. that\'s how you know it\'s real.'}];
+  st:['leave the deck in moonlight for an hour with the quartz on top.','light one candle in a safe holder and ask one question. no follow-ups.','pull cards until one repeats. the repeat is the answer.','write the card down before you interpret it, so the first read stays honest. blow out the candle when you\'re done.'],
+  sg:'the answer annoys you slightly. that is usually how you know it\'s real.'}];
 const TAGS=['all','release','love','protection','confidence','money','clarity'];
 let tagF='all';
 const PANTRY=[
  {c:'❧ herbs',i:[
-  {n:'bay leaf',e:'❧',w:'the messenger — write it, burn it, send it',u:'wishes · banishing · victory',o:'☉︎ sun · fire',r:['cut & clear','road opener'],cd:['m01']},
-  {n:'rosemary',e:'❧',w:'cleansing + memory. the when-in-doubt herb.',u:'protection · clarity',o:'☉︎ sun · fire',r:['cut & clear'],cd:['m08']},
-  {n:'cinnamon',e:'❧',w:'heat and speed. sweetens and accelerates.',u:'money · speed · sweetening',o:'☉︎ sun · fire',r:['honey jar','road opener'],cd:['p01']},
-  {n:'rose petals',e:'✿',w:'love drawn soft. never forced.',u:'love · self-tenderness',o:'♀︎ venus · water',r:['honey jar'],cd:['c02']},
-  {n:'jasmine',e:'✿',w:'moon medicine — dreams, intuition, night blooms',u:'intuition · peace',o:'☽︎ moon · water',r:['build the inner home'],cd:['m02']}]},
+  {n:'bay leaf',e:'❧',w:'sacred to apollo and ruled by the sun, bay was the victor\'s crown. folk practice turns it into a messenger: write on it, burn it, let the smoke carry it.',u:'wishes · banishing · victory',o:'☉︎ sun · fire',r:['cut & clear','road opener'],cd:['m01']},
+  {n:'rosemary',e:'❧',w:'a solar, fiery herb tied to remembrance and to clearing a space. it cleanses and protects, which makes it the herb to reach for when you\'re not sure.',u:'protection · clarity',o:'☉︎ sun · fire',r:['cut & clear'],cd:['m08']},
+  {n:'cinnamon',e:'❧',w:'hot, solar, and fast. cinnamon speeds up whatever it\'s added to and sweetens it on the way, so it shows up in both money and love work.',u:'money · speed · sweetening',o:'☉︎ sun · fire',r:['honey jar','road opener'],cd:['p01']},
+  {n:'rose petals',e:'✿',w:'the rose belongs to venus in nearly every tradition. petals draw love gently, by attraction rather than pressure, and that includes love for yourself.',u:'love · self-tenderness',o:'♀︎ venus · water',r:['honey jar'],cd:['c02']},
+  {n:'jasmine',e:'✿',w:'it blooms and scents the air at night, so tradition gives it to the moon: dreams, intuition, and the quiet that lets you hear them.',u:'intuition · peace',o:'☽︎ moon · water',r:['build the inner home'],cd:['m02']}]},
  {c:'◈ crystals',i:[
-  {n:'black tourmaline',e:'◈',w:'the bouncer. absorbs what\'s aimed at you.',u:'protection · grounding',o:'♄︎ saturn · earth',r:['cut & clear'],cd:['m16']},
-  {n:'rose quartz',e:'◈',w:'the heart on low heat. self-love first, always.',u:'love · healing',o:'♀︎ venus · water',r:['honey jar'],cd:['c13']},
-  {n:'clear quartz',e:'◈',w:'the amplifier. boosts whatever sits beside it.',u:'clarity · amplification',o:'☽︎ moon',r:['return to sender','road opener','full moon truth pull'],cd:['m02']},
-  {n:'citrine',e:'◈',w:'money and magnetism. doesn\'t hold negativity.',u:'money · confidence',o:'☉︎ sun · fire',r:['glamour before the shift'],cd:['m17']}]},
+  {n:'black tourmaline',e:'◈',w:'dark, dense, and grounding, so it goes to saturn and earth. it is kept at doors and thresholds to absorb what is aimed your way. the bouncer, basically.',u:'protection · grounding',o:'♄︎ saturn · earth',r:['cut & clear'],cd:['m16']},
+  {n:'rose quartz',e:'◈',w:'pink, soft, and given to venus. it works on the heart at a low steady heat, and it starts with how you treat yourself.',u:'love · healing',o:'♀︎ venus · water',r:['honey jar'],cd:['c13']},
+  {n:'clear quartz',e:'◈',w:'clear like water and reflective like moonlight, so it is linked to the moon. it carries no agenda of its own and amplifies whatever sits beside it.',u:'clarity · amplification',o:'☽︎ moon',r:['return to sender','road opener','full moon truth pull'],cd:['m02']},
+  {n:'citrine',e:'◈',w:'the colour of sunlight, so it is ruled by the sun. it draws money and visibility, and folk lore says it never holds on to negativity.',u:'money · confidence',o:'☉︎ sun · fire',r:['glamour before the shift'],cd:['m17']}]},
  {c:'✧ candles & colors',i:[
-  {n:'black candle',e:'✧',w:'banish · protect · absorb. the full stop.',u:'release · protection',o:'♄︎ saturn',r:['cut & clear','return to sender'],cd:['m13']},
-  {n:'white candle',e:'✧',w:'the blank one. any intention, moon-coded.',u:'cleansing · beginnings',o:'☽︎ moon',r:['build the inner home','full moon truth pull'],cd:['m00']},
-  {n:'pink candle',e:'✧',w:'soft love. sweetening. self-tenderness.',u:'love',o:'♀︎ venus',r:['honey jar'],cd:['c02']},
-  {n:'gold candle',e:'✧',w:'solar success. visibility. the win.',u:'confidence · glamour',o:'☉︎ sun',r:['glamour before the shift'],cd:['m19']},
-  {n:'orange candle',e:'✧',w:'roads open. opportunity moves.',u:'momentum',o:'☿︎ mercury',r:['road opener'],cd:['m10']}]},
+  {n:'black candle',e:'✧',w:'black is saturn\'s colour: limits, endings, protection. it banishes and absorbs, and it is how a working says "this stops here."',u:'release · protection',o:'♄︎ saturn',r:['cut & clear','return to sender'],cd:['m13']},
+  {n:'white candle',e:'✧',w:'white holds every colour, so it stands in for any intention. it is lunar and clean, the one to use for new beginnings.',u:'cleansing · beginnings',o:'☽︎ moon',r:['build the inner home','full moon truth pull'],cd:['m00']},
+  {n:'pink candle',e:'✧',w:'pink is venus at her gentlest. it is used for tender love, sweetening, and repair, including the repair you owe yourself.',u:'love',o:'♀︎ venus',r:['honey jar'],cd:['c02']},
+  {n:'gold candle',e:'✧',w:'gold is the sun\'s metal and colour: success, visibility, being seen to win.',u:'confidence · glamour',o:'☉︎ sun',r:['glamour before the shift'],cd:['m19']},
+  {n:'orange candle',e:'✧',w:'orange sits between solar gold and fiery red and is traditionally given to mercury, god of roads and crossings. it opens doors and gets opportunity moving.',u:'momentum',o:'☿︎ mercury',r:['road opener'],cd:['m10']}]},
  {c:'☽︎ waters & oils',i:[
-  {n:'moon water',e:'☽︎',w:'charged under her. the base of everything.',u:'intuition · cleansing',o:'☽︎ moon · water',r:['build the inner home'],cd:['m02']},
-  {n:'rose water',e:'✿',w:'glamour in a bottle. wear it like intent.',u:'glamour · love',o:'♀︎ venus',r:['glamour before the shift'],cd:['m03']},
-  {n:'black salt',e:'◈',w:'the line they don\'t cross.',u:'protection · banishing',o:'♄︎ saturn · earth',r:['return to sender'],cd:['m15']},
-  {n:'honey',e:'❧',w:'sweeten the current. slow, sticky, undeniable.',u:'love · sweetening',o:'♀︎ venus',r:['honey jar'],cd:['c02']}]}];
+  {n:'moon water',e:'☽︎',w:'water left out overnight under the moon, usually a full one, to take on her qualities. it is the base for most lunar work. for altar use, not for drinking.',u:'intuition · cleansing',o:'☽︎ moon · water',r:['build the inner home'],cd:['m02']},
+  {n:'rose water',e:'✿',w:'venus distilled. worn on the skin, it turns attraction into something you put on deliberately, like a scent with a purpose.',u:'glamour · love',o:'♀︎ venus',r:['glamour before the shift'],cd:['m03']},
+  {n:'black salt',e:'◈',w:'salt has protected thresholds for centuries; blackened with ash or charcoal, it takes on saturn\'s weight. you lay it down as a line that isn\'t crossed.',u:'protection · banishing',o:'♄︎ saturn · earth',r:['return to sender'],cd:['m15']},
+  {n:'honey',e:'❧',w:'sweetness has belonged to venus since antiquity. honey sweetens a situation slowly and holds on, which is why jar work is built on it.',u:'love · sweetening',o:'♀︎ venus',r:['honey jar'],cd:['c02']}]}];
 const SPR={yours:[
- {n:'should i text back',f:'3 cards',p:['the pull','the pattern','the door']},
- {n:'the cage door',f:'4 cards',p:['the cage','the key','the cost','the open air']},
- {n:'the shadow dive',f:'5 cards',p:['surface','shadow','the hook','the medicine','the rise']},
+ {n:'should i text back',f:'3 cards · what pulls you, what repeats, what opens',p:['the pull','the pattern','the door']},
+ {n:'the cage door',f:'4 cards · for leaving what you\'ve outgrown',p:['the cage','the key','the cost','the open air']},
+ {n:'the shadow dive',f:'5 cards · down into the pattern and back up',p:['surface','shadow','the hook','the medicine','the rise']},
  {n:'where do i feel safe',f:'4 cards · new moon',p:['the walls','the door','the hearth','the key']}],
 classic:[
- {n:'the clarity cross',f:'5 cards · when the brain won\'t shut up',p:['heart of it','crossing','root','crown','next']},
- {n:'past · present · future',f:'3 cards · the classic for a reason',p:['past','present','future']},
- {n:'the celtic cross',f:'10 cards · the whole situation',p:['heart','cross','root','past','crown','future','self','environment','hopes/fears','outcome']}]};
-const TRICKS=[['✦ significators','pick the court that matches your sun/moon/rising element. that\'s you in the spread.'],
- ['♞ knight directions','which way the horse faces = which way the energy is moving. toward you or away.'],
- ['✿ read by color','warm cards rush. cool cards retreat. count them before you read a single meaning.'],
- ['❀ the flower lens','look for buds, blooms, and wilt. that\'s the growth stage of the situation, right there.'],
- ['◑ the repeat rule','if a card comes back three times, stop asking. it already answered.']];
+ {n:'the clarity cross',f:'5 cards · for when your mind won\'t settle',p:['heart of it','crossing','root','crown','next']},
+ {n:'past · present · future',f:'3 cards · the classic, and a classic for a reason',p:['past','present','future']},
+ {n:'the celtic cross',f:'10 cards · the whole situation, layer by layer',p:['heart','cross','root','past','crown','future','self','environment','hopes/fears','outcome']}]};
+const TRICKS=[['✦ significators','choose the court card whose suit matches the element of your sun, moon, or rising: wands for fire, cups for water, swords for air, pentacles for earth. that card is you in the spread.'],
+ ['♞ knight directions','notice which way the knight\'s horse faces. toward the centre of the spread, the situation is coming to you; facing out, it is leaving.'],
+ ['✿ read by color','before you read a single meaning, count warm cards against cool ones. warm palettes push forward; cool ones hold back and reflect.'],
+ ['❀ the flower lens','look at the plants in the imagery: buds, full bloom, or wilt. they show what stage the situation has reached.'],
+ ['◑ the repeat rule','if the same card turns up three times, stop asking. it already answered, and you didn\'t like it.']];
 
 /* ══════════ SKY VIEW ══════════ */
 /* ══════════ THE SKY RIGHT NOW (celestine, via /api/sky) ══════════ */
@@ -399,9 +409,14 @@ function renderSky(){
     <button class="tr" onclick="nav('lib');setShelf('work');setTimeout(()=>jumpRit('${rit.n}'),80)"><span class="g">✧</span><div><div class="a">matched working · ${rit.n}</div><div class="b">${rit.v}</div></div><span class="n">${pn.split(' ')[0]}</span></button>
     <button class="tr" onclick="openEntry()"><span class="g">+</span><div><div class="a" style="color:var(--deep)">add to today</div><div class="b">${today.length} ${today.length===1?'entry':'entries'} logged</div></div></button>`;
 }
-const PROMPTS={'new moon':'what are you actually planting — not what sounds good out loud?','waxing crescent':'what would you protect if someone tried to talk you out of it?',
- 'first quarter':'where\'s the resistance, and is it a wall or a door?','waxing gibbous':'what needs editing, not abandoning?','full moon':'what can you see now that you couldn\'t two weeks ago?',
- 'waning gibbous':'what truth are you circling but not saying?','last quarter':'what have you outgrown but kept out of habit?','waning crescent':'what are you still feeding after it already ended?'};
+const PROMPTS={'new moon':'what are you actually beginning this cycle, not what sounds good out loud?',
+ 'waxing crescent':'what new thing would you protect if someone tried to talk you out of it?',
+ 'first quarter':'where is the resistance, and is it telling you to stop or to build it stronger?',
+ 'waxing gibbous':'what needs one more revision before it\'s ready to be seen?',
+ 'full moon':'what can you see clearly now that you couldn\'t two weeks ago?',
+ 'waning gibbous':'what have you learned this cycle, and who needs to hear it?',
+ 'last quarter':'what are you still carrying out of habit rather than choice?',
+ 'waning crescent':'what is ending, and what do you need to rest before the next beginning?'};
 const prompt=(pn,s)=>PROMPTS[pn];
 
 /* ══════════ EVENTS ENGINE ══════════ */
@@ -439,7 +454,7 @@ function evForDate(d){
     /* the engine owns the sky, the moon, natal and convergence layers for this month */
     (cm.ev[k]||[]).forEach(e=>{if(LON[e.lay]!==false&&LON[e.lay]!==undefined)out.push({id:e.id,lay:e.lay,gl:e.gl,t:e.title,s:e.sub||'',date:k,big:e.big?1:0,cos:e});});
     if(LON.lunar&&signOf(moonLon(new Date(d.getTime()-86400000)))!==si)
-      out.push({id:'ms-'+k,lay:'lunar',gl:'☽︎',t:`moon enters ${SIGNS[si]}`,s:`${MOOD[pn].split('.')[0]} · ${SIGN_READ[SIGNS[si]][0]}`,date:k});
+      out.push({id:'ms-'+k,lay:'lunar',gl:'☽︎',t:`moon enters ${SIGNS[si]}`,s:`${pn} · ${SIGN_READ[SIGNS[si]][0].split(':')[0]}`,date:k});
     if(LON.ritual){const r=RIT.find(x=>x.ph.includes(pn));if(r&&(pn==='new moon'||pn==='full moon'))out.push({id:'r-'+k,lay:'ritual',gl:'✧',t:`matched working · ${r.n}`,s:r.v,date:k});}
     if(LON.sixmo&&pn==='new moon')out.push({id:'6-'+k,lay:'sixmo',gl:'◐',t:'six-month checkpoint',s:'new moon = plan review. what shipped, what stalled?',date:k});
     return out.concat(mineFor(k));
@@ -451,7 +466,7 @@ function evForDate(d){
     if(pv<.5&&p>=.5)out.push({id:'fm-'+k,lay:'lunation',gl:'○',t:`full moon in ${SIGNS[si]}`,s:`${degIn(ml).toFixed(0)}° ${GLY[si]} · everything gets lit`,date:k});
   }
   if(LON.lunar&&signOf(moonLon(new Date(d.getTime()-86400000)))!==si)
-    out.push({id:'ms-'+k,lay:'lunar',gl:'☽︎',t:`moon enters ${SIGNS[si]}`,s:`${MOOD[pn].split('.')[0]} · ${SIGN_READ[SIGNS[si]][0]}`,date:k});
+    out.push({id:'ms-'+k,lay:'lunar',gl:'☽︎',t:`moon enters ${SIGNS[si]}`,s:`${pn} · ${SIGN_READ[SIGNS[si]][0].split(':')[0]}`,date:k});
   if(LON.void){const v=voidWindow(d);if(v.active)out.push({id:'v-'+k,lay:'void',gl:'⊘',t:'moon goes void',s:`~${v.hrs}h before she changes signs — don't launch`,date:k});}
   if(LON.natal&&S.me.natal){ /* transit to natal: moon through natal sun/moon sign (engine placements) */
     const b3=big3Of(S.me), nsun=b3.sun, nmoon=b3.moon;
@@ -566,7 +581,7 @@ function renderCal(){
   const sd=parse(S.sel),ev=evForDate(sd),p=phase(sd),si=signOf(moonLon(sd));
   document.getElementById('dSelLab').innerHTML=`${fmtL(sd)}<button class="lk" onclick="moonSheet('${S.sel}')">${phaseName(p)} · ${GLY[si]} ${SIGNS[si]} ›</button>`;
   document.getElementById('dSel').innerHTML=ev.length?ev.map(e=>evRow(e)).join('')
-    :`<button class="card qd" onclick="openAdd('${S.sel}')">nothing on the books. the sky's quiet — ${MOOD[phaseName(p)].toLowerCase()}<span class="qd-go">+ add something to ${fmt(sd)} ›</span></button>`;
+    :`<button class="card qd" onclick="openAdd('${S.sel}')">nothing scheduled. ${MOOD[phaseName(p)]}<span class="qd-go">+ add something to ${fmt(sd)} ›</span></button>`;
   const nt=document.getElementById('ccNote');if(document.activeElement!==nt)nt.value=S.notes[S.sel]||'';
   nt.placeholder=`what happened on ${fmt(sd)}? the record keeps it.`;
   document.getElementById('ccNoteDay').textContent=fmt(sd);
@@ -1183,7 +1198,7 @@ function renderNatal(){
   loadPromise();
   const b=big3Of(S.me);
   document.getElementById('natalPromise').innerHTML=
-   `your sun's in <b>${SIGNS[b.sun]}</b> and your moon's in <b>${SIGNS[b.moon]}</b> — so the thing you're built to become and the thing you actually need are ${b.sun===b.moon?'the same department, which is rare and means when you\'re on, you\'re fully on, and when you\'re off, there\'s nowhere to hide':'running on different frequencies. that\'s not a flaw, that\'s the whole tension the chart is asking you to metabolize'}. ${SIGN_READ[SIGNS[b.moon]][1]}${b.rise!=null?` and with <b>${SIGNS[b.rise]}</b> rising, that's the door everyone walks through first — ${SIGN_READ[SIGNS[b.rise]][0]}.`:''}`;
+   `your sun is in <b>${SIGNS[b.sun]}</b>, what you are built to become; your moon is in <b>${SIGNS[b.moon]}</b>, what you need in order to feel safe. ${b.sun===b.moon?'they share a sign, which is rare: will and need pull the same way, so when you are on you are fully on, and there is little room to hide when you are not.':'they work in different signs, and the chart asks you to serve both: the sun sets the direction, the moon decides whether you can sustain it.'} with the moon in ${SIGNS[b.moon]}, ${SIGN_READ[SIGNS[b.moon]][0].split(': ')[1]}.${b.rise!=null?` <b>${SIGNS[b.rise]}</b> rising is the doorway people meet first: ${SIGN_READ[SIGNS[b.rise]][0].split(': ')[1]}.`:''}`;
 }
 
 /* the written natal promise: generated once per chart on request (/api/read/natal), then kept */
@@ -1269,31 +1284,31 @@ const SIGN_META=[
  ['fire','cardinal','mars','♂︎'],['earth','fixed','venus','♀︎'],['air','mutable','mercury','☿︎'],['water','cardinal','moon','☽︎'],
  ['fire','fixed','sun','☉︎'],['earth','mutable','mercury','☿︎'],['air','cardinal','venus','♀︎'],['water','fixed','mars · pluto','♂︎ ♇︎'],
  ['fire','mutable','jupiter','♃︎'],['earth','cardinal','saturn','♄︎'],['air','fixed','saturn · uranus','♄︎ ♅︎'],['water','mutable','jupiter · neptune','♃︎ ♆︎']];
-const HOUSE_MEAN=['self, body, the first impression — the door everyone walks through','money, resources, what you value and what values you','siblings, neighbors, texts, the daily commute of your mind','home, family, roots, the private floor plan','romance, creativity, play, kids, the fun you make','work, health, routines, the daily grind and the daily care',
- 'partners, contracts, the people across the table','shared money, sex, debt, inheritance, the deep end','travel, belief, higher learning, the long road','career, reputation, the public chapter of you','friends, networks, the future you\'re building with others','the hidden, the subconscious, endings, rest, retreat'];
-const PLANET_MEAN={sun:'your core identity — what you\'re here to become',moon:'your emotional body — what you need to feel safe',mercury:'how you think, talk, and process',venus:'how you love, attract, and value',mars:'how you want, chase, and fight',jupiter:'where luck and growth come easy (and where you overdo it)',
- saturn:'where life makes you earn it — discipline, fear, mastery',uranus:'where you rebel and break the pattern',neptune:'where you dream, dissolve, and get foggy',pluto:'where power, obsession, and rebirth live',chiron:'the wound that becomes the medicine',
- north_node:'the direction you\'re growing toward',south_node:'the comfort zone you\'re growing out of',lilith:'the part of you that refused to be tamed',asc:'your rising — the lens, the body, the vibe people clock first',mc:'the midheaven — your public direction and reputation',dsc:'the descendant — what you seek in partners',ic:'the IC — your roots and private foundation'};
+const HOUSE_MEAN=['the self: your body, temperament and the first impression you make before you say a word','money and resources: what you earn, own and value, and the self-worth underneath it','the near world: siblings, neighbors, messages, short trips and the way your mind moves day to day','home and roots: family, ancestry, the private foundation you build on','pleasure and creation: romance, play, art, children and the risks you take for joy','daily work and health: routines, service, the body\'s upkeep and the habits that run your days',
+ 'partnership: marriage, contracts, close collaborators and open rivals, the people across the table','shared resources and depth: other people\'s money, debt, sex, inheritance and what you merge with others','the far horizon: travel, belief, higher learning, law and the search for meaning','career and reputation: your public role, ambitions and what you are known for','community: friends, networks, allies and the future you build with others','the hidden: the unconscious, solitude, endings and what you work through out of sight'];
+const PLANET_MEAN={sun:'your core identity: the vitality you run on and the self you are growing into',moon:'your emotional body: what you need to feel safe and how you comfort yourself',mercury:'your mind and voice: how you think, learn, talk and make sense of things',venus:'your way of loving and valuing: what you find beautiful, who you attract and what you hold dear',mars:'your drive: how you want, pursue, compete and fight for what matters',jupiter:'your capacity to grow: where faith, luck and generosity come easily, and where you overdo it',
+ saturn:'your principle of limits: where life makes you earn it through discipline, time and fear faced down',uranus:'your break with the pattern: where you rebel, innovate and refuse to be predictable',neptune:'your capacity to dissolve: where you dream, idealize, sense the unseen and lose the edges',pluto:'your depth: where power, obsession, loss and rebirth do their slow work',chiron:'the wound that becomes the medicine: where you hurt and where you learn to heal others',
+ north_node:'the direction of growth: the unfamiliar qualities this life asks you to develop',south_node:'the familiar groove: the skills you arrived with and the comfort zone you are outgrowing',lilith:'the part of you that refused to be tamed: raw desire, exile and the power of saying no',asc:'the sign rising on the eastern horizon at birth: your body, your approach to life and the first impression you make',mc:'the highest point of the chart: your public direction, vocation and reputation',dsc:'the point setting in the west at birth: what you seek, and project, in partners',ic:'the lowest point of the chart: your roots, private life and inner foundation'};
 const GLOSS={
- retrograde:['℞ retrograde','a planet looks like it\'s walking backwards from here. it isn\'t — earth is lapping it. in practice: that planet\'s topics go into review. redo, revisit, reread. launching is harder; fixing is easier.'],
- elements:['◐ the element balance','count the seven classical planets by element: fire (aries, leo, sagittarius) acts, earth (taurus, virgo, capricorn) builds, air (gemini, libra, aquarius) talks, water (cancer, scorpio, pisces) feels. whichever leads is the day\'s default setting.'],
- rising:['↑ the rising','your ascendant — the zodiac sign that was rising on the eastern horizon the minute you were born. it sets every house in your chart, so it needs your exact birth time and place. the app casts it with the celestine engine — no time, no rising (we won\'t fake it).'],
- sun:['☉︎ the sun','where the sun was when you were born. your core identity, your engine, the thing you\'re built to become.'],
- moon:['☽︎ the moon','your emotional body. what you need to feel safe, how you self-soothe, what you do when nobody\'s watching.'],
- wheel:['◎ reading the wheel','the outer band is the zodiac (ARI → PIS), ticked every 5°. the solid line across is your horizon — rising on the left, setting on the right; the dashed line is the MC–IC meridian. the small numbers are your houses, running counter-clockwise from the rising. planets sit at their exact degree as two-letter codes (SU sun, MO moon, ME mercury…). lines in the hub are aspects under 4°: solid for squares and oppositions, dashed for the easy ones. tap any code to open it.'],
- aspects:['☌ aspects','the angles between your planets. conjunction 0° (fused), sextile 60° (easy opening), square 90° (friction that builds muscle), trine 120° (natural talent), opposition 180° (a seesaw). the orb is how close to exact — tighter means louder.'],
- placements:['✦ placements','every body in your chart: which sign it\'s in (the style), which degree, and which house (the life department). ℞ means it was retrograde at your birth — the energy turns inward first.'],
- notifications:['◉ notifications','push reminders for voids, exact windows, lunations, and your returns are being built. for now the calendar is the source of truth — everything that would ping you is already on it.'],
- deck:['✦ deck art','rider–waite–smith, 1909 original scans by pamela colman smith. public domain — yours to keep forever.'],
- layers:['◐ calendar layers','every lens the calendar can show: the moon, the sky, your chart, your people, your practice. turn on what you use and the calendar redraws live.'],
- porphyry:['◈ porphyry houses','the default here. your real angles (ASC, IC, DSC, MC) anchor the four quadrants and each quadrant splits into three equal houses. stable at every latitude, honest to your actual horizon.'],
- void:['⊘ void of course','the stretch after the moon makes her last major aspect in a sign and before she enters the next one. launches, sends, and promises made in a void tend to fizzle. rest, edit, wait.'],
- lunation:['● lunations','new moons (plant) and full moons (harvest, reveal). eclipses are lunations with the volume turned all the way up.'],
- flag:['✦ flagged days','days where three or more things stack up, or something big lands (an eclipse, a station). worth planning around.'],
- stand:['☉︎ the sun\'s season','the sun spends about a month in each sign — that\'s the season everyone is living in. the arrow shows when it moves on.'],
- stats:['◇ the month at a glance','how many things are on the books this month with your current layers, how many days are flagged, and which part of the sky is loudest.'],
- calendar:['✦ the calendar','this is the cosmic calendar sheet, live: your chart line up top, the layers you have on, the standing condition for the month in the black bar, every event written into its day, and what to watch underneath. tap any day, event, layer or line to open it.'],
- compare:['☍ synastry & composite','synastry lays two charts on top of each other — where your planets hit theirs. a composite blends both charts into one: the relationship as its own creature. both need a cast chart for each person.']};
+ retrograde:['℞ retrograde','a planet is retrograde when, seen from earth, it appears to move backward through the zodiac. it isn\'t; earth is overtaking it in orbit, and the stations where it seems to stop are the loudest points. while it\'s retrograde, that planet\'s topics go into review: revisit, repair, reread. launching gets harder and fixing gets easier.'],
+ elements:['◐ the element balance','count the seven classical planets by element: fire (aries, leo, sagittarius) acts, earth (taurus, virgo, capricorn) builds, air (gemini, libra, aquarius) connects and talks, water (cancer, scorpio, pisces) feels. whichever element leads sets the day\'s default temperament. the missing one is what everyone forgets to bring.'],
+ rising:['↑ the rising','your ascendant is the sign that was rising on the eastern horizon at the minute and place you were born. it anchors every house in the chart and colors how you meet the world, so it needs an exact birth time. the app casts it with the celestine engine; without a time there is no rising, and we won\'t guess one.'],
+ sun:['☉︎ the sun','the sun\'s sign, degree and house at your birth. it describes your core identity: what gives you vitality, what you\'re built to become, and where you want to be seen. read it as the purpose the rest of the chart serves.'],
+ moon:['☽︎ the moon','the moon\'s sign, degree and house at your birth. it describes your emotional body: what you need to feel safe, how you self-soothe, and how you behave when nobody\'s watching. the sun is who you\'re becoming; the moon is what you need on the way.'],
+ wheel:['◎ reading the wheel','the outer band is the zodiac (ARI → PIS), ticked every 5°. the solid line across is your horizon, rising on the left and setting on the right; the dashed line is the MC–IC meridian. the small numbers are your houses, running counter-clockwise from the rising, and each planet sits at its exact degree as a two-letter code (SU sun, MO moon, ME mercury…). lines in the hub are aspects tighter than 4°: solid for squares and oppositions, dashed for sextiles and trines. tap any code to open it.'],
+ aspects:['☌ aspects','aspects are the angles between planets, measured along the zodiac: conjunction 0° (fused), sextile 60° (an easy opening), square 90° (friction that builds strength), trine 120° (natural talent), opposition 180° (a seesaw). the orb is the distance from exact; the tighter the orb, the louder the aspect. read the planets first, then the angle tells you how they get along.'],
+ placements:['✦ placements','a placement is one body in your chart, read in three parts: the sign (how it operates), the degree (exactly where), and the house (which area of life it works in). ℞ means it was retrograde at your birth, so it tends to work inward first and show outwardly later.'],
+ notifications:['◉ notifications','push reminders for void-of-course moons, exact aspects, lunations and your returns are still being built. until then the calendar is the source of truth: everything that would notify you is already on it.'],
+ deck:['✦ deck art','the rider–waite–smith deck, from the 1909 original scans of pamela colman smith\'s art. it is in the public domain, so it is yours to keep for good.'],
+ layers:['◐ calendar layers','layers are the lenses the calendar can show: the moon, the wider sky, your chart, the people in your orbit, and your own practice. each one adds its events to the same days, so you can see where they stack. turn on what you actually use and the calendar redraws as you go.'],
+ porphyry:['◈ porphyry houses','the default house system here. your real angles (ASC, IC, DSC, MC) anchor the four quadrants, and each quadrant is split into three equal houses. it stays stable at every latitude and stays honest to your actual horizon. whole-sign and placidus are available in settings.'],
+ void:['⊘ void of course','the moon is void of course from her last major aspect in a sign until she enters the next sign. it can last minutes or most of a day. launches, sends and promises made in a void tend to go nowhere, so use it to rest, edit and wait.'],
+ lunation:['● lunations','a lunation is a new or full moon. the new moon, sun and moon together, is for planting intentions; the full moon, sun and moon opposite, is for harvest and things coming to light. an eclipse is a lunation near the moon\'s nodes, with consequences that unfold over months.'],
+ flag:['✦ flagged days','a day is flagged when three or more events stack up, or when something major lands, like an eclipse or a station. these are the days worth planning around, not panicking about.'],
+ stand:['☉︎ the sun\'s season','the sun spends about a month in each sign, and that sign sets the season everyone is living in. it is the shared backdrop to every personal transit. the arrow shows when the sun moves into the next sign.'],
+ stats:['◇ the month at a glance','a count of what\'s on the calendar this month with your current layers, how many days are flagged, and which part of the sky is most active. use it to see whether the month is busy before you read the details.'],
+ calendar:['✦ the calendar','this is the cosmic calendar sheet, live. your chart line sits up top, then the layers you have on, the month\'s standing condition in the black bar, each event written into its day, and what to watch underneath. tap any day, event, layer or line to open it.'],
+ compare:['☍ synastry & composite','synastry overlays two charts to show where your planets contact theirs, and how each of you lands in the other\'s life. a composite blends both charts into one, the relationship read as its own entity. both need a cast chart for each person.']};
 function explain(k,more){
   const g=GLOSS[k];if(!g)return;
   sheet(`<div class="gb"></div><div class="xp-eb">✦ · explained · ✦</div><div class="xp-h">${g[0]}</div><p class="xp-p">${g[1]}</p>${more||''}
@@ -1312,7 +1327,7 @@ function explainSign(i){
   const nx=nextMoonIn(i);
   sheet(`<div class="gb"></div><div class="xp-eb">${el} · ${mod} · ruled by ${rul} ${rg}</div>
     <div class="xp-sign">${GLY[i]}</div><div class="xp-bl">${nm}</div>
-    <p class="xp-p"><b>${vibe}.</b> ${read}</p>
+    <p class="xp-p"><b>${vibe.split(': ')[1]}.</b> ${read}</p>
     ${mine.length?`<div class="xp-lab">in your chart</div><div class="ich">${mine.join('')}</div>`:''}
     ${nh>=0?`<div class="xp-lab">your houses</div><p class="xp-p">${nm} opens your <b>${nh+1}${['st','nd','rd'][nh]||'th'} house</b> — ${HOUSE_MEAN[nh]}.</p>`:''}
     ${nx?`<button class="btn" onclick="closeSheet();pickDay('${key(nx)}');nav('cal')">moon in ${nm} next · ${fmt(nx)} ›</button>`:''}`);
@@ -1345,14 +1360,14 @@ function explainPlacement(who,k){
   sheet(`<div class="gb"></div><div class="xp-eb">${nameW} chart · celestine</div>
     <div class="xp-sign">${BG[k]||'✦'}</div><div class="xp-h">${bname(k)} in ${nm}</div>
     <div class="xp-meta">${GLY[si]} ${dm(degIn(lon))} ${nm}${h?` · house ${h}`:''}${retro?' · retrograde ℞':''}</div>
-    <p class="xp-p"><b>${bname(k)}</b> is ${PLANET_MEAN[k]||'a point in the chart'}. in <button class="lk" onclick="explainSign(${si})"><b>${nm}</b></button> it runs ${SIGN_READ[nm][0]}.</p>
+    <p class="xp-p"><b>${bname(k)}</b> is ${PLANET_MEAN[k]||'a point in the chart'}. in <button class="lk" onclick="explainSign(${si})"><b>${nm}</b></button> it takes on the sign's manner: ${SIGN_READ[nm][0].split(': ')[1]}.</p>
     ${h?`<p class="xp-p">it lives in <button class="lk" onclick="explainHouse(${h})"><b>house ${h}</b></button> — ${HOUSE_MEAN[h-1]}.</p>`:''}
-    ${retro?'<p class="xp-p">retrograde at birth: this energy processes inward first, then comes out sharper.</p>':''}
+    ${retro?'<p class="xp-p">retrograde at birth: this planet works inward first. its expression arrives later, more considered, and often sharper for it.</p>':''}
     ${asp.length?`<div class="xp-lab">tightest aspects</div>${asp.map(a=>`<button class="nr" onclick="explainAspect('${a.a}','${a.b}','${a.t.n}',${a.orb.toFixed(1)})"><span class="g">${a.t.g}</span><span class="n">${bname(a.a)} ${a.t.n} ${bname(a.b)}</span><span class="w2">${a.orb.toFixed(1)}°</span><span class="c">›</span></button>`).join('')}`:''}
     ${who==='me'?`<button class="btn" onclick="closeSheet();nav('natal')">open my chart ›</button>`:''}`);
 }
-const ASP_READ={conjunction:'fused. these two act as one unit — you can\'t get one without the other.',sextile:'an open door. easy cooperation that pays off when you actually use it.',
- square:'friction on purpose. this is where you build muscle — annoying, productive, permanent.',trine:'natural talent. flows so easily you might not notice it\'s a gift.',opposition:'a seesaw. you swing between the two until you learn to hold both.'};
+const ASP_READ={conjunction:'0°, the two planets share one degree and act as a single unit. their topics blend so completely that you rarely get one without the other.',sextile:'60°, two signs of compatible elements in easy contact. it offers cooperation and opportunity, but only pays out when you act on it.',
+ square:'90°, two planets in signs of the same mode pulling across each other. it creates friction that forces growth; uncomfortable, productive, and usually where your best work comes from.',trine:'120°, two planets in the same element, flowing without resistance. this is natural talent, so easy you may not notice it, or bother to use it.',opposition:'180°, two planets facing each other across the wheel. you swing between them, often through other people, until you learn to hold both at once.'};
 function explainAspect(a,b,t,orb){
   const A=ASP.find(x=>x.n===t);
   sheet(`<div class="gb"></div><div class="xp-eb">aspect · ${orb}° orb</div>
@@ -1438,7 +1453,7 @@ function showCompare(kind,i){
       return `<div class="nr"><span class="g">${BG[k]}</span><span class="n">${k}</span><span class="w2">${GLY[si]} ${SIGNS[si]} ${dm(degIn(l))}</span></div>`;}).join('');
     const rise=A.timeKnown&&B.timeKnown?signOf(mid(A.asc,B.asc)):null;
     sheet(`<div class="gb"></div><div class="xp-eb">◍ · composite · you × ${esc(p.name)}</div><div class="xp-h">the relationship's own chart</div>
-      <p class="xp-p">midpoints of both charts — the "us" as its own creature.${rise!=null?` it rises in <b>${SIGNS[rise]}</b>: ${SIGN_READ[SIGNS[rise]][0]}.`:''}</p>${rows}`);
+      <p class="xp-p">midpoints of both charts — the "us" as its own creature.${rise!=null?` it rises in <b>${SIGNS[rise]}</b>: ${SIGN_READ[SIGNS[rise]][0].split(': ')[1]}.`:''}</p>${rows}`);
   }
 }
 /* user calendar events — the "+ add to the calendar" sheet */
