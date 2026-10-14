@@ -183,7 +183,7 @@ const rgba=(h,a)=>{const n=parseInt(h.slice(1),16);return`rgba(${n>>16&255},${n>
 function setAcc(i){
   if(!ACC[i])i=0;S.accent=i;const A=ACC[i],r=document.documentElement.style;
   r.setProperty('--accent',A.a);
-  r.setProperty('--soft',A.a);r.setProperty('--glow','transparent');
+  r.setProperty('--glow','transparent');   /* --soft is mixed from --accent in astrocake.css */
   document.querySelectorAll('.sw').forEach(s=>s.classList.toggle('on',+s.dataset.i===i));
   saveUi();stars();
 }
@@ -941,9 +941,9 @@ function renderPull(){
       <div class="pl-sub">a photo keeps it exactly as it fell. you'll name the cards next.</div>
       ${PL.photos.length?`<div class="pl-photo"><img src="${PL.photos[0]}" alt="your spread"></div>
         ${PL.photos.length>1?`<div class="prev">${PL.photos.slice(1).map(x=>`<img src="${x}">`).join('')}</div>`:''}`
-      :`<label class="pl-drop"><input type="file" accept="image/*" capture="environment" hidden onchange="plPhoto(this)">
+      :`<label class="pl-drop"><input type="file" accept="image/*" multiple hidden onchange="plPhoto(this)">
           <span class="pl-cards"><i></i><i></i><i></i></span>
-          <span class="t">photo of the spread</span><span class="s">camera or library</span></label>`}
+          <span class="t">add a photo of the spread</span><span class="s">take one or pick from your library</span></label>`}
       ${PL.photos.length?`<label class="btn g pl-more"><input type="file" accept="image/*" hidden onchange="plPhoto(this)">+ another photo</label>`:''}`;
     foot=`<button class="btn" onclick="plGo(1)">${PL.photos.length?'next':'skip — lay it out by hand'}</button>`;
   } else if(st===1){
@@ -1031,22 +1031,20 @@ function tapCard(k){plCard(k);}
 let entPhotos=[];
 function openEntry(dk,who,pre){
   entPhotos=[];
-  sheet(`<div class="gb"></div>
-    <div class="cap" style="font-size:9.5px;color:var(--deep);text-align:center">✧ · the record · ✧</div>
-    <div class="sf" style="font-size:24px;text-align:center;margin-top:3px">new entry</div>
-    <div class="seg" id="etype" style="margin-top:14px">
-      <button data-t="note" class="on">✧ note</button><button data-t="ritual">✧ working</button>
-      <button data-t="cycle">◉ cycle</button><button data-t="sex">◇ intimacy</button></div>
-    <div class="ob-f" style="margin-top:12px">
-      <input id="enD" type="date" value="${dk||key(new Date())}">
-      <input id="enT" placeholder="title" value="${who?'about '+who:''}">
-      <textarea id="enB" rows="4" placeholder="${who?'what happened with '+esc(who)+'?':'what happened, what you noticed, what the sky was doing…'}">${pre?esc(pre)+'\n\n':''}</textarea>
+  sheet(`<div class="gb"></div><div class="xp-eb">✧ · the record · ✧</div><div class="xp-h">new entry</div>
+    <div class="fm">
+      <div class="fl"><span>what kind</span><div class="fchips" id="etype">
+        <button type="button" data-t="note" class="fchip on">✧ note</button><button type="button" data-t="ritual" class="fchip">✧ working</button>
+        <button type="button" data-t="cycle" class="fchip">◉ cycle</button><button type="button" data-t="sex" class="fchip">◇ intimacy</button></div></div>
+      <div class="frow"><label class="fl" style="flex:0 0 46%"><span>date</span><input id="enD" type="date" value="${dk||key(new Date())}"></label>
+        <label class="fl"><span>title</span><input id="enT" placeholder="optional" value="${who?'about '+esc(who):''}"></label></div>
+      <label class="fl"><span>what happened</span><textarea id="enB" rows="4" placeholder="${who?'what happened with '+esc(who)+'?':'what you noticed, what the sky was doing…'}">${pre?esc(pre)+'\n\n':''}</textarea></label>
+      <div class="fl"><span>photos · optional</span>
+        <label class="ph-add"><input type="file" id="enF" accept="image/*" multiple hidden><span class="pl-cards"><i></i><i></i></span><span>add photos — screenshots, spreads, altars, signs</span></label>
+        <div class="prev" id="enP"></div></div>
     </div>
-    <label class="up"><input type="file" id="enF" accept="image/*" multiple hidden>
-      <div class="g">◉</div><div class="t">add photos</div><div class="s">screenshots, spreads, altars, signs</div></label>
-    <div class="prev" id="enP"></div>
-    ${who?`<input type="hidden" id="enW" value="${who}">`:''}
-    <button class="btn" onclick="saveEntry()">✧ into the book</button>`);
+    ${who?`<input type="hidden" id="enW" value="${esc(who)}">`:''}
+    <button class="btn" onclick="saveEntry()">into the book</button>`);
   document.getElementById('enF').onchange=e=>{
     [...e.target.files].forEach(f=>{const r=new FileReader();r.onload=x=>{entPhotos.push(x.target.result);
       document.getElementById('enP').innerHTML=entPhotos.map(p=>`<img src="${p}">`).join('');};r.readAsDataURL(f);});};
